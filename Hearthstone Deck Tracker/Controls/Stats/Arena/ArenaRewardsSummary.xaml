@@ -86,6 +86,9 @@
                 <StackPanel Orientation="Horizontal">
                     <TextBlock VerticalAlignment="Center" Text="{lex:LocText Key=Stats_Arena_Rewards_Label_Packs_Ungoro, Suffix=' '}"/>
                     <TextBlock VerticalAlignment="Center" Text="{Binding Path=PacksCountUngoro, Source={x:Static compiledStats:ArenaStats.Instance}, IsAsync=True}"/>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock VerticalAlignment="Center" Text="{lex:LocText Key=Stats_Arena_Rewards_Label_Packs_Kft, Suffix=' '}"/>
+                    <TextBlock VerticalAlignment="Center" Text="{Binding Path=PacksCountKft, Source={x:Static compiledStats:ArenaStats.Instance}, IsAsync=True}"/>
                 </StackPanel>
             </StackPanel>
         </StackPanel>
