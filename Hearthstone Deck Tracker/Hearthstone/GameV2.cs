@@ -67,6 +67,8 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 		internal GameStats StoredGameStats { get; set; }
 		public List<AccountId> AccountIds { get; } = new List<AccountId>();
 
+		internal event Action OnPlayersFound;
+
 		public Mode CurrentMode
 		{
 			get => _currentMode;
@@ -160,6 +162,7 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 					Log.Info("Set current region to" + region);
 				}
 			}
+			OnPlayersFound?.Invoke();
 		}
 
 		private void LogReflectionData(string source = "") 
@@ -201,6 +204,7 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 				Opponent.Name = MatchInfo.OpposingPlayer.Name;
 				Player.Id = MatchInfo.LocalPlayer.Id;
 				Opponent.Id = MatchInfo.OpposingPlayer.Id;
+				OnPlayersFound?.Invoke();
 			}
 			Entities.Clear();
 			SavedReplay = false;

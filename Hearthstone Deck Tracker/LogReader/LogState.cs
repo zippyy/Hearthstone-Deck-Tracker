@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using HearthDb.Enums;
 using Hearthstone_Deck_Tracker.Enums;
 using Hearthstone_Deck_Tracker.Hearthstone;
@@ -9,6 +10,7 @@ using Hearthstone_Deck_Tracker.Hearthstone.Entities;
 using Hearthstone_Deck_Tracker.LogReader.Handlers;
 using Hearthstone_Deck_Tracker.LogReader.Interfaces;
 using Hearthstone_Deck_Tracker.Replay;
+using Hearthstone_Deck_Tracker.Utility.Logging;
 
 #endregion
 
@@ -21,8 +23,29 @@ namespace Hearthstone_Deck_Tracker.LogReader
 		public LogState(GameV2 game)
 		{
 			_game = game;
+			_game.OnPlayersFound += GameOnOnPlayersFound;
 			KnownCardIds = new Dictionary<int, IList<string>>();
 		}
+
+		private void GameOnOnPlayersFound()
+		{
+			var count = TmpEntities.Count;
+			if(count == 0)
+				return;
+			foreach(var tmpEntity in TmpEntities.ToList())
+			{
+				if(tmpEntity.Name == _game.Player.Name)
+					TransferTempData(tmpEntity, _game.PlayerEntity);
+				else if (tmpEntity.Name == _game.Opponent.Name)
+					TransferTempData(tmpEntity, _game.OpponentEntity);
+			}
+			if(TmpEntities.Count < count)
+			{
+				Log.Info("Invoking queued actions");
+				TagChangeHandler.InvokeQueuedActions(_game);
+			}
+		}
+
 		public bool CurrentEntityHasCardId { get; set; }
 		public int CurrentEntityId { get; private set; }
 		public bool GameEnded { get; set; }
@@ -87,6 +110,15 @@ namespace Hearthstone_Deck_Tracker.LogReader
 			CurrentBlock = CurrentBlock?.Parent;
 			if(_game.Entities.TryGetValue(CurrentEntityId, out var entity))
 				entity.Info.HasOutstandingTagChanges = false;
+		}
+
+		public void TransferTempData(Entity tmpEntity, Entity entity)
+		{
+			Log.Info($"Transferring {tmpEntity.Tags.Count} tags from temp entity ({tmpEntity.Id}) to {tmpEntity.Name}");
+			entity.Name = tmpEntity.Name;
+			foreach(var tag in tmpEntity.Tags)
+				TagChangeHandler.TagChange(this, tag.Key, entity.Id, tag.Value, _game);
+			TmpEntities.Remove(tmpEntity);
 		}
 	}
 

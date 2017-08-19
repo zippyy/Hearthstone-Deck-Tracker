@@ -67,8 +67,9 @@ namespace Hearthstone_Deck_Tracker.LogReader.Handlers
 				else
 				{
 					var entity = game.Entities.FirstOrDefault(x => x.Value.Name == rawEntity);
-
-					if(entity.Value == null)
+					if (entity.Value != null)
+						state.TagChangeHandler.TagChange(state, match.Groups["tag"].Value, entity.Key, match.Groups["value"].Value, game);
+					else
 					{
 						var players = game.Entities.Where(x => x.Value.HasTag(GameTag.PLAYER_ID)).Take(2).ToList();
 						var unnamedPlayers = players.Where(x => string.IsNullOrEmpty(x.Value.Name)).ToList();
@@ -95,32 +96,21 @@ namespace Hearthstone_Deck_Tracker.LogReader.Handlers
 
 						if(entity.Value != null)
 						{
-							entity.Value.Name = tmpEntity.Name;
-							foreach(var t in tmpEntity.Tags)
-								state.TagChangeHandler.TagChange(state, t.Key, entity.Key, t.Value, game);
-							state.TmpEntities.Remove(tmpEntity);
-							state.TagChangeHandler.TagChange(state, match.Groups["tag"].Value, entity.Key, match.Groups["value"].Value, game);
+							tmpEntity.SetTag(tag, value);
+							state.TransferTempData(tmpEntity, entity.Value);
 						}
 						if(state.TmpEntities.Contains(tmpEntity))
 						{
 							tmpEntity.SetTag(tag, value);
-							var player = game.Player.Name == tmpEntity.Name ? game.Player
-										: (game.Opponent.Name == tmpEntity.Name ? game.Opponent : null);
+							var player = game.Player.Name == tmpEntity.Name ? game.Player : (game.Opponent.Name == tmpEntity.Name ? game.Opponent : null);
 							if(player != null)
 							{
 								var playerEntity = game.Entities.FirstOrDefault(x => x.Value.GetTag(GameTag.PLAYER_ID) == player.Id).Value;
 								if(playerEntity != null)
-								{
-									playerEntity.Name = tmpEntity.Name;
-									foreach(var t in tmpEntity.Tags)
-										state.TagChangeHandler.TagChange(state, t.Key, playerEntity.Id, t.Value, game);
-									state.TmpEntities.Remove(tmpEntity);
-								}
+									state.TransferTempData(tmpEntity, playerEntity);
 							}
 						}
 					}
-					else
-						state.TagChangeHandler.TagChange(state, match.Groups["tag"].Value, entity.Key, match.Groups["value"].Value, game);
 				}
 			}
 			else if(CreationRegex.IsMatch(logLine))

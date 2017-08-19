@@ -37,6 +37,7 @@ namespace Hearthstone_Deck_Tracker.LogReader.Interfaces
 		void ResetCurrentEntity();
 		void BlockStart(string type);
 		void BlockEnd();
+		void TransferTempData(Entity tempEntity, Entity entity);
 		Block CurrentBlock { get; }
 		List<Entity> TmpEntities { get; }
 		TagChangeHandler TagChangeHandler { get; }
