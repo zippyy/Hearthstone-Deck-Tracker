@@ -4,13 +4,15 @@ using System;
 using System.Collections.Generic;
 using HearthDb.Enums;
 using Hearthstone_Deck_Tracker.Enums;
+using Hearthstone_Deck_Tracker.Hearthstone.Entities;
+using Hearthstone_Deck_Tracker.LogReader.Handlers;
 using Hearthstone_Deck_Tracker.Replay;
 
 #endregion
 
 namespace Hearthstone_Deck_Tracker.LogReader.Interfaces
 {
-	public interface IHsGameState
+	public interface ILogState
 	{
 		bool CurrentEntityHasCardId { get; set; }
 		int CurrentEntityId { get; }
@@ -36,5 +38,7 @@ namespace Hearthstone_Deck_Tracker.LogReader.Interfaces
 		void BlockStart(string type);
 		void BlockEnd();
 		Block CurrentBlock { get; }
+		List<Entity> TmpEntities { get; }
+		TagChangeHandler TagChangeHandler { get; }
 	}
 }

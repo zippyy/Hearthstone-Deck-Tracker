@@ -13,19 +13,19 @@ using Hearthstone_Deck_Tracker.Replay;
 
 namespace Hearthstone_Deck_Tracker.LogReader.Handlers
 {
-	internal class TagChangeHandler
+	public class TagChangeHandler
 	{
 		private readonly TagChangeActions _tagChangeActions = new TagChangeActions();
 		private readonly Queue<Tuple<int, Action>> _creationTagActionQueue = new Queue<Tuple<int, Action>>();
 
-		public void TagChange(IHsGameState gameState, string rawTag, int id, string rawValue, IGame game, bool isCreationTag = false)
+		public void TagChange(ILogState state, string rawTag, int id, string rawValue, IGame game, bool isCreationTag = false)
 		{
 			var tag = GameTagHelper.ParseEnum<GameTag>(rawTag);
 			var value = GameTagHelper.ParseTag(tag, rawValue);
-			TagChange(gameState, tag, id, value, game, isCreationTag);
+			TagChange(state, tag, id, value, game, isCreationTag);
 		}
 
-		public void TagChange(IHsGameState gameState, GameTag tag, int id, int value, IGame game, bool isCreationTag = false)
+		public void TagChange(ILogState state, GameTag tag, int id, int value, IGame game, bool isCreationTag = false)
 		{
 			if(!game.Entities.ContainsKey(id))
 				game.Entities.Add(id, new Entity(id));
@@ -38,7 +38,7 @@ namespace Hearthstone_Deck_Tracker.LogReader.Handlers
 
 			if(isCreationTag)
 			{
-				var action = _tagChangeActions.FindAction(tag, game, gameState, id, value, prevValue);
+				var action = _tagChangeActions.FindAction(tag, game, state, id, value, prevValue);
 				if(action != null)
 				{
 					entity.Info.HasOutstandingTagChanges = true;
@@ -46,7 +46,7 @@ namespace Hearthstone_Deck_Tracker.LogReader.Handlers
 				}
 			}
 			else
-				_tagChangeActions.FindAction(tag, game, gameState, id, value, prevValue)?.Invoke();
+				_tagChangeActions.FindAction(tag, game, state, id, value, prevValue)?.Invoke();
 		}
 		
 

@@ -15,9 +15,9 @@ namespace Hearthstone_Deck_Tracker.LogReader.Handlers
 {
 	public class RachelleHandler
 	{
-		public void Handle(string logLine, IHsGameState gameState, IGame game)
+		public void Handle(string logLine, ILogState state, IGame game)
 		{
-			if(!GoldProgressRegex.IsMatch(logLine) || (DateTime.Now - gameState.LastGameStart) <= TimeSpan.FromSeconds(10)
+			if(!GoldProgressRegex.IsMatch(logLine) || (DateTime.Now - state.LastGameStart) <= TimeSpan.FromSeconds(10)
 				|| game.CurrentGameMode == GameMode.Spectator)
 				return;
 			var rawWins = GoldProgressRegex.Match(logLine).Groups["wins"].Value;

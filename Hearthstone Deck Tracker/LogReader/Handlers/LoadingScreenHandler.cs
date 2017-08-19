@@ -27,7 +27,7 @@ namespace Hearthstone_Deck_Tracker.LogReader.Handlers
 		private bool _checkedMirrorStatus;
 		public event Action OnHearthMirrorCheckFailed;
 
-		public void Handle(LogLine logLine, IHsGameState gameState, IGame game)
+		public void Handle(LogLine logLine, ILogState state, IGame game)
 		{
 			var match = LogConstants.GameModeRegex.Match(logLine.Line);
 			if(match.Success)
@@ -48,7 +48,7 @@ namespace Hearthstone_Deck_Tracker.LogReader.Handlers
 				}
 
 				if(game.PreviousMode == Mode.GAMEPLAY && game.CurrentMode != Mode.GAMEPLAY)
-					gameState.GameHandler.HandleInMenu();
+					state.GameHandler.HandleInMenu();
 
 				if(game.CurrentMode == Mode.HUB && !_checkedMirrorStatus && (DateTime.Now - logLine.Time).TotalSeconds < 5)
 				{
@@ -74,8 +74,8 @@ namespace Hearthstone_Deck_Tracker.LogReader.Handlers
 			}
 			else if(logLine.Line.Contains("Gameplay.Start"))
 			{
-				gameState.Reset();
-				gameState.GameHandler.HandleGameStart(logLine.Time);
+				state.Reset();
+				state.GameHandler.HandleGameStart(logLine.Time);
 			}
 		}
 

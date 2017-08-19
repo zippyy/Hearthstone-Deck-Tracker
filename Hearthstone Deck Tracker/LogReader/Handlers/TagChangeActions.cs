@@ -15,38 +15,38 @@ namespace Hearthstone_Deck_Tracker.LogReader.Handlers
 {
 	internal class TagChangeActions
 	{
-		public Action FindAction(GameTag tag, IGame game, IHsGameState gameState, int id, int value, int prevValue)
+		public Action FindAction(GameTag tag, IGame game, ILogState state, int id, int value, int prevValue)
 		{
 			switch(tag)
 			{
 				case ZONE:
-					return () => ZoneChange(gameState, id, game, value, prevValue);
+					return () => ZoneChange(state, id, game, value, prevValue);
 				case PLAYSTATE:
-					return () => PlaystateChange(gameState, id, game, value);
+					return () => PlaystateChange(state, id, game, value);
 				case CARDTYPE:
-					return () => CardTypeChange(gameState, id, game, value);
+					return () => CardTypeChange(state, id, game, value);
 				case LAST_CARD_PLAYED:
-					return () => LastCardPlayedChange(gameState, value);
+					return () => LastCardPlayedChange(state, value);
 				case DEFENDING:
-					return () => DefendingChange(gameState, id, game, value);
+					return () => DefendingChange(state, id, game, value);
 				case ATTACKING:
-					return () => AttackingChange(gameState, id, game, value);
+					return () => AttackingChange(state, id, game, value);
 				case NUM_MINIONS_PLAYED_THIS_TURN:
-					return () => NumMinionsPlayedThisTurnChange(gameState, game, value);
+					return () => NumMinionsPlayedThisTurnChange(state, game, value);
 				case PREDAMAGE:
-					return () => PredamageChange(gameState, id, game, value);
+					return () => PredamageChange(state, id, game, value);
 				case NUM_TURNS_IN_PLAY:
-					return () => NumTurnsInPlayChange(gameState, id, game, value);
+					return () => NumTurnsInPlayChange(state, id, game, value);
 				case CONTROLLER:
-					return () => ControllerChange(gameState, id, game, prevValue, value);
+					return () => ControllerChange(state, id, game, prevValue, value);
 				case FATIGUE:
-					return () => FatigueChange(gameState, value, game, id);
+					return () => FatigueChange(state, value, game, id);
 				case STEP:
-					return () => StepChange(gameState, game);
+					return () => StepChange(state, game);
 				case TURN:
-					return () => TurnChange(gameState, game);
+					return () => TurnChange(state, game);
 				case STATE:
-					return () => StateChange(value, gameState);
+					return () => StateChange(value, state);
 				case TRANSFORMED_FROM_CARD:
 					return () => TransformedFromCardChange(id, value, game);
 			}
@@ -61,87 +61,87 @@ namespace Hearthstone_Deck_Tracker.LogReader.Handlers
 				entity.Info.SetOriginalCardId(value);
 		}
 
-		private void StateChange(int value, IHsGameState gameState)
+		private void StateChange(int value, ILogState state)
 		{
 			if(value != (int)State.COMPLETE)
 				return;
-			gameState.GameHandler.HandleGameEnd();
-			gameState.GameEnded = true;
+			state.GameHandler.HandleGameEnd();
+			state.GameEnded = true;
 		}
 
-		private void TurnChange(IHsGameState gameState, IGame game)
+		private void TurnChange(ILogState state, IGame game)
 		{
-			if(!gameState.SetupDone || game.PlayerEntity == null)
+			if(!state.SetupDone || game.PlayerEntity == null)
 				return;
 			var activePlayer = game.PlayerEntity.HasTag(CURRENT_PLAYER) ? ActivePlayer.Player : ActivePlayer.Opponent;
 			if(activePlayer == ActivePlayer.Player)
-				gameState.PlayerUsedHeroPower = false;
+				state.PlayerUsedHeroPower = false;
 			else
-				gameState.OpponentUsedHeroPower = false;
+				state.OpponentUsedHeroPower = false;
 		}
 
-		private void StepChange(IHsGameState gameState, IGame game)
+		private void StepChange(ILogState state, IGame game)
 		{
-			if(gameState.SetupDone || game.Entities.FirstOrDefault().Value?.Name != "GameEntity")
+			if(state.SetupDone || game.Entities.FirstOrDefault().Value?.Name != "GameEntity")
 				return;
 			Log.Info("Game was already in progress.");
-			gameState.WasInProgress = true;
+			state.WasInProgress = true;
 		}
 
-		private void LastCardPlayedChange(IHsGameState gameState, int value) => gameState.LastCardPlayed = value;
+		private void LastCardPlayedChange(ILogState state, int value) => state.LastCardPlayed = value;
 
-		private void DefendingChange(IHsGameState gameState, int id, IGame game, int value)
+		private void DefendingChange(ILogState state, int id, IGame game, int value)
 		{
 			if(!game.Entities.TryGetValue(id, out var entity))
 				return;
-			gameState.GameHandler.HandleDefendingEntity(value == 1 ? entity : null);
+			state.GameHandler.HandleDefendingEntity(value == 1 ? entity : null);
 		}
 
-		private void AttackingChange(IHsGameState gameState, int id, IGame game, int value)
+		private void AttackingChange(ILogState state, int id, IGame game, int value)
 		{
 			if(!game.Entities.TryGetValue(id, out var entity))
 				return;
-			gameState.GameHandler.HandleAttackingEntity(value == 1 ? entity : null);
+			state.GameHandler.HandleAttackingEntity(value == 1 ? entity : null);
 		}
 
-		private void NumMinionsPlayedThisTurnChange(IHsGameState gameState, IGame game, int value)
+		private void NumMinionsPlayedThisTurnChange(ILogState state, IGame game, int value)
 		{
 			if(value <= 0)
 				return;
 			if(game.PlayerEntity?.IsCurrentPlayer ?? false)
-				gameState.GameHandler.HandlePlayerMinionPlayed();
+				state.GameHandler.HandlePlayerMinionPlayed();
 		}
 
-		private void PredamageChange(IHsGameState gameState, int id, IGame game, int value)
+		private void PredamageChange(ILogState state, int id, IGame game, int value)
 		{
 			if(value <= 0)
 				return;
 			if(!game.Entities.TryGetValue(id, out var entity))
 				return;
-			gameState.GameHandler.HandleEntityPredamage(entity, value);
+			state.GameHandler.HandleEntityPredamage(entity, value);
 		}
 
-		private void NumTurnsInPlayChange(IHsGameState gameState, int id, IGame game, int value)
+		private void NumTurnsInPlayChange(ILogState state, int id, IGame game, int value)
 		{
 			if(value <= 0)
 				return;
 			if(!game.Entities.TryGetValue(id, out var entity))
 				return;
-			gameState.GameHandler.HandleTurnsInPlayChange(entity, gameState.GetTurnNumber());
+			state.GameHandler.HandleTurnsInPlayChange(entity, state.GetTurnNumber());
 		}
 
-		private void FatigueChange(IHsGameState gameState, int value, IGame game, int id)
+		private void FatigueChange(ILogState state, int value, IGame game, int id)
 		{
 			if(!game.Entities.TryGetValue(id, out var entity))
 				return;
 			var controller = entity.GetTag(CONTROLLER);
 			if(controller == game.Player.Id)
-				gameState.GameHandler.HandlePlayerFatigue(value);
+				state.GameHandler.HandlePlayerFatigue(value);
 			else if(controller == game.Opponent.Id)
-				gameState.GameHandler.HandleOpponentFatigue(value);
+				state.GameHandler.HandleOpponentFatigue(value);
 		}
 
-		private void ControllerChange(IHsGameState gameState, int id, IGame game, int prevValue, int value)
+		private void ControllerChange(ILogState state, int id, IGame game, int prevValue, int value)
 		{
 			if(!game.Entities.TryGetValue(id, out var entity))
 				return;
@@ -155,48 +155,48 @@ namespace Hearthstone_Deck_Tracker.LogReader.Handlers
 			if(value == game.Player.Id)
 			{
 				if(entity.IsInZone(Zone.SECRET))
-					gameState.GameHandler.HandleOpponentStolen(entity, entity.CardId, gameState.GetTurnNumber());
+					state.GameHandler.HandleOpponentStolen(entity, entity.CardId, state.GetTurnNumber());
 				else if(entity.IsInZone(PLAY))
-					gameState.GameHandler.HandleOpponentStolen(entity, entity.CardId, gameState.GetTurnNumber());
+					state.GameHandler.HandleOpponentStolen(entity, entity.CardId, state.GetTurnNumber());
 			}
 			else if(value == game.Opponent.Id)
 			{
 				if(entity.IsInZone(Zone.SECRET))
-					gameState.GameHandler.HandlePlayerStolen(entity, entity.CardId, gameState.GetTurnNumber());
+					state.GameHandler.HandlePlayerStolen(entity, entity.CardId, state.GetTurnNumber());
 				else if(entity.IsInZone(PLAY))
-					gameState.GameHandler.HandlePlayerStolen(entity, entity.CardId, gameState.GetTurnNumber());
+					state.GameHandler.HandlePlayerStolen(entity, entity.CardId, state.GetTurnNumber());
 			}
 		}
 
-		private void CardTypeChange(IHsGameState gameState, int id, IGame game, int value)
+		private void CardTypeChange(ILogState state, int id, IGame game, int value)
 		{
 			if(value == (int)CardType.HERO)
-				SetHeroAsync(id, game, gameState);
+				SetHeroAsync(id, game, state);
 		}
 
-		private void PlaystateChange(IHsGameState gameState, int id, IGame game, int value)
+		private void PlaystateChange(ILogState state, int id, IGame game, int value)
 		{
 			if(value == (int)CONCEDED)
-				gameState.GameHandler.HandleConcede();
-			if(gameState.GameEnded)
+				state.GameHandler.HandleConcede();
+			if(state.GameEnded)
 				return;
 			if(!game.Entities.TryGetValue(id, out var entity) || !entity.IsPlayer)
 				return;
 			switch((PlayState)value)
 			{
 				case WON:
-					gameState.GameHandler.HandleWin();
+					state.GameHandler.HandleWin();
 					break;
 				case LOST:
-					gameState.GameHandler.HandleLoss();
+					state.GameHandler.HandleLoss();
 					break;
 				case TIED:
-					gameState.GameHandler.HandleTied();
+					state.GameHandler.HandleTied();
 					break;
 			}
 		}
 
-		private void ZoneChange(IHsGameState gameState, int id, IGame game, int value, int prevValue)
+		private void ZoneChange(ILogState state, int id, IGame game, int value, int prevValue)
 		{
 			if(id <= 3)
 				return;
@@ -213,31 +213,31 @@ namespace Hearthstone_Deck_Tracker.LogReader.Handlers
 			switch((Zone)prevValue)
 			{
 				case DECK:
-					ZoneChangeFromDeck(gameState, id, game, value, prevValue, controller, entity.CardId);
+					ZoneChangeFromDeck(state, id, game, value, prevValue, controller, entity.CardId);
 					break;
 				case HAND:
-					ZoneChangeFromHand(gameState, id, game, value, prevValue, controller, entity.CardId);
+					ZoneChangeFromHand(state, id, game, value, prevValue, controller, entity.CardId);
 					break;
 				case PLAY:
-					ZoneChangeFromPlay(gameState, id, game, value, prevValue, controller, entity.CardId);
+					ZoneChangeFromPlay(state, id, game, value, prevValue, controller, entity.CardId);
 					break;
 				case Zone.SECRET:
-					ZoneChangeFromSecret(gameState, id, game, value, prevValue, controller, entity.CardId);
+					ZoneChangeFromSecret(state, id, game, value, prevValue, controller, entity.CardId);
 					break;
 				case Zone.INVALID:
 					var maxId = GetMaxHeroPowerId(game);
-					if(!gameState.SetupDone && (id <= maxId || game.GameEntity?.GetTag(STEP) == (int)Step.INVALID && entity.GetTag(ZONE_POSITION) < 5))
+					if(!state.SetupDone && (id <= maxId || game.GameEntity?.GetTag(STEP) == (int)Step.INVALID && entity.GetTag(ZONE_POSITION) < 5))
 					{
 						entity.Info.OriginalZone = DECK;
-						SimulateZoneChangesFromDeck(gameState, id, game, value, entity.CardId, maxId);
+						SimulateZoneChangesFromDeck(state, id, game, value, entity.CardId, maxId);
 					}
 					else
-						ZoneChangeFromOther(gameState, id, game, value, prevValue, controller, entity.CardId);
+						ZoneChangeFromOther(state, id, game, value, prevValue, controller, entity.CardId);
 					break;
 				case GRAVEYARD:
 				case SETASIDE:
 				case REMOVEDFROMGAME:
-					ZoneChangeFromOther(gameState, id, game, value, prevValue, controller, entity.CardId);
+					ZoneChangeFromOther(state, id, game, value, prevValue, controller, entity.CardId);
 					break;
 				default:
 					Log.Warn($"unhandled zone change (id={id}): {prevValue} -> {value}");
@@ -249,7 +249,7 @@ namespace Hearthstone_Deck_Tracker.LogReader.Handlers
 		private int GetMaxHeroPowerId(IGame game) => 
 			Math.Max(game.PlayerEntity?.GetTag(HERO_ENTITY) ?? 66, game.OpponentEntity?.GetTag(HERO_ENTITY) ?? 66) + 1;
 
-		private void SimulateZoneChangesFromDeck(IHsGameState gameState, int id, IGame game, int value, string cardId, int maxId)
+		private void SimulateZoneChangesFromDeck(ILogState state, int id, IGame game, int value, string cardId, int maxId)
 		{
 			if(value == (int)DECK)
 				return;
@@ -263,16 +263,16 @@ namespace Hearthstone_Deck_Tracker.LogReader.Handlers
 			if(entity.IsHero && !entity.IsPlayableHero || entity.IsHeroPower || entity.HasTag(PLAYER_ID) || entity.GetTag(CARDTYPE) == (int)CardType.GAME
 				|| entity.HasTag(CREATOR))
 				return;
-			ZoneChangeFromDeck(gameState, id, game, (int)HAND, (int)DECK, entity.GetTag(CONTROLLER), cardId);
+			ZoneChangeFromDeck(state, id, game, (int)HAND, (int)DECK, entity.GetTag(CONTROLLER), cardId);
 			if(value == (int)HAND)
 				return;
-			ZoneChangeFromHand(gameState, id, game, (int)PLAY, (int)HAND, entity.GetTag(CONTROLLER), cardId);
+			ZoneChangeFromHand(state, id, game, (int)PLAY, (int)HAND, entity.GetTag(CONTROLLER), cardId);
 			if(value == (int)PLAY)
 				return;
-			ZoneChangeFromPlay(gameState, id, game, value, (int)PLAY, entity.GetTag(CONTROLLER), cardId);
+			ZoneChangeFromPlay(state, id, game, value, (int)PLAY, entity.GetTag(CONTROLLER), cardId);
 		}
 
-		private void ZoneChangeFromOther(IHsGameState gameState, int id, IGame game, int value, int prevValue, int controller, string cardId)
+		private void ZoneChangeFromOther(ILogState state, int id, IGame game, int value, int prevValue, int controller, string cardId)
 		{
 			if(!game.Entities.TryGetValue(id, out var entity))
 				return;
@@ -280,7 +280,7 @@ namespace Hearthstone_Deck_Tracker.LogReader.Handlers
 			{
 				//This entity was moved from DECK to SETASIDE to HAND, e.g. by Tracking
 				entity.Info.Discarded = false;
-				ZoneChangeFromDeck(gameState, id, game, value, prevValue, controller, cardId);
+				ZoneChangeFromDeck(state, id, game, value, prevValue, controller, cardId);
 				return;
 			}
 			entity.Info.Created = true;
@@ -288,41 +288,41 @@ namespace Hearthstone_Deck_Tracker.LogReader.Handlers
 			{
 				case PLAY:
 					if(controller == game.Player.Id)
-						gameState.GameHandler.HandlePlayerCreateInPlay(entity, cardId, gameState.GetTurnNumber());
+						state.GameHandler.HandlePlayerCreateInPlay(entity, cardId, state.GetTurnNumber());
 					if(controller == game.Opponent.Id)
-						gameState.GameHandler.HandleOpponentCreateInPlay(entity, cardId, gameState.GetTurnNumber());
+						state.GameHandler.HandleOpponentCreateInPlay(entity, cardId, state.GetTurnNumber());
 					break;
 				case DECK:
 					if(controller == game.Player.Id)
 					{
-						if(gameState.JoustReveals > 0)
+						if(state.JoustReveals > 0)
 							break;
-						gameState.GameHandler.HandlePlayerGetToDeck(entity, cardId, gameState.GetTurnNumber());
+						state.GameHandler.HandlePlayerGetToDeck(entity, cardId, state.GetTurnNumber());
 					}
 					if(controller == game.Opponent.Id)
 					{
-						if(gameState.JoustReveals > 0)
+						if(state.JoustReveals > 0)
 							break;
-						gameState.GameHandler.HandleOpponentGetToDeck(entity, gameState.GetTurnNumber());
+						state.GameHandler.HandleOpponentGetToDeck(entity, state.GetTurnNumber());
 					}
 					break;
 				case HAND:
 					if(controller == game.Player.Id)
-						gameState.GameHandler.HandlePlayerGet(entity, cardId, gameState.GetTurnNumber());
+						state.GameHandler.HandlePlayerGet(entity, cardId, state.GetTurnNumber());
 					else if(controller == game.Opponent.Id)
-						gameState.GameHandler.HandleOpponentGet(entity, gameState.GetTurnNumber(), id);
+						state.GameHandler.HandleOpponentGet(entity, state.GetTurnNumber(), id);
 					break;
 				case Zone.SECRET:
 					if(controller == game.Player.Id)
-						gameState.GameHandler.HandlePlayerSecretPlayed(entity, cardId, gameState.GetTurnNumber(), (Zone)prevValue);
+						state.GameHandler.HandlePlayerSecretPlayed(entity, cardId, state.GetTurnNumber(), (Zone)prevValue);
 					else if(controller == game.Opponent.Id)
-						gameState.GameHandler.HandleOpponentSecretPlayed(entity, cardId, -1, gameState.GetTurnNumber(), (Zone)prevValue, id);
+						state.GameHandler.HandleOpponentSecretPlayed(entity, cardId, -1, state.GetTurnNumber(), (Zone)prevValue, id);
 					break;
 				case SETASIDE:
 					if(controller == game.Player.Id)
-						gameState.GameHandler.HandlePlayerCreateInSetAside(entity, gameState.GetTurnNumber());
+						state.GameHandler.HandlePlayerCreateInSetAside(entity, state.GetTurnNumber());
 					if(controller == game.Opponent.Id)
-						gameState.GameHandler.HandleOpponentCreateInSetAside(entity, gameState.GetTurnNumber());
+						state.GameHandler.HandleOpponentCreateInSetAside(entity, state.GetTurnNumber());
 					break;
 				default:
 					Log.Warn($"unhandled zone change (id={id}): {prevValue} -> {value}");
@@ -330,7 +330,7 @@ namespace Hearthstone_Deck_Tracker.LogReader.Handlers
 			}
 		}
 
-		private void ZoneChangeFromSecret(IHsGameState gameState, int id, IGame game, int value, int prevValue, int controller, string cardId)
+		private void ZoneChangeFromSecret(ILogState state, int id, IGame game, int value, int prevValue, int controller, string cardId)
 		{
 			switch((Zone)value)
 			{
@@ -340,7 +340,7 @@ namespace Hearthstone_Deck_Tracker.LogReader.Handlers
 					{
 						if(!game.Entities.TryGetValue(id, out var entity))
 							return;
-						gameState.GameHandler.HandleOpponentSecretTrigger(entity, cardId, gameState.GetTurnNumber(), id);
+						state.GameHandler.HandleOpponentSecretTrigger(entity, cardId, state.GetTurnNumber(), id);
 					}
 					break;
 				default:
@@ -349,7 +349,7 @@ namespace Hearthstone_Deck_Tracker.LogReader.Handlers
 			}
 		}
 
-		private void ZoneChangeFromPlay(IHsGameState gameState, int id, IGame game, int value, int prevValue, int controller, string cardId)
+		private void ZoneChangeFromPlay(ILogState state, int id, IGame game, int value, int prevValue, int controller, string cardId)
 		{
 			if(!game.Entities.TryGetValue(id, out var entity))
 				return;
@@ -357,28 +357,28 @@ namespace Hearthstone_Deck_Tracker.LogReader.Handlers
 			{
 				case HAND:
 					if(controller == game.Player.Id)
-						gameState.GameHandler.HandlePlayerBackToHand(entity, cardId, gameState.GetTurnNumber());
+						state.GameHandler.HandlePlayerBackToHand(entity, cardId, state.GetTurnNumber());
 					else if(controller == game.Opponent.Id)
-						gameState.GameHandler.HandleOpponentPlayToHand(entity, cardId, gameState.GetTurnNumber(), id);
+						state.GameHandler.HandleOpponentPlayToHand(entity, cardId, state.GetTurnNumber(), id);
 					break;
 				case DECK:
 					if(controller == game.Player.Id)
-						gameState.GameHandler.HandlePlayerPlayToDeck(entity, cardId, gameState.GetTurnNumber());
+						state.GameHandler.HandlePlayerPlayToDeck(entity, cardId, state.GetTurnNumber());
 					else if(controller == game.Opponent.Id)
-						gameState.GameHandler.HandleOpponentPlayToDeck(entity, cardId, gameState.GetTurnNumber());
+						state.GameHandler.HandleOpponentPlayToDeck(entity, cardId, state.GetTurnNumber());
 					break;
 				case GRAVEYARD:
 					if(controller == game.Player.Id)
-						gameState.GameHandler.HandlePlayerPlayToGraveyard(entity, cardId, gameState.GetTurnNumber());
+						state.GameHandler.HandlePlayerPlayToGraveyard(entity, cardId, state.GetTurnNumber());
 					else if(controller == game.Opponent.Id)
-						gameState.GameHandler.HandleOpponentPlayToGraveyard(entity, cardId, gameState.GetTurnNumber(), game.PlayerEntity?.IsCurrentPlayer ?? false);
+						state.GameHandler.HandleOpponentPlayToGraveyard(entity, cardId, state.GetTurnNumber(), game.PlayerEntity?.IsCurrentPlayer ?? false);
 					break;
 				case REMOVEDFROMGAME:
 				case SETASIDE:
 					if(controller == game.Player.Id)
-						gameState.GameHandler.HandlePlayerRemoveFromPlay(entity, gameState.GetTurnNumber());
+						state.GameHandler.HandlePlayerRemoveFromPlay(entity, state.GetTurnNumber());
 					else if(controller == game.Opponent.Id)
-						gameState.GameHandler.HandleOpponentRemoveFromPlay(entity, gameState.GetTurnNumber());
+						state.GameHandler.HandleOpponentRemoveFromPlay(entity, state.GetTurnNumber());
 					break;
 				case PLAY:
 					break;
@@ -388,7 +388,7 @@ namespace Hearthstone_Deck_Tracker.LogReader.Handlers
 			}
 		}
 
-		private void ZoneChangeFromHand(IHsGameState gameState, int id, IGame game, int value, int prevValue, int controller, string cardId)
+		private void ZoneChangeFromHand(ILogState state, int id, IGame game, int value, int prevValue, int controller, string cardId)
 		{
 			if(!game.Entities.TryGetValue(id, out var entity))
 				return;
@@ -396,38 +396,38 @@ namespace Hearthstone_Deck_Tracker.LogReader.Handlers
 			{
 				case PLAY:
 					if(controller == game.Player.Id)
-						gameState.GameHandler.HandlePlayerPlay(entity, cardId, gameState.GetTurnNumber());
+						state.GameHandler.HandlePlayerPlay(entity, cardId, state.GetTurnNumber());
 					else if(controller == game.Opponent.Id)
 					{
-						gameState.GameHandler.HandleOpponentPlay(entity, cardId, entity.GetTag(ZONE_POSITION),
-																 gameState.GetTurnNumber());
+						state.GameHandler.HandleOpponentPlay(entity, cardId, entity.GetTag(ZONE_POSITION),
+																 state.GetTurnNumber());
 					}
 					break;
 				case REMOVEDFROMGAME:
 				case SETASIDE:
 				case GRAVEYARD:
 					if(controller == game.Player.Id)
-						gameState.GameHandler.HandlePlayerHandDiscard(entity, cardId, gameState.GetTurnNumber());
+						state.GameHandler.HandlePlayerHandDiscard(entity, cardId, state.GetTurnNumber());
 					else if(controller == game.Opponent.Id)
 					{
-						gameState.GameHandler.HandleOpponentHandDiscard(entity, cardId, entity.GetTag(ZONE_POSITION),
-																		gameState.GetTurnNumber());
+						state.GameHandler.HandleOpponentHandDiscard(entity, cardId, entity.GetTag(ZONE_POSITION),
+																		state.GetTurnNumber());
 					}
 					break;
 				case Zone.SECRET:
 					if(controller == game.Player.Id)
-						gameState.GameHandler.HandlePlayerSecretPlayed(entity, cardId, gameState.GetTurnNumber(), (Zone)prevValue);
+						state.GameHandler.HandlePlayerSecretPlayed(entity, cardId, state.GetTurnNumber(), (Zone)prevValue);
 					else if(controller == game.Opponent.Id)
 					{
-						gameState.GameHandler.HandleOpponentSecretPlayed(entity, cardId, entity.GetTag(ZONE_POSITION),
-																		 gameState.GetTurnNumber(), (Zone)prevValue, id);
+						state.GameHandler.HandleOpponentSecretPlayed(entity, cardId, entity.GetTag(ZONE_POSITION),
+																		 state.GetTurnNumber(), (Zone)prevValue, id);
 					}
 					break;
 				case DECK:
 					if(controller == game.Player.Id)
-						gameState.GameHandler.HandlePlayerMulligan(entity, cardId);
+						state.GameHandler.HandlePlayerMulligan(entity, cardId);
 					else if(controller == game.Opponent.Id)
-						gameState.GameHandler.HandleOpponentMulligan(entity, entity.GetTag(ZONE_POSITION));
+						state.GameHandler.HandleOpponentMulligan(entity, entity.GetTag(ZONE_POSITION));
 					break;
 				default:
 					Log.Warn($"unhandled zone change (id={id}): {prevValue} -> {value}");
@@ -435,7 +435,7 @@ namespace Hearthstone_Deck_Tracker.LogReader.Handlers
 			}
 		}
 
-		private void ZoneChangeFromDeck(IHsGameState gameState, int id, IGame game, int value, int prevValue, int controller, string cardId)
+		private void ZoneChangeFromDeck(ILogState state, int id, IGame game, int value, int prevValue, int controller, string cardId)
 		{
 			if(!game.Entities.TryGetValue(id, out var entity))
 				return;
@@ -443,53 +443,53 @@ namespace Hearthstone_Deck_Tracker.LogReader.Handlers
 			{
 				case HAND:
 					if(controller == game.Player.Id)
-						gameState.GameHandler.HandlePlayerDraw(entity, cardId, gameState.GetTurnNumber());
+						state.GameHandler.HandlePlayerDraw(entity, cardId, state.GetTurnNumber());
 					else if(controller == game.Opponent.Id)
-						gameState.GameHandler.HandleOpponentDraw(entity, gameState.GetTurnNumber());
+						state.GameHandler.HandleOpponentDraw(entity, state.GetTurnNumber());
 					break;
 				case SETASIDE:
 				case REMOVEDFROMGAME:
-					if(!gameState.SetupDone)
+					if(!state.SetupDone)
 					{
 						entity.Info.Created = true;
 						return;
 					}
 					if(controller == game.Player.Id)
 					{
-						if(gameState.JoustReveals > 0)
+						if(state.JoustReveals > 0)
 						{
-							gameState.JoustReveals--;
+							state.JoustReveals--;
 							break;
 						}
-						gameState.GameHandler.HandlePlayerRemoveFromDeck(entity, gameState.GetTurnNumber());
+						state.GameHandler.HandlePlayerRemoveFromDeck(entity, state.GetTurnNumber());
 					}
 					else if(controller == game.Opponent.Id)
 					{
-						if(gameState.JoustReveals > 0)
+						if(state.JoustReveals > 0)
 						{
-							gameState.JoustReveals--;
+							state.JoustReveals--;
 							break;
 						}
-						gameState.GameHandler.HandleOpponentRemoveFromDeck(entity, gameState.GetTurnNumber());
+						state.GameHandler.HandleOpponentRemoveFromDeck(entity, state.GetTurnNumber());
 					}
 					break;
 				case GRAVEYARD:
 					if(controller == game.Player.Id)
-						gameState.GameHandler.HandlePlayerDeckDiscard(entity, cardId, gameState.GetTurnNumber());
+						state.GameHandler.HandlePlayerDeckDiscard(entity, cardId, state.GetTurnNumber());
 					else if(controller == game.Opponent.Id)
-						gameState.GameHandler.HandleOpponentDeckDiscard(entity, cardId, gameState.GetTurnNumber());
+						state.GameHandler.HandleOpponentDeckDiscard(entity, cardId, state.GetTurnNumber());
 					break;
 				case PLAY:
 					if(controller == game.Player.Id)
-						gameState.GameHandler.HandlePlayerDeckToPlay(entity, cardId, gameState.GetTurnNumber());
+						state.GameHandler.HandlePlayerDeckToPlay(entity, cardId, state.GetTurnNumber());
 					else if(controller == game.Opponent.Id)
-						gameState.GameHandler.HandleOpponentDeckToPlay(entity, cardId, gameState.GetTurnNumber());
+						state.GameHandler.HandleOpponentDeckToPlay(entity, cardId, state.GetTurnNumber());
 					break;
 				case Zone.SECRET:
 					if(controller == game.Player.Id)
-						gameState.GameHandler.HandlePlayerSecretPlayed(entity, cardId, gameState.GetTurnNumber(), (Zone)prevValue);
+						state.GameHandler.HandlePlayerSecretPlayed(entity, cardId, state.GetTurnNumber(), (Zone)prevValue);
 					else if(controller == game.Opponent.Id)
-						gameState.GameHandler.HandleOpponentSecretPlayed(entity, cardId, -1, gameState.GetTurnNumber(), (Zone)prevValue, id);
+						state.GameHandler.HandleOpponentSecretPlayed(entity, cardId, -1, state.GetTurnNumber(), (Zone)prevValue, id);
 					break;
 				default:
 					Log.Warn($"unhandled zone change (id={id}): {prevValue} -> {value}");
@@ -497,7 +497,7 @@ namespace Hearthstone_Deck_Tracker.LogReader.Handlers
 			}
 		}
 
-		private async void SetHeroAsync(int id, IGame game, IHsGameState gameState)
+		private async void SetHeroAsync(int id, IGame game, ILogState state)
 		{
 			Log.Info("Found hero with id=" + id);
 			if(game.PlayerEntity == null)
@@ -511,7 +511,7 @@ namespace Hearthstone_Deck_Tracker.LogReader.Handlers
 			{
 				if(!game.Entities.TryGetValue(id, out var entity))
 					return;
-				gameState.GameHandler.SetPlayerHero(Database.GetHeroNameFromId(entity.CardId));
+				state.GameHandler.SetPlayerHero(Database.GetHeroNameFromId(entity.CardId));
 				return;
 			}
 			if(game.OpponentEntity == null)
@@ -525,7 +525,7 @@ namespace Hearthstone_Deck_Tracker.LogReader.Handlers
 			{
 				if(!game.Entities.TryGetValue(id, out var entity))
 					return;
-				gameState.GameHandler.SetOpponentHero(Database.GetHeroNameFromId(entity.CardId));
+				state.GameHandler.SetOpponentHero(Database.GetHeroNameFromId(entity.CardId));
 			}
 		}
 	}

@@ -6,6 +6,7 @@ using HearthDb.Enums;
 using Hearthstone_Deck_Tracker.Enums;
 using Hearthstone_Deck_Tracker.Hearthstone;
 using Hearthstone_Deck_Tracker.Hearthstone.Entities;
+using Hearthstone_Deck_Tracker.LogReader.Handlers;
 using Hearthstone_Deck_Tracker.LogReader.Interfaces;
 using Hearthstone_Deck_Tracker.Replay;
 
@@ -13,11 +14,11 @@ using Hearthstone_Deck_Tracker.Replay;
 
 namespace Hearthstone_Deck_Tracker.LogReader
 {
-	public class HsGameState : IHsGameState
+	public class LogState : ILogState
 	{
 		private readonly GameV2 _game;
 
-		public HsGameState(GameV2 game)
+		public LogState(GameV2 game)
 		{
 			_game = game;
 			KnownCardIds = new Dictionary<int, IList<string>>();
@@ -39,6 +40,8 @@ namespace Hearthstone_Deck_Tracker.LogReader
 		public int GameTriggerCount { get; set; }
 		public Zone CurrentEntityZone { get; set; }
 		public bool DeterminedPlayers => _game.Player.Id > 0 && _game.Opponent.Id > 0;
+		public List<Entity> TmpEntities { get; } = new List<Entity>();
+		public TagChangeHandler TagChangeHandler { get; } = new TagChangeHandler();
 
 		public int GetTurnNumber()
 		{
@@ -59,6 +62,8 @@ namespace Hearthstone_Deck_Tracker.LogReader
 			GameTriggerCount = 0;
 			CurrentBlock = null;
 			_maxBlockId = 0;
+			TmpEntities.Clear();
+			TagChangeHandler.ClearQueuedActions();
 		}
 
 		public void SetCurrentEntity(int id)

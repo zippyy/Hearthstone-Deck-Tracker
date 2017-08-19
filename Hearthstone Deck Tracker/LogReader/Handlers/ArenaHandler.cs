@@ -11,7 +11,7 @@ namespace Hearthstone_Deck_Tracker.LogReader.Handlers
 {
 	public class ArenaHandler
 	{
-		public void Handle(LogLine logLine, IHsGameState gameState, IGame game)
+		public void Handle(LogLine logLine, ILogState state, IGame game)
 		{
 			if(logLine.Line.Contains("IN_REWARDS") && game.CurrentMode == Mode.DRAFT)
 				Watchers.ArenaWatcher.Update();

@@ -610,11 +610,11 @@
     <Compile Include="Hearthstone\Player.cs" />
     <Compile Include="LogReader\Handlers\ArenaHandler.cs" />
     <Compile Include="LogReader\Handlers\PowerHandler.cs" />
-    <Compile Include="LogReader\HsGameState.cs" />
+    <Compile Include="LogReader\LogState.cs" />
     <Compile Include="LogReader\LogConstants.cs" />
     <Compile Include="LogReader\Handlers\RachelleHandler.cs" />
     <Compile Include="LogReader\Handlers\TagChangeHandler.cs" />
-    <Compile Include="LogReader\Interfaces\IHsGameState.cs" />
+    <Compile Include="LogReader\Interfaces\ILogState.cs" />
     <Compile Include="LogReader\Interfaces\IHSLogReader.cs" />
     <Compile Include="LogReader\LogWatcherManager.cs" />
     <Compile Include="Plugins\IPlugin.cs" />

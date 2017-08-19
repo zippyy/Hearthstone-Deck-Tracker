@@ -9,6 +9,7 @@ using System.Windows.Documents;
 using Hearthstone_Deck_Tracker.Controls.Error;
 using Hearthstone_Deck_Tracker.Hearthstone;
 using Hearthstone_Deck_Tracker.LogReader.Handlers;
+using Hearthstone_Deck_Tracker.LogReader.Interfaces;
 using Hearthstone_Deck_Tracker.Utility.Logging;
 using Hearthstone_Deck_Tracker.Windows;
 using HearthWatcher;
@@ -26,7 +27,7 @@ namespace Hearthstone_Deck_Tracker.LogReader
 		private readonly ArenaHandler _arenaHandler = new ArenaHandler();
 		private readonly LoadingScreenHandler _loadingScreenHandler = new LoadingScreenHandler();
 		private readonly FullScreenFxHandler _fullScreenFxHandler = new FullScreenFxHandler();
-		private HsGameState _gameState;
+		private ILogState _state;
 		private GameV2 _game;
 		private readonly LogWatcher _logWatcher;
 		private bool _stop;
@@ -111,8 +112,8 @@ namespace Hearthstone_Deck_Tracker.LogReader
 		private void InitializeGameState(GameV2 game)
 		{
 			_game = game;
-			_gameState = new HsGameState(game) { GameHandler = new GameEventHandler(game) };
-			_gameState.Reset();
+			_state = new LogState(game) { GameHandler = new GameEventHandler(game) };
+			_state.Reset();
 		}
 
 		private void OnNewLines(List<LogLine> lines)
@@ -129,20 +130,20 @@ namespace Hearthstone_Deck_Tracker.LogReader
 							_game.PowerLog.Add(line.Line);
 						else
 						{
-							_powerLineHandler.Handle(line.Line, _gameState, _game);
+							_powerLineHandler.Handle(line.Line, _state, _game);
 							OnPowerLogLine.Execute(line.Line);
 						}
 						break;
 					case "Rachelle":
-						_rachelleHandler.Handle(line.Line, _gameState, _game);
+						_rachelleHandler.Handle(line.Line, _state, _game);
 						OnRachelleLogLine.Execute(line.Line);
 						break;
 					case "Arena":
-						_arenaHandler.Handle(line, _gameState, _game);
+						_arenaHandler.Handle(line, _state, _game);
 						OnArenaLogLine.Execute(line.Line);
 						break;
 					case "LoadingScreen":
-						_loadingScreenHandler.Handle(line, _gameState, _game);
+						_loadingScreenHandler.Handle(line, _state, _game);
 						break;
 					case "FullScreenFX":
 						_fullScreenFxHandler.Handle(line, _game);
@@ -152,6 +153,6 @@ namespace Hearthstone_Deck_Tracker.LogReader
 			Helper.UpdateEverything(_game);
 		}
 
-		public int GetTurnNumber() => _gameState.GetTurnNumber();
+		public int GetTurnNumber() => _state.GetTurnNumber();
 	}
 }
