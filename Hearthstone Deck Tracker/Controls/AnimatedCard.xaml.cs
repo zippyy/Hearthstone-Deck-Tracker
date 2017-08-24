@@ -1,13 +1,15 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using System.Windows.Media.Animation;
+using Hearthstone_Deck_Tracker.Overlay;
 
 namespace Hearthstone_Deck_Tracker.Controls
 {
 	/// <summary>
 	/// Interaction logic for AnimatedCard.xaml
 	/// </summary>
-	public partial class AnimatedCard
+	public partial class AnimatedCard : IHoverable
 	{
 		public AnimatedCard(Hearthstone.Card card)
 		{
@@ -60,6 +62,13 @@ namespace Hearthstone_Deck_Tracker.Controls
 			sb.Begin();
 			await Task.Delay(sb.Duration.TimeSpan);
 			_runningStoryBoards.Remove(key);
+		}
+
+		public bool Hoverable { get; } = true;
+
+		public void OnHover()
+		{
+			Console.WriteLine(Card.Name);
 		}
 	}
 }

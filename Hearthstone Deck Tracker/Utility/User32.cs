@@ -91,6 +91,8 @@ namespace Hearthstone_Deck_Tracker
 
 		public static void SetWindowExStyle(IntPtr hwnd, int style) => SetWindowLong(hwnd, GwlExstyle, GetWindowLong(hwnd, GwlExstyle) | style);
 
+		public static void RemoveWindowExStyle(IntPtr hwnd, int style) => SetWindowLong(hwnd, GwlExstyle, GetWindowLong(hwnd, GwlExstyle) & ~style);
+
 		public static bool IsHearthstoneInForeground() => GetForegroundWindow() == GetHearthstoneWindow();
 
 		[DllImport("user32.dll")]
@@ -102,7 +104,12 @@ namespace Hearthstone_Deck_Tracker
 		public static WindowState GetHearthstoneWindowState()
 		{
 			var hsWindow = GetHearthstoneWindow();
-			var state = GetWindowLong(hsWindow, GwlStyle);
+			return GetWindowState(hsWindow);
+		}
+
+		public static WindowState GetWindowState(IntPtr handle)
+		{
+			var state = GetWindowLong(handle, GwlStyle);
 			if((state & WsMaximize) == WsMaximize)
 				return WindowState.Maximized;
 			if((state & WsMinimize) == WsMinimize)
@@ -170,32 +177,33 @@ namespace Hearthstone_Deck_Tracker
 
 		public static Rectangle GetHearthstoneRect(bool dpiScaling)
 		{
-			// Returns the co-ordinates of Hearthstone's client area in screen co-ordinates
 			var hsHandle = GetHearthstoneWindow();
+			return GetWindowRect(hsHandle);
+		}
+
+		public static Rectangle GetWindowRect(IntPtr handle)
+		{
 			var rect = new Rect();
-			var ptUL = new Point();
-			var ptLR = new Point();
+			var topLeft = new Point();
+			var bottomRight = new Point();
 
-			GetClientRect(hsHandle, ref rect);
+			GetClientRect(handle, ref rect);
 
-			ptUL.X = rect.left;
-			ptUL.Y = rect.top;
+			topLeft.X = rect.left;
+			topLeft.Y = rect.top;
 
-			ptLR.X = rect.right;
-			ptLR.Y = rect.bottom;
+			bottomRight.X = rect.right;
+			bottomRight.Y = rect.bottom;
 
-			ClientToScreen(hsHandle, ref ptUL);
-			ClientToScreen(hsHandle, ref ptLR);
+			ClientToScreen(handle, ref topLeft);
+			ClientToScreen(handle, ref bottomRight);
 
-			if(dpiScaling)
-			{
-				ptUL.X = (int)(ptUL.X / Helper.DpiScalingX);
-				ptUL.Y = (int)(ptUL.Y / Helper.DpiScalingY);
-				ptLR.X = (int)(ptLR.X / Helper.DpiScalingX);
-				ptLR.Y = (int)(ptLR.Y / Helper.DpiScalingY);
-			}
+			topLeft.X = (int)(topLeft.X / Helper.DpiScalingX);
+			topLeft.Y = (int)(topLeft.Y / Helper.DpiScalingY);
+			bottomRight.X = (int)(bottomRight.X / Helper.DpiScalingX);
+			bottomRight.Y = (int)(bottomRight.Y / Helper.DpiScalingY);
 
-			return new Rectangle(ptUL.X, ptUL.Y, ptLR.X - ptUL.X, ptLR.Y - ptUL.Y);
+			return new Rectangle(topLeft.X, topLeft.Y, bottomRight.X - topLeft.X, bottomRight.Y - topLeft.Y);
 		}
 
 		public static void BringHsToForeground()

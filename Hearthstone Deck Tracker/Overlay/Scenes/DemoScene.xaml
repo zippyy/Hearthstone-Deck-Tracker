@@ -1,0 +1,13 @@
+﻿<overlay:OverlayScene x:Class="Hearthstone_Deck_Tracker.Overlay.Scenes.DemoScene"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             mc:Ignorable="d"
+             d:DesignHeight="300" d:DesignWidth="300"
+             xmlns:overlay="clr-namespace:Hearthstone_Deck_Tracker.Overlay">
+    <Button Name="BtnDragging" Content="Enable Dragging" Canvas.Left="30" Canvas.Top="15" Click="DragButton_OnClick" overlay:OverlayScene.Clickable="True"/>
+</overlay:OverlayScene>
+
+
+

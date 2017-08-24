@@ -264,6 +264,24 @@
     </Compile>
     <Compile Include="FlyoutControls\DeckExport\DeckExportViewModel.cs" />
     <Compile Include="HsReplay\Data\JsonCache.cs" />
+    <Compile Include="Overlay\Config\OverlayConfig.cs" />
+    <Compile Include="Overlay\Elements\DemoElement.xaml.cs">
+      <DependentUpon>DemoElement.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Overlay\Overlay.cs" />
+    <Compile Include="Overlay\OverlayInteraction.cs" />
+    <Compile Include="Overlay\OverlayScene.cs" />
+    <Compile Include="Overlay\OverlayHelper.xaml.cs">
+      <DependentUpon>OverlayHelper.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Overlay\OverlayWindow.xaml.cs">
+      <DependentUpon>OverlayWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Overlay\Scenes\DemoScene.xaml.cs">
+      <DependentUpon>DemoScene.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Overlay\Scenes\Scene.cs" />
+    <Compile Include="Overlay\UIElementInfo.cs" />
     <Compile Include="Stats\CompiledStats\DateTimeHelper.cs" />
     <Compile Include="Utility\Converters\LocalizationConverter.cs" />
     <Compile Include="Utility\Converters\GameStatsHasReplayConverter.cs" />
@@ -1114,6 +1132,22 @@
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
+    <Page Include="Overlay\Elements\DemoElement.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Overlay\OverlayHelper.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Overlay\OverlayWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Overlay\Scenes\DemoScene.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Windows\CrashDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1484,6 +1518,7 @@
       <Name>HSReplay</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>

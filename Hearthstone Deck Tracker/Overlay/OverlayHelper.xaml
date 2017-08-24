@@ -1,0 +1,27 @@
+﻿<Window x:Class="Hearthstone_Deck_Tracker.Overlay.OverlayHelper"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:Hearthstone_Deck_Tracker.Overlay"
+        mc:Ignorable="d"
+        DataContext="{Binding RelativeSource={RelativeSource Self}}"
+        Title="OverlayHelper" Height="300" Width="300">
+    <DockPanel>
+        <StackPanel DockPanel.Dock="Right" Width="100">
+            <Button Content="Attach" Command="{Binding AttachCommand}"/>
+            <Button Content="Detach" Command="{Binding DetachCommand}"/>
+            <Button Content="Gen Config" Command="{Binding GenConfigCommand}"/>
+            <Button Content="Reload Config" Command="{Binding ReloadConfigCommand}"/>
+        </StackPanel>
+        <ListView Name="ProcList" ItemsSource="{Binding Processes, Mode=OneWay}" SelectedItem="{Binding SelectedProc}">
+            <ListView.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock>
+                        <Run Text="{Binding ProcessName, Mode=OneWay}"/> - <Run Text="{Binding Id, Mode=OneWay}"></Run>
+                    </TextBlock>
+                </DataTemplate>
+            </ListView.ItemTemplate>
+        </ListView>
+    </DockPanel>
+</Window>

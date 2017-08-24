@@ -12,6 +12,7 @@ using System.Windows.Threading;
 using Hearthstone_Deck_Tracker.Controls.Error;
 using Hearthstone_Deck_Tracker.Plugins;
 using Hearthstone_Deck_Tracker.Utility.Extensions;
+using Hearthstone_Deck_Tracker.Utility.Themes;
 using Hearthstone_Deck_Tracker.Windows;
 using Squirrel;
 
@@ -82,7 +83,9 @@ namespace Hearthstone_Deck_Tracker
 		private void App_OnStartup(object sender, StartupEventArgs e)
 		{
 			ShutdownMode = ShutdownMode.OnExplicitShutdown;
-			Core.Initialize();
+			//Core.Initialize();
+			ThemeManager.Run();
+			new Overlay.OverlayHelper().Show();
 		}
 
 		private void HandleManipulationBoundaryFeedback(object sender, ManipulationBoundaryFeedbackEventArgs e) => e.Handled = true;
