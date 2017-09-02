@@ -11,6 +11,7 @@ using Hearthstone_Deck_Tracker.Utility;
 using Hearthstone_Deck_Tracker.Utility.Extensions;
 using Hearthstone_Deck_Tracker.Utility.Logging;
 using Hearthstone_Deck_Tracker.Windows;
+using Microsoft.WindowsAPICodePack.Dialogs;
 
 #endregion
 
@@ -234,12 +235,17 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Tracker
 
 		private void ButtonGamePath_OnClick(object sender, RoutedEventArgs e)
 		{
-			var dialog = new FolderBrowserDialog {Description = "Select your Hearthstone Directory", ShowNewFolderButton = false};
+			var dialog = new CommonOpenFileDialog
+			{
+				IsFolderPicker = true,
+				DefaultDirectory = @"C:\Program Files (x86)",
+				Title = "Select your Hearthstone Directory"
+			};
 			var dialogResult = dialog.ShowDialog();
 
-			if(dialogResult == DialogResult.OK)
+			if(dialogResult == CommonFileDialogResult.Ok)
 			{
-				Config.Instance.HearthstoneDirectory = dialog.SelectedPath;
+				Config.Instance.HearthstoneDirectory = dialog.FileName;
 				Config.Save();
 				Core.MainWindow.ShowMessage("Restart required.", "Please restart HDT for this setting to take effect.").Forget();
 			}
@@ -248,10 +254,13 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Tracker
 		private async void SelectSaveDataPath_Click(object sender, RoutedEventArgs e)
 		{
 #if(!SQUIRREL)
-			var dialog = new FolderBrowserDialog();
+			var dialog = new CommonOpenFileDialog
+			{
+				IsFolderPicker = true
+			};
 			var dialogResult = dialog.ShowDialog();
 
-			if(dialogResult == DialogResult.OK)
+			if(dialogResult == CommonFileDialogResult.Ok)
 			{
 				var saveInAppData = Config.Instance.SaveDataInAppData.HasValue && Config.Instance.SaveDataInAppData.Value;
 				if(!saveInAppData)
@@ -263,10 +272,10 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Tracker
 						DeckStatsList.SetupDeckStatsFile();
 						DeckList.SetupDeckListFile();
 						DefaultDeckStats.SetupDefaultDeckStatsFile();
-						Config.Instance.DataDirPath = dialog.SelectedPath;
+						Config.Instance.DataDirPath = dialog.FileName;
 					}
 				}
-				Config.Instance.DataDirPath = dialog.SelectedPath;
+				Config.Instance.DataDirPath = dialog.FileName;
 				Config.Save();
 				if(!saveInAppData)
 				{
@@ -381,24 +390,25 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Tracker
 
 		private async void ButtonHearthstoneLogsDirectory_Click(object sender, RoutedEventArgs e)
 		{
-			var dialog = new FolderBrowserDialog();
-			dialog.SelectedPath = Config.Instance.HearthstoneDirectory;
+			var dialog = new CommonOpenFileDialog();
+			dialog.IsFolderPicker = true;
+			dialog.DefaultDirectory = Config.Instance.HearthstoneDirectory;
 			var dialogResult = dialog.ShowDialog();
 
-			if (dialogResult == DialogResult.OK)
+			if (dialogResult == CommonFileDialogResult.Ok)
 			{
 				//Logs directory needs to be a child directory in Hearthstone directory
-				if (!dialog.SelectedPath.StartsWith(Config.Instance.HearthstoneDirectory + @"\"))
+				if (!dialog.FileName.StartsWith(Config.Instance.HearthstoneDirectory + @"\"))
 				{
 					await Core.MainWindow.ShowMessage("Invalid argument", "Selected directory not in Hearthstone directory!");
 					return;
 				}
 
 				//Check if same path selected (no restart required)
-				if (Config.Instance.HearthstoneLogsDirectoryName.Equals(dialog.SelectedPath))
+				if (Config.Instance.HearthstoneLogsDirectoryName.Equals(dialog.FileName))
 					return;
 
-				Config.Instance.HearthstoneLogsDirectoryName = dialog.SelectedPath.Remove(0, Config.Instance.HearthstoneDirectory.Length + 1);
+				Config.Instance.HearthstoneLogsDirectoryName = dialog.FileName.Remove(0, Config.Instance.HearthstoneDirectory.Length + 1);
 				Config.Save();
 
 				await Core.MainWindow.ShowMessage("Restart required.", "Click ok to restart HDT");
