@@ -74,7 +74,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\HearthMirror\HearthMirror\HearthMirror.csproj">
+    <ProjectReference Include="..\HearthSim.Common\HearthMirror\HearthMirror\HearthMirror.csproj">
       <Project>{1694a2f8-645a-4263-a6ab-fc26323fd675}</Project>
       <Name>HearthMirror</Name>
     </ProjectReference>

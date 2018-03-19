@@ -60,7 +60,7 @@
     <None Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\HearthDb\HearthDb\HearthDb.csproj">
+    <ProjectReference Include="..\HearthSim.Common\HearthDb\HearthDb\HearthDb.csproj">
       <Project>{7ed14243-e02b-4b94-af00-a67a62c282f0}</Project>
       <Name>HearthDb</Name>
     </ProjectReference>

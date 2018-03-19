@@ -119,11 +119,11 @@
     <Compile Include="LocUtilTests.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\HearthDb\HearthDb\HearthDb.csproj">
+    <ProjectReference Include="..\HearthSim.Common\HearthDb\HearthDb\HearthDb.csproj">
       <Project>{7ed14243-e02b-4b94-af00-a67a62c282f0}</Project>
       <Name>HearthDb</Name>
     </ProjectReference>
-    <ProjectReference Include="..\HearthMirror\HearthMirror\HearthMirror.csproj">
+    <ProjectReference Include="..\HearthSim.Common\HearthMirror\HearthMirror\HearthMirror.csproj">
       <Project>{1694a2f8-645a-4263-a6ab-fc26323fd675}</Project>
       <Name>HearthMirror</Name>
     </ProjectReference>

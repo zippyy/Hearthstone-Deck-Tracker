@@ -44,9 +44,7 @@ function SyncRepo($name, $localDir, $branch = "origin/master") {
 }
 
 if(-not $skipGitSync) {
-	SyncRepo "HearthSim/HearthDb" "HearthDb"
-	SyncRepo "HearthSim/HearthMirror" "HearthMirror"
-	SyncRepo "HearthSim/HSReplay-API-Client" "HSReplay-Api"
+	SyncRepo "HearthSim/HearthSim.Common" "HearthSim.Common"
 	SyncRepo "HearthSim/HDT-Localization" "HDT-Localization"
 }
 

@@ -22,9 +22,11 @@ catch {
 	"Git was not found and is required to run bootstrap.bat. Download git from https://git-scm.com/download and during installation choose `"Use Git from the Windows Command Prompt`"."
 }
 
-git clone "https://github.com/HearthSim/HearthDb" "HearthDb"
-git clone "https://github.com/HearthSim/HearthMirror" "HearthMirror"
-git clone "https://github.com/HearthSim/HSReplay-API-Client" "HSReplay-Api"
+git clone "https://github.com/HearthSim/HearthSim.Common" "HearthSim.Common"
+Set-Location "HearthSim.Common"
+Invoke-Expression "./bootstrap.bat"
+Set-Location ..
+
 git clone "https://github.com/HearthSim/HDT-Localization" "HDT-Localization"
 
 Copy-Item "HDT-Localization\*.resx" "Hearthstone Deck Tracker\Properties\" -Force
