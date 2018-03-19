@@ -275,6 +275,7 @@
     <Compile Include="HsReplay\HSReplayNetHelper.cs" />
     <Compile Include="Utility\ComboBoxHelper.cs" />
     <Compile Include="Utility\DataLoader.cs" />
+    <Compile Include="Utility\GameTypeHelper.cs" />
     <Compile Include="Utility\GlobalCommands.cs" />
     <Compile Include="Utility\HearthstoneRunner.cs" />
     <Compile Include="Utility\RateLimiter.cs" />

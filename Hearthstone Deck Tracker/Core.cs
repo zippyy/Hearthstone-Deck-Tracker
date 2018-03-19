@@ -23,6 +23,8 @@ using Hearthstone_Deck_Tracker.Windows;
 using MahApps.Metro.Controls.Dialogs;
 using Hearthstone_Deck_Tracker.Utility.Themes;
 using Hearthstone_Deck_Tracker.Utility.Updating;
+using HearthSim.Core;
+using HearthSim.Core.HSReplay;
 using WPFLocalizeExtension.Engine;
 
 #endregion
@@ -42,6 +44,8 @@ namespace Hearthstone_Deck_Tracker
 		public static Version Version { get; set; }
 		public static GameV2 Game { get; set; }
 		public static MainWindow MainWindow { get; set; }
+
+		private static Manager _manager;
 
 		public static Overview StatsOverview => _statsOverview ?? (_statsOverview = new Overview());
 
@@ -66,6 +70,12 @@ namespace Hearthstone_Deck_Tracker
 			ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
 			Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
 			Config.Load();
+			var hsReplayConfig = new HSReplayNetConfig(Config.Instance.DataDir, "089b2bc6-3c26-4aab-adbe-bcfd5bb48671",
+				"jIpNwuUWLFI6S3oeQkO3xlW6UCnfogw1IpAbFXqq", Helper.GetUserAgent(), GameTypeHelper.All,
+				Config.Instance.HsReplayUploadPacks ?? false, Config.Instance.SelectedTwitchUser);
+			_manager = new Manager(hsReplayConfig);
+			_manager.Start();
+
 			Log.Info($"HDT: {Helper.GetCurrentVersion()}, Operating System: {Helper.GetWindowsVersion()}, .NET Framework: {Helper.GetInstalledDotNetVersion()}");
 			var splashScreenWindow = new SplashScreenWindow();
 #if(SQUIRREL)
