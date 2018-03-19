@@ -26,6 +26,7 @@ using Hearthstone_Deck_Tracker.Utility.Updating;
 using HearthSim.Core;
 using HearthSim.Core.HSReplay;
 using WPFLocalizeExtension.Engine;
+using Log = HearthSim.Util.Logging.Log;
 
 #endregion
 
@@ -91,7 +92,7 @@ namespace Hearthstone_Deck_Tracker
 			}
 #endif
 			splashScreenWindow.ShowConditional();
-			Log.Initialize();
+			Log.Initialize(Path.Combine(Config.Instance.DataDir, "Logs"), "hdt_log");
 			ConfigManager.Run();
 			LocUtil.UpdateCultureInfo();
 			var newUser = ConfigManager.PreviousVersion == null;
