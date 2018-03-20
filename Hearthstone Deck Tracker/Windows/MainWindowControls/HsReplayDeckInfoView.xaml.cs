@@ -9,6 +9,7 @@ using Hearthstone_Deck_Tracker.HsReplay;
 using Hearthstone_Deck_Tracker.HsReplay.Data;
 using Hearthstone_Deck_Tracker.Utility;
 using Hearthstone_Deck_Tracker.Utility.MVVM;
+using HearthSim.Core.HSReplay.Data;
 
 namespace Hearthstone_Deck_Tracker.Windows.MainWindowControls
 {

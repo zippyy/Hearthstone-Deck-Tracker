@@ -64,11 +64,6 @@ namespace Hearthstone_Deck_Tracker.LogReader.Handlers
 				else
 					Watchers.ArenaWatcher.Stop();
 
-				if(game.CurrentMode == Mode.PACKOPENING)
-					Watchers.PackWatcher.Run();
-				else
-					Watchers.PackWatcher.Stop();
-
 				if(game.CurrentMode == Mode.TAVERN_BRAWL)
 					Core.Game.CacheBrawlInfo();
 

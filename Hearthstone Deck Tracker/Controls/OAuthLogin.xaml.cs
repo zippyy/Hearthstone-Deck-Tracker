@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using Hearthstone_Deck_Tracker.Annotations;
-using Hearthstone_Deck_Tracker.HsReplay;
 using Hearthstone_Deck_Tracker.Utility;
 using Hearthstone_Deck_Tracker.Utility.Extensions;
 using HSReplay.OAuth;
@@ -33,17 +32,17 @@ namespace Hearthstone_Deck_Tracker.Controls
 		public OAuthLogin()
 		{
 			InitializeComponent();
-			HSReplayNetHelper.Authenticating += OnAuthenticating;
-			HSReplayNetOAuth.Authenticated += () => OnPropertyChanged(nameof(IsAuthenticated));
-			HSReplayNetOAuth.LoggedOut += () => OnPropertyChanged(nameof(IsAuthenticated));
+			Core.HSReplay.OAuth.Authenticating += OnAuthenticating;
+			Core.HSReplay.OAuth.Authenticated += () => OnPropertyChanged(nameof(IsAuthenticated));
+			Core.HSReplay.OAuth.LoggedOut += () => OnPropertyChanged(nameof(IsAuthenticated));
 		}
 
-		public bool IsAuthenticated => HSReplayNetOAuth.IsFullyAuthenticated
-										|| ScopeConsideredLoggedIn != null
-										&& HSReplayNetOAuth.IsAuthenticatedFor(ScopeConsideredLoggedIn);
+		public bool IsAuthenticated =>
+			Core.HSReplay.OAuth.IsFullyAuthenticated || ScopeConsideredLoggedIn != null
+				&& Core.HSReplay.OAuth.IsAuthenticatedFor(ScopeConsideredLoggedIn);
 
-		public ICommand LoginCommand
-			=> new Command(() => HSReplayNetHelper.TryAuthenticate(SuccessUrl, ErrorUrl).Forget());
+		public ICommand LoginCommand =>
+			new Command(() => Core.HSReplay.OAuth.Authenticate(SuccessUrl, ErrorUrl, Scope.FullAccess).Forget());
 
 		public ICommand TryAgainCommand => new Command(() =>
 		{

@@ -34,7 +34,10 @@ namespace Hearthstone_Deck_Tracker.HsReplay
 				var log = GetLogFromHdtReplay(game.ReplayFile).ToArray();
 				var validationResult = LogValidator.Validate(log);
 				if(validationResult.IsValid)
-					await LogUploader.Upload(log, null, game);
+				{
+					var uploadMetaData = UploadMetaDataGenerator.Generate(null, game);
+					await Core.HSReplay.LogUploader.Upload(log, uploadMetaData);
+				}
 				else
 				{
 					Log.Error("Invalid log: " + validationResult.Reason);
@@ -95,8 +98,9 @@ namespace Hearthstone_Deck_Tracker.HsReplay
 				var hsBuild = BuildDates.GetByDate(file.LastWriteTime);
 				var metaData = hsBuild != null ? new GameMetaData() {HearthstoneBuild = hsBuild} : null;
 				var gameStats = hsBuild != null ? new GameStats() {StartTime = file.LastWriteTime} : null;
-				var success = await LogUploader.Upload(log.ToArray(), metaData, gameStats);
-				if(success)
+				var uploadMetaData = UploadMetaDataGenerator.Generate(metaData, gameStats);
+				var uploadStatus = await Core.HSReplay.LogUploader.Upload(log.ToArray(), uploadMetaData);
+				if(uploadStatus.Success)
 				{
 					Helper.TryOpenUrl(gameStats?.HsReplay?.Url);
 					setToastStatus?.Invoke(ReplayProgress.Complete);

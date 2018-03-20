@@ -7,8 +7,6 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
 using Hearthstone_Deck_Tracker.Annotations;
-using Hearthstone_Deck_Tracker.HsReplay;
-using Hearthstone_Deck_Tracker.Live;
 using Hearthstone_Deck_Tracker.Utility;
 using Hearthstone_Deck_Tracker.Utility.Twitch;
 using HSReplay.OAuth;
@@ -22,25 +20,25 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Streaming
 		private bool _twitchAccountLinked;
 		private bool _twitchStreamLive;
 
-		public string HSReplayUserName = HSReplayNetOAuth.AccountData?.Username;
+		public string HSReplayUserName = Core.HSReplay.OAuth.AccountData?.Username;
 
 		public StreamingTwitchExtension()
 		{
 			InitializeComponent();
-			LiveDataManager.OnStreamingChecked += streaming => TwitchStreamLive = streaming;
-			HSReplayNetOAuth.AccountDataUpdated += () =>
+			Core.HSReplay.Twitch.OnStreamingChecked += streaming => TwitchStreamLive = streaming;
+			Core.HSReplay.OAuth.AccountDataUpdated += () =>
 			{
 				UpdateAccountName();
 				RefreshTwitchAccounts();
 			};
-			HSReplayNetOAuth.LoggedOut += () => OnPropertyChanged(nameof(IsAuthenticated));
+			Core.HSReplay.OAuth.LoggedOut += () => OnPropertyChanged(nameof(IsAuthenticated));
 		}
 
 		public SolidColorBrush SelectedColor => Helper.BrushFromHex(Config.Instance.StreamingOverlayBackground);
 
-		public ICommand AuthenticateCommand => new Command(async () => await HSReplayNetHelper.TryAuthenticate());
+		public ICommand AuthenticateCommand => new Command(async () => await Core.HSReplay.OAuth.Authenticate(Scope.FullAccess));
 
-		public bool IsAuthenticated => HSReplayNetOAuth.IsAuthenticatedFor(Scope.ReadSocialAccounts);
+		public bool IsAuthenticated => Core.HSReplay.OAuth.IsAuthenticatedFor(Scope.ReadSocialAccounts);
 
 		public bool TwitchExtensionEnabled
 		{
@@ -53,9 +51,9 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Streaming
 				if(!Core.Game.IsInMenu)
 				{
 					if(value)
-						LiveDataManager.WatchBoardState();
+						Core.HSReplay.Twitch.WatchBoardState(Core.Hearthstone.CurrentGame);
 					else
-						LiveDataManager.Stop();
+						Core.HSReplay.Twitch.Stop();
 				}
 			}
 		}
@@ -102,7 +100,7 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Streaming
 			}
 		}
 
-		public List<TwitchAccount> AvailableTwitchAccounts => HSReplayNetOAuth.TwitchUsers;
+		public List<TwitchAccount> AvailableTwitchAccounts => Core.HSReplay.OAuth.TwitchUsers;
 
 		public bool MultipleTwitchAccounts => AvailableTwitchAccounts?.Count > 1;
 
@@ -131,7 +129,7 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Streaming
 
 		public async Task<bool> RefreshHsreplayAccount()
 		{
-			var success = await HSReplayNetOAuth.UpdateAccountData();
+			var success = await Core.HSReplay.OAuth.UpdateAccountData();
 			if(success)
 				UpdateAccountName();
 			return success;
@@ -139,7 +137,7 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Streaming
 
 		public async void RefreshTwitchAccounts()
 		{
-			var success = await HSReplayNetOAuth.UpdateTwitchUsers();
+			var success = await Core.HSReplay.OAuth.UpdateTwitchUsers();
 			if(success)
 				AwaitingTwitchAccountConnection = false;
 			UpdateTwitchData();

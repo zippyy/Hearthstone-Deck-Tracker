@@ -1,157 +1,107 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
+using System.Net;
 using Hearthstone_Deck_Tracker.Controls.Error;
 using Hearthstone_Deck_Tracker.Hearthstone;
-using Hearthstone_Deck_Tracker.Utility;
 using Hearthstone_Deck_Tracker.Utility.Analytics;
-using Hearthstone_Deck_Tracker.Utility.Extensions;
-using Hearthstone_Deck_Tracker.Utility.Logging;
 using Hearthstone_Deck_Tracker.Utility.Toasts;
+using HearthSim.Core.EventManagers;
+using HearthSim.Core.HSReplay;
+using HearthSim.Core.Util.EventArgs;
 
 namespace Hearthstone_Deck_Tracker.HsReplay
 {
 	internal static class HSReplayNetHelper
 	{
-		private static readonly RateLimiter CollectionSyncLimiter;
-
 		static HSReplayNetHelper()
 		{
-			CollectionSyncLimiter = new RateLimiter(6, TimeSpan.FromMinutes(2));
-			ConfigWrapper.CollectionSyncingChanged += () => SyncCollection().Forget();
-			CollectionHelper.OnCollectionChanged += () => SyncCollection().Forget();
-			CollectionUploaded += () =>
+			//ConfigWrapper.CollectionSyncingChanged += () => SyncCollection().Forget();
+			Core.HSReplay.OAuth.CollectionUpdated += HandleCollectionUpdated;
+			Core.HSReplay.Events.CollectionUploadError += HandleCollectionUploadError;
+			Core.HSReplay.Events.BlizzardAccountClaimed += args => Influx.OnBlizzardAccountClaimed(true);
+			Core.HSReplay.Events.BlizzardAccountClaimError += HandleBlizzardAccountClaimError;
+			Core.HSReplay.OAuth.AuthenticationError += HandleAuthenticationError;
+			Core.HSReplay.OAuth.Authenticating += HandleAuthenticating;
+			Core.HSReplay.OAuth.LoggedOut += Influx.OnOAuthLogout;
+			Core.HSReplay.OAuth.Authenticated += () => Influx.OnOAuthLoginComplete(AuthenticationErrorType.None);
+			Core.HSReplay.OAuth.AuthenticationBrowserError += HandleAuthenticationBrowserError;
+			Core.HSReplay.LogUploader.UploadComplete += HandleUploadComplete;
+			Core.HSReplay.LogUploader.UploadError += args =>
 			{
-				ToastManager.ShowCollectionUpdatedToast();
-				Influx.OnCollectionSynced(true);
+				//todo? this might be handled elsewhere
 			};
-			CollectionUploadError += () => Influx.OnCollectionSynced(false);
-			BlizzardAccountClaimed += Influx.OnBlizzardAccountClaimed;
-			AuthenticationError += Influx.OnOAuthLoginComplete;
-			Authenticating += authenticating =>
-			{
-				if(authenticating)
-					Influx.OnOAuthLoginInitiated();
-			};
-			HSReplayNetOAuth.LoggedOut += Influx.OnOAuthLogout;
-			HSReplayNetOAuth.Authenticated += () => Influx.OnOAuthLoginComplete(AuthenticationErrorType.None);
 		}
 
-		public static event Action CollectionUploaded;
-		public static event Action CollectionUploadError;
-		public static event Action CollectionUploadThrottled;
-		public static event Action CollectionAlreadyUpToDate;
-		public static event Action<bool> Authenticating;
-		public static event Action<bool> BlizzardAccountClaimed;
-		public static event Action<AuthenticationErrorType> AuthenticationError;
-
-		public static async Task TryAuthenticate(string successUrl = null, string errorUrl = null)
+		private static void HandleUploadComplete(UploadCompleteEventArgs args)
 		{
-			Authenticating?.Invoke(true);
-			if(await HSReplayNetOAuth.Authenticate(successUrl, errorUrl))
+			if(args.Status.Success)
 			{
-				if(!await HSReplayNetOAuth.UpdateAccountData())
-				{
-					ErrorManager.AddError("HSReplay.net Error",
-						"Could not load HSReplay.net account status."
-						+ " Please try again later.");
-					AuthenticationError?.Invoke(AuthenticationErrorType.AccountData);
-				}
-				await SyncCollection();
+				//TODO: Update GameStats
 			}
 			else
 			{
-				ErrorManager.AddError("Could not authenticate with HSReplay.net",
-					"Please try running HDT as administrator "
+				//TODO: Store powerlog
+				var status = (args.Status.Exception as WebException)?.Status ?? WebExceptionStatus.UnknownError;
+				Influx.OnGameUploadFailed(status);
+			}
+		}
+
+		private static void HandleAuthenticationBrowserError(string url)
+		{
+			ErrorManager.AddError("Could not open your browser.",
+				"Please open the following url in your browser to continue:\n\n" + url, true);
+		}
+
+		private static void HandleAuthenticating(bool authenticating)
+		{
+			if(authenticating)
+				Influx.OnOAuthLoginInitiated();
+		}
+
+		private static void HandleCollectionUpdated()
+		{
+			ToastManager.ShowCollectionUpdatedToast();
+			Influx.OnCollectionSynced(true);
+		}
+
+		private static void HandleCollectionUploadError(CollectionUploadError args)
+		{
+			Influx.OnCollectionSynced(false);
+			ErrorManager.AddError("HSReplay.net Error", "Could not upload your collection. Please try again later.");
+		}
+
+		private static void HandleAuthenticationError(AuthenticationErrorType args)
+		{
+			Influx.OnOAuthLoginComplete(args);
+			if(args == AuthenticationErrorType.AccountData)
+			{
+				ErrorManager.AddError("HSReplay.net Error",
+					"Could not load HSReplay.net account status. Please try again later.");
+			}
+			else
+			{
+				ErrorManager.AddError("HSReplay.net Error",
+					"Could not authenticate with HSReplay.net. Please try running HDT as administrator "
 					+ "(right-click the exe and select 'Run as administrator').\n"
 					+ "If that does not help please try again later.", true);
-				AuthenticationError?.Invoke(AuthenticationErrorType.Authentication);
 			}
-			Authenticating?.Invoke(false);
 		}
 
-		public static async Task UpdateAccount()
+		private static void HandleBlizzardAccountClaimError(BlizzardAccountClaimEventArgs args)
 		{
-			if(HSReplayNetOAuth.IsAuthenticatedForAnything())
+			Influx.OnBlizzardAccountClaimed(false);
+			if(args.Error == ClaimError.AlreadyClaimed)
 			{
-				await HSReplayNetOAuth.UpdateAccountData();
-				if(string.IsNullOrEmpty(Account.Instance.UploadToken)
-					|| !Account.Instance.TokenClaimed.HasValue
-					|| (!HSReplayNetOAuth.AccountData?.UploadTokens.Contains(Account.Instance.UploadToken) ?? false))
-					await ApiWrapper.UpdateUploadTokenStatus();
-				if(Account.Instance.TokenClaimed == false && !string.IsNullOrEmpty(Account.Instance.UploadToken))
-					await HSReplayNetOAuth.ClaimUploadToken(Account.Instance.UploadToken);
+				ErrorManager.AddError("HSReplay.net Error",
+					$"Your blizzard account ({args.BattleTag}, {args.Hi}-{args.Lo}) is already attached to another"
+					+ " HSReplay.net Account. Please contact us at contact@hsreplay.net if this is not correct.");
 			}
 			else
-				ApiWrapper.UpdateUploadTokenStatus().Forget();
-		}
-
-		public static async Task SyncCollection()
-		{
-			if(!Config.Instance.SyncCollection || !HSReplayNetOAuth.IsFullyAuthenticated)
-				return;
-			var collection = await CollectionHelper.GetCollection();
-			if(collection == null)
-				return;
-			var hash = collection.GetHashCode();
-			var hi = collection.AccountHi;
-			var lo = collection.AccountLo;
-			var account = hi + "-" + lo;
-			if(Account.Instance.CollectionState.TryGetValue(account, out var state) && state.Hash == hash)
 			{
-				Log.Debug("Collection ready up-to-date");
-				state.Date = DateTime.Now;
-				Account.Save();
-				CollectionAlreadyUpToDate?.Invoke();
-				return;
+				ErrorManager.AddError("HSReplay.net Error",
+					$"Could not attach your Blizzard account ({args.BattleTag}, {args.Hi}-{args.Lo}) to"
+					+ $"your HSReplay.net Account ({Core.HSReplay.OAuth.AccountData?.Username})."
+					+ " Please try again later or contact us at contact@hsreplay.net if this persists.");
 			}
-			await CollectionSyncLimiter.Run(async () =>
-			{
-				if(!HSReplayNetOAuth.AccountData?.BlizzardAccounts?.Any(x => x.AccountHi == hi && x.AccountLo == lo) ?? true)
-				{
-					var response = await HSReplayNetOAuth.ClaimBlizzardAccount(hi, lo, collection.BattleTag);
-					var success = response == HSReplayNetOAuth.ClaimBlizzardAccountResponse.Success;
-					BlizzardAccountClaimed?.Invoke(success);
-					if(success)
-						HSReplayNetOAuth.UpdateAccountData().Forget();
-					else if(response == HSReplayNetOAuth.ClaimBlizzardAccountResponse.TokenAlreadyClaimed)
-					{
-						ErrorManager.AddError("HSReplay.net error",
-							$"Your blizzard account ({collection.BattleTag}, {account}) is already attached to another"
-							+ " HSReplay.net Account. Please contact us at contact@hsreplay.net"
-							+ " if this is not correct.");
-						return;
-					}
-					else
-					{
-						ErrorManager.AddError("HSReplay.net error",
-							$"Could not attach your Blizzard account ({collection.BattleTag}, {account}) to"
-							+ $" HSReplay.net Account ({HSReplayNetOAuth.AccountData?.Username})."
-							+ " Please try again later or contact us at contact@hsreplay.net if this persists.");
-						return;
-					}
-				}
-				if(await HSReplayNetOAuth.UpdateCollection(collection))
-				{
-					Account.Instance.CollectionState[account] = new Account.SyncState(hash);
-					Account.Save();
-					Log.Debug("Collection synced");
-					CollectionUploaded?.Invoke();
-				}
-				else
-				{
-					ErrorManager.AddError("HSReplay.net error",
-						"Could not update your collection. Please try again later.\n"
-						+ "If this problem persists please try logging out and back in"
-						+ " under 'options > hsreplay.net > my account'");
-					CollectionUploadError?.Invoke();
-				}
-			}, () =>
-			{
-				Log.Debug("Waiting for rate limit...");
-				CollectionUploadThrottled?.Invoke();
-			});
 		}
 
 		public static void OpenDecksUrlWithCollection(string campaign)
@@ -162,14 +112,8 @@ namespace Hearthstone_Deck_Tracker.HsReplay
 				var region = Helper.GetRegion(collection.AccountHi);
 				query.Add($"hearthstone_account={(int)region}-{collection.AccountLo}");
 			}
-			Helper.TryOpenUrl(Helper.BuildHsReplayNetUrl("decks", campaign, query, new[] { "maxDustCost=0" }));
-		}
 
-		public enum AuthenticationErrorType
-		{
-			None,
-			Authentication,
-			AccountData
+			Helper.TryOpenUrl(Helper.BuildHsReplayNetUrl("decks", campaign, query, new[] { "maxDustCost=0" }));
 		}
 	}
 }

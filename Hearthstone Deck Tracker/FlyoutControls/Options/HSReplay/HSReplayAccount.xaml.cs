@@ -4,10 +4,10 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Input;
 using Hearthstone_Deck_Tracker.Annotations;
-using Hearthstone_Deck_Tracker.HsReplay;
 using Hearthstone_Deck_Tracker.Utility;
+using HearthSim.Core.HSReplay;
+using HearthSim.Core.HSReplay.Data;
 using static System.Windows.Visibility;
-using static Hearthstone_Deck_Tracker.HsReplay.Enums.AccountStatus;
 
 namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.HSReplay
 {
@@ -16,6 +16,9 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.HSReplay
 		private bool _logoutButtonEnabled = true;
 		private bool _logoutTriggered;
 		private bool _claimTokenButtonEnabled = true;
+
+		private OAuthWrapper HSReplayNetOAuth => Core.HSReplay.OAuth;
+		private Account Account => Core.HSReplay.Account;
 
 		public HSReplayAccount()
 		{
@@ -31,7 +34,7 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.HSReplay
 				LogoutTriggered = false;
 			};
 			HSReplayNetOAuth.UploadTokenClaimed += () => OnPropertyChanged(nameof(UploadTokenUnclaimed));
-			Account.Instance.TokenClaimedChanged += () => OnPropertyChanged(nameof(UploadTokenUnclaimed));
+			Account.TokenStatusChanged += args => OnPropertyChanged(nameof(UploadTokenUnclaimed));
 			ConfigWrapper.ReplayAutoUploadChanged += () => OnPropertyChanged(nameof(ReplayUploadingEnabled));
 			ConfigWrapper.CollectionSyncingChanged += () => OnPropertyChanged(nameof(CollectionSyncingEnabled));
 		}
@@ -39,10 +42,10 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.HSReplay
 		public bool IsAuthenticated => HSReplayNetOAuth.IsFullyAuthenticated;
 
 		public Visibility ReplaysClaimedVisibility =>
-			Account.Instance.Status == Anonymous || HSReplayNetOAuth.IsFullyAuthenticated ? Collapsed : Visible;
+			Account.Status == AccountStatus.Anonymous|| HSReplayNetOAuth.IsFullyAuthenticated ? Collapsed : Visible;
 
 		public Visibility LoginInfoVisibility =>
-			Account.Instance.Status == Anonymous && !HSReplayNetOAuth.IsFullyAuthenticated ? Visible : Collapsed;
+			Account.Status == AccountStatus.Anonymous && !HSReplayNetOAuth.IsFullyAuthenticated ? Visible : Collapsed;
 
 		public bool IsPremiumUser =>
 			HSReplayNetOAuth.AccountData?.IsPremium?.Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? false;
@@ -70,7 +73,7 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.HSReplay
 			}
 		}
 
-		public string Username => HSReplayNetOAuth.AccountData?.Username ?? Account.Instance.Username ?? string.Empty;
+		public string Username => HSReplayNetOAuth.AccountData?.Username ?? Account.Username ?? string.Empty;
 
 		public ICommand LogoutCommand => new Command(async () =>
 		{
@@ -113,10 +116,10 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.HSReplay
 		public ICommand ClaimUploadTokenCommand => new Command(async () =>
 		{
 			ClaimTokenButtonEnabled = false;
-			if(!Account.Instance.TokenClaimed.HasValue)
-				await ApiWrapper.UpdateUploadTokenStatus();
-			if(Account.Instance.TokenClaimed == false)
-				await HSReplayNetOAuth.ClaimUploadToken(Account.Instance.UploadToken);
+			if(Account.TokenStatus == TokenStatus.Unknown)
+				await Core.HSReplay.Api.UpdateTokenStatus();
+			if(Account.TokenStatus == TokenStatus.Unclaimed)
+				await HSReplayNetOAuth.ClaimUploadToken(Account.UploadToken);
 			ClaimTokenButtonEnabled = true;
 		});
 
@@ -124,7 +127,7 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.HSReplay
 
 		public bool CollectionSyncingEnabled => ConfigWrapper.CollectionSyncingEnabled;
 
-		public bool UploadTokenUnclaimed => IsAuthenticated && (!Account.Instance.TokenClaimed ?? true);
+		public bool UploadTokenUnclaimed => IsAuthenticated && Account.TokenStatus == TokenStatus.Unclaimed;
 
 		public void Update()
 		{

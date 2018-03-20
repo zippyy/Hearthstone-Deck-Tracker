@@ -13,19 +13,19 @@ namespace Hearthstone_Deck_Tracker.Windows.MainWindowControls
 		public CollectionSyncingBannerView()
 		{
 			InitializeComponent();
-			HSReplayNetHelper.CollectionUploaded += Update;
-			HSReplayNetHelper.CollectionAlreadyUpToDate += Update;
-			HSReplayNetOAuth.LoggedOut += Update;
-			HSReplayNetOAuth.Authenticated += Update;
+			Core.HSReplay.Events.CollectionUploaded += Update;
+			Core.HSReplay.Events.CollectionAlreadyUpToDate += Update;
+			Core.HSReplay.OAuth.LoggedOut += Update;
+			Core.HSReplay.OAuth.Authenticated += Update;
 			ScheduledTaskRunner.Instance.Schedule(() => OnPropertyChanged(nameof(SyncAge)), TimeSpan.FromMinutes(1));
 		}
 
-		public bool CollectionSynced => Account.Instance.CollectionState.Any();
+		public bool CollectionSynced => Core.HSReplay.Account.CollectionState.Any();
 
-		public bool IsAuthenticated => HSReplayNetOAuth.IsFullyAuthenticated;
+		public bool IsAuthenticated => Core.HSReplay.OAuth.IsFullyAuthenticated;
 
 		public string SyncAge => CollectionSynced
-			? LocUtil.GetAge(Account.Instance.CollectionState.Values.Max(x => x.Date))
+			? LocUtil.GetAge(Core.HSReplay.Account.CollectionState.Values.Max(x => x.Date))
 			: string.Empty;
 
 		public event PropertyChangedEventHandler PropertyChanged;

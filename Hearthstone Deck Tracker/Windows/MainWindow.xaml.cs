@@ -16,11 +16,8 @@ using Hearthstone_Deck_Tracker.API;
 using Hearthstone_Deck_Tracker.Controls.DeckPicker;
 using Hearthstone_Deck_Tracker.Controls.Error;
 using Hearthstone_Deck_Tracker.Enums;
-using Hearthstone_Deck_Tracker.FlyoutControls;
 using Hearthstone_Deck_Tracker.Hearthstone;
 using Hearthstone_Deck_Tracker.HsReplay;
-using Hearthstone_Deck_Tracker.HsReplay.Enums;
-using Hearthstone_Deck_Tracker.Live;
 using Hearthstone_Deck_Tracker.Plugins;
 using Hearthstone_Deck_Tracker.Stats;
 using Hearthstone_Deck_Tracker.Utility;
@@ -28,6 +25,8 @@ using Hearthstone_Deck_Tracker.Utility.Analytics;
 using Hearthstone_Deck_Tracker.Utility.Extensions;
 using Hearthstone_Deck_Tracker.Utility.Logging;
 using Hearthstone_Deck_Tracker.Utility.Updating;
+using HearthSim.Core.HSReplay.Data;
+using HSReplay.OAuth;
 #if(SQUIRREL)
 	using Squirrel;
 #endif
@@ -37,9 +36,6 @@ using Application = System.Windows.Application;
 
 namespace Hearthstone_Deck_Tracker.Windows
 {
-	/// <summary>
-	///     Interaction logic for MainWindow.xaml
-	/// </summary>
 	public partial class MainWindow : INotifyPropertyChanged
 	{
 		public event PropertyChangedEventHandler PropertyChanged;
@@ -169,8 +165,8 @@ namespace Hearthstone_Deck_Tracker.Windows
 
 		public Visibility IntroductionLabelVisibility => DeckList.Instance.Decks.Any() ? Collapsed : Visible;
 
-		public Visibility MenuItemReplayClaimAccountVisibility => Account.Instance.Status == AccountStatus.Anonymous ? Visible : Collapsed;
-		public Visibility MenuItemReplayMyAccountVisibility => Account.Instance.Status == AccountStatus.Anonymous ? Collapsed : Visible;
+		public Visibility MenuItemReplayClaimAccountVisibility => Core.HSReplay.Account.Status == AccountStatus.Anonymous ? Visible : Collapsed;
+		public Visibility MenuItemReplayMyAccountVisibility => Core.HSReplay.Account.Status == AccountStatus.Anonymous ? Collapsed : Visible;
 		
 		public Visibility HsReplayButtonVisibility
 		{
@@ -222,7 +218,7 @@ namespace Hearthstone_Deck_Tracker.Windows
 				Influx.OnHsReplayDataLoaded();
 			};
 
-			HSReplayNetOAuth.Authenticated += ActivateWindow;
+			Core.HSReplay.OAuth.Authenticated += ActivateWindow;
 
 			RemoteConfig.Instance.Loaded += data =>
 			{
@@ -230,12 +226,12 @@ namespace Hearthstone_Deck_Tracker.Windows
 				OnPropertyChanged(nameof(CollectionSyncingBannerRemovable));
 			};
 
-			HSReplayNetHelper.CollectionUploaded += () =>
+			Core.HSReplay.OAuth.CollectionUpdated += () =>
 			{
 				OnPropertyChanged(nameof(CollectionSyncingBannerRemovable)); 
 			};
 
-			HSReplayNetOAuth.LoggedOut += () =>
+			Core.HSReplay.OAuth.LoggedOut += () =>
 			{
 				OnPropertyChanged(nameof(CollectionSyncingBannerVisbiility));
 				OnPropertyChanged(nameof(CollectionSyncingBannerRemovable));
@@ -307,7 +303,7 @@ namespace Hearthstone_Deck_Tracker.Windows
 			{
 				Log.Info("Shutting down...");
 				Influx.OnAppExit(Helper.GetCurrentVersion());
-				LiveDataManager.Stop();
+				Core.HSReplay.Twitch.Stop();
 				Core.UpdateOverlay = false;
 				Core.Update = false;
 
@@ -665,8 +661,8 @@ namespace Hearthstone_Deck_Tracker.Windows
 
 		private void RemovableBanner_OnClick(object sender, EventArgs e)
 		{
-			var authenticated = HSReplayNetOAuth.IsFullyAuthenticated;
-			var collectionSynced = Account.Instance.CollectionState.Any();
+			var authenticated = Core.HSReplay.OAuth.IsFullyAuthenticated;
+			var collectionSynced = Core.HSReplay.Account.CollectionState.Any();
 			Influx.OnCollectionSyncingBannerClicked(authenticated, collectionSynced);
 			if(!authenticated || !collectionSynced)
 			{
@@ -674,9 +670,10 @@ namespace Hearthstone_Deck_Tracker.Windows
 				FlyoutOptions.IsOpen = true;
 				if(!authenticated)
 				{
+					Core.HSReplay.OAuth.Authenticate(Scope.FullAccess).Forget();
 					var successUrl = Helper.BuildHsReplayNetUrl("decks", "collection_syncing_banner",
 						new[] { "modal=collection" });
-					HSReplayNetHelper.TryAuthenticate(successUrl).Forget();
+					//HSReplayNetHelper.TryAuthenticate(successUrl).Forget();
 				}
 			}
 			else
@@ -699,7 +696,7 @@ namespace Hearthstone_Deck_Tracker.Windows
 					return Collapsed;
 				if(Config.Instance.HideCollectionSyncingBanner >= CollectionBannerId)
 				{
-					var synced = Account.Instance.CollectionState.Any();
+					var synced = Core.HSReplay.Account.CollectionState.Any();
 					var removablePostSync = RemoteConfig.Instance.Data?.CollectionBanner?.RemovablePostSync ?? false;
 					var removablePreSync = RemoteConfig.Instance.Data?.CollectionBanner?.RemovablePreSync ?? false;
 					if(synced && removablePostSync || !synced && removablePreSync)
@@ -715,7 +712,7 @@ namespace Hearthstone_Deck_Tracker.Windows
 		{
 			get
 			{
-				var synced = Account.Instance.CollectionState.Any();
+				var synced = Core.HSReplay.Account.CollectionState.Any();
 				return !synced && (RemoteConfig.Instance.Data?.CollectionBanner?.RemovablePreSync ?? false)
 					|| synced && (RemoteConfig.Instance.Data?.CollectionBanner?.RemovablePostSync ?? false);
 			}

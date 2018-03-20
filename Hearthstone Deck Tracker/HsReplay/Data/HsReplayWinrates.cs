@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using WinrateData = System.Collections.Generic.Dictionary<string, Hearthstone_Deck_Tracker.HsReplay.Data.DeckWinrateData>;
+using HearthSim.Core.HSReplay.Data;
+using WinrateData = System.Collections.Generic.Dictionary<string, HearthSim.Core.HSReplay.Data.DeckWinrateData>;
 
 namespace Hearthstone_Deck_Tracker.HsReplay.Data
 {
@@ -22,7 +23,8 @@ namespace Hearthstone_Deck_Tracker.HsReplay.Data
 				return deck;
 			if(!_cleaned)
 				Cleanup();
-			deck = await ApiWrapper.GetDeckWinrates(shortId, wild) ?? NoDataFallback;
+			var response = await Core.HSReplay.Api.GetDeckWinrates(shortId, wild);
+			deck = response.Success ? response.Data ?? NoDataFallback : NoDataFallback;
 			_data[shortId] = deck;
 			await WriteToDisk(data);
 			return deck;

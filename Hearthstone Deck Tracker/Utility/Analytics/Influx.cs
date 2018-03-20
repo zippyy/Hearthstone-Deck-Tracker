@@ -10,6 +10,7 @@ using Hearthstone_Deck_Tracker.HsReplay;
 using Hearthstone_Deck_Tracker.Plugins;
 using Hearthstone_Deck_Tracker.Utility.Extensions;
 using Hearthstone_Deck_Tracker.Utility.Logging;
+using HearthSim.Core.HSReplay;
 
 namespace Hearthstone_Deck_Tracker.Utility.Analytics
 {
@@ -35,7 +36,7 @@ namespace Hearthstone_Deck_Tracker.Utility.Analytics
 				.Tag("authenticated", authenticated)
 				.Tag("premium", premium)
 				.Tag("collection_syncing", Config.Instance.SyncCollection)
-				.Tag("collections_uploaded", Account.Instance.CollectionState.Count)
+				.Tag("collections_uploaded", Core.HSReplay.Account.CollectionState.Count)
 				.Tag("auto_upload", Config.Instance.HsReplayAutoUpload)
 				.Tag("lang_card", Config.Instance.SelectedLanguage)
 				.Tag("lang_ui", Config.Instance.Localization.ToString())
@@ -190,7 +191,7 @@ namespace Hearthstone_Deck_Tracker.Utility.Analytics
 			_oAuthInitiated = DateTime.Now;
 		}
 
-		public static void OnOAuthLoginComplete(HSReplayNetHelper.AuthenticationErrorType error)
+		public static void OnOAuthLoginComplete(AuthenticationErrorType error)
 		{
 			if(!Config.Instance.GoogleAnalytics)
 				return;

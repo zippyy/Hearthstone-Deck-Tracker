@@ -8,12 +8,13 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using Hearthstone_Deck_Tracker.HsReplay;
-using Hearthstone_Deck_Tracker.HsReplay.Enums;
 using Hearthstone_Deck_Tracker.Plugins;
 using Hearthstone_Deck_Tracker.Stats;
 using static System.Windows.Visibility;
 using System.Windows.Controls;
 using Hearthstone_Deck_Tracker.Utility.MVVM;
+using HearthSim.Core.HSReplay.Data;
+using HSReplay.OAuth;
 
 namespace Hearthstone_Deck_Tracker.Windows.MainWindowControls
 {
@@ -93,7 +94,7 @@ namespace Hearthstone_Deck_Tracker.Windows.MainWindowControls
 		{
 			Helper.OptionsMain.TreeViewItemHSReplayAccount.IsSelected = true;
 			Core.MainWindow.FlyoutOptions.IsOpen = true;
-			await HSReplayNetHelper.TryAuthenticate();
+			await Core.HSReplay.OAuth.Authenticate(Scope.FullAccess);
 		});
 
 		public ICommand MetaCommand => new Command(() => Helper.TryOpenUrl(Helper.BuildHsReplayNetUrl("meta", "menu")));
@@ -107,7 +108,7 @@ namespace Hearthstone_Deck_Tracker.Windows.MainWindowControls
 		public IEnumerable<MenuItem> PluginsMenuItems => PluginsWithMenu.Select(p => p.MenuItem);
 
 		public Visibility ReplaysEmptyVisibility => LatestReplays.Count == 0 ? Visible : Collapsed;
-		public Visibility MyReplaysVisibility => Account.Instance.Status == AccountStatus.Anonymous ? Collapsed : Visible;
+		public Visibility MyReplaysVisibility => Core.HSReplay.Account.Status == AccountStatus.Anonymous ? Collapsed : Visible;
 
 		public Visibility PluginsEmptyVisibility => PluginsWithMenu.Any() ? Collapsed : Visible;
 
@@ -122,7 +123,7 @@ namespace Hearthstone_Deck_Tracker.Windows.MainWindowControls
 		public Visibility UnarchiveDeckVisibility => Decks.FirstOrDefault()?.Archived ?? false ? Visible : Collapsed;
 		public Visibility SeparatorVisibility => Decks.FirstOrDefault()?.IsArenaDeck ?? true ? Collapsed : Visible;
 		public Visibility DeckHistoryVisibility => Decks.FirstOrDefault()?.HasVersions ?? false ? Visible : Collapsed;
-		public Visibility LoginVisibility => HSReplayNetOAuth.IsFullyAuthenticated ? Collapsed : Visible;
+		public Visibility LoginVisibility => Core.HSReplay.OAuth.IsFullyAuthenticated ? Collapsed : Visible;
 
 		public bool LoginButtonEnabled
 		{
@@ -145,15 +146,11 @@ namespace Hearthstone_Deck_Tracker.Windows.MainWindowControls
 				}
 			};
 
-			Account.Instance.PropertyChanged += (sender, e) =>
-			{
-				if(e.PropertyName == "Status")
-					OnPropertyChanged(nameof(MyReplaysVisibility));
-			};
+			Core.HSReplay.Account.StatusChanged += args => OnPropertyChanged(nameof(MyReplaysVisibility));
 
-			HSReplayNetOAuth.AccountDataUpdated += UpdateHSReplayNetMenu;
-			HSReplayNetOAuth.LoggedOut += UpdateHSReplayNetMenu;
-			HSReplayNetHelper.Authenticating += EnableLoginButton;
+			Core.HSReplay.OAuth.AccountDataUpdated += UpdateHSReplayNetMenu;
+			Core.HSReplay.OAuth.LoggedOut += UpdateHSReplayNetMenu;
+			Core.HSReplay.OAuth.Authenticating += EnableLoginButton;
 		}
 
 		private void EnableLoginButton(bool authenticating)

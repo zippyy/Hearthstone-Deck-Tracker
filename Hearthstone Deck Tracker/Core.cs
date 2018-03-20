@@ -47,6 +47,8 @@ namespace Hearthstone_Deck_Tracker
 		public static MainWindow MainWindow { get; set; }
 
 		private static Manager _manager;
+		internal static HSReplayNet HSReplay => _manager.HSReplayNet;
+		internal static HearthSim.Core.Hearthstone.Game Hearthstone => _manager.Game;
 
 		public static Overview StatsOverview => _statsOverview ?? (_statsOverview = new Overview());
 
@@ -164,15 +166,13 @@ namespace Hearthstone_Deck_Tracker
 			if(Helper.HearthstoneDirExists && Config.Instance.StartHearthstoneWithHDT && !Game.IsRunning)
 				HearthstoneRunner.StartHearthstone().Forget();
 
-			HSReplayNetHelper.UpdateAccount().Forget();
-
 			Initialized = true;
 
 			Influx.OnAppStart(
 				Helper.GetCurrentVersion(),
 				newUser,
-				HSReplayNetOAuth.IsFullyAuthenticated,
-				HSReplayNetOAuth.AccountData?.IsPremium?.Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? false,
+				HSReplay.OAuth.IsFullyAuthenticated,
+				HSReplay.OAuth.AccountData?.IsPremium?.Equals("true", StringComparison.InvariantCultureIgnoreCase) ?? false,
 				(int)(DateTime.UtcNow - _startUpTime).TotalSeconds,
 				PluginManager.Instance.Plugins.Count
 			);

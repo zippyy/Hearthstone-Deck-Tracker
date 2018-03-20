@@ -13,7 +13,6 @@ using Hearthstone_Deck_Tracker.Hearthstone;
 using Hearthstone_Deck_Tracker.Hearthstone.Entities;
 using Hearthstone_Deck_Tracker.HsReplay;
 using Hearthstone_Deck_Tracker.Importing;
-using Hearthstone_Deck_Tracker.Live;
 using Hearthstone_Deck_Tracker.Replay;
 using Hearthstone_Deck_Tracker.Stats;
 using Hearthstone_Deck_Tracker.Stats.CompiledStats;
@@ -141,7 +140,11 @@ namespace Hearthstone_Deck_Tracker
 					var log = powerLog.ToArray();
 					var validationResult = LogValidator.Validate(log);
 					if(validationResult.IsValid)
-						LogUploader.Upload(log, (GameMetaData)_game.MetaData.Clone(), _game.CurrentGameStats).Forget();
+					{
+						//var uploadMetadata =UploadMetaDataGenerator.Generate(
+						//	(GameMetaData)_game.MetaData.Clone(), _game.CurrentGameStats);
+						//Core.HSReplay.LogUploader.Upload(log, uploadMetadata).Forget();
+					}
 					else 
 					{
 						Log.Error("Invalid log: " + validationResult.Reason);
@@ -354,7 +357,6 @@ namespace Hearthstone_Deck_Tracker
 				_game.IsUsingPremade = true;
 			Core.Windows.CapturableOverlay?.UpdateContentVisibility();
 			GameEvents.OnGameStart.Execute();
-			LiveDataManager.WatchBoardState();
 		}
 
 		private void HandleAdventureRestart()
@@ -381,7 +383,6 @@ namespace Hearthstone_Deck_Tracker
 				TurnTimer.Instance.Stop();
 				Core.Overlay.HideTimers();
 				DeckManager.ResetAutoSelectCount();
-				LiveDataManager.Stop();
 				Log.Info("Game ended...");
 				_game.InvalidateMatchInfoCache();
 				if(_game.CurrentGameMode == Spectator && _game.CurrentGameStats.Result == GameResult.None)

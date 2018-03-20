@@ -1,7 +1,7 @@
 ﻿using System.Windows.Input;
-using Hearthstone_Deck_Tracker.HsReplay;
 using Hearthstone_Deck_Tracker.Utility;
 using Hearthstone_Deck_Tracker.Utility.Extensions;
+using HSReplay.OAuth;
 
 namespace Hearthstone_Deck_Tracker.Controls.Information
 {
@@ -18,7 +18,7 @@ namespace Hearthstone_Deck_Tracker.Controls.Information
 			Helper.OptionsMain.TreeViewItemHSReplayCollection.IsSelected = true;
 			Core.MainWindow.FlyoutOptions.IsOpen = true;
 			var successUrl = Helper.BuildHsReplayNetUrl("decks", "collection_info", new[] { "modal=collection" });
-			HSReplayNetHelper.TryAuthenticate(successUrl).Forget();
+			Core.HSReplay.OAuth.Authenticate(successUrl, null, Scope.FullAccess).Forget();
 		});
 
 		public ICommand CloseCommand => new Command(() => Core.MainWindow.FlyoutUpdateNotes.IsOpen = false);

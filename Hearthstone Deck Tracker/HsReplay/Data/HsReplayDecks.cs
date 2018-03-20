@@ -1,5 +1,7 @@
 ﻿using System;
 using Hearthstone_Deck_Tracker.Utility.Logging;
+using HearthSim.Core.HSReplay;
+using HearthSim.Core.HSReplay.Data;
 
 namespace Hearthstone_Deck_Tracker.HsReplay.Data
 {
@@ -35,7 +37,8 @@ namespace Hearthstone_Deck_Tracker.HsReplay.Data
 			if(data?.IsStale ?? true)
 			{
 				Log.Info("Cached data was not found or stale. Fetching latest...");
-				data = await ApiWrapper.GetAvailableDecks();
+				var response = await Core.HSReplay.Api.GetAvailableDecks();
+				data = response.Success ? response.Data : null;
 				if(data == null)
 				{
 					Log.Warn("No data. Can retry in 30 minutes.");

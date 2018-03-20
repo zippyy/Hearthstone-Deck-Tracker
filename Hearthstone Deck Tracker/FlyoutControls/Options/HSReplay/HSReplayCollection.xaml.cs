@@ -17,11 +17,11 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.HSReplay
 		public HSReplayCollection()
 		{
 			InitializeComponent();
-			HSReplayNetOAuth.Authenticated += Update;
-			HSReplayNetOAuth.LoggedOut += Update;
-			HSReplayNetHelper.CollectionUploaded += CollectionUpdated;
-			HSReplayNetHelper.CollectionAlreadyUpToDate += CollectionUpdated;
-			HSReplayNetHelper.CollectionUploadThrottled += () =>
+			Core.HSReplay.OAuth.Authenticated += Update;
+			Core.HSReplay.OAuth.LoggedOut += Update;
+			Core.HSReplay.Events.CollectionUploaded += CollectionUpdated;
+			Core.HSReplay.Events.CollectionAlreadyUpToDate += CollectionUpdated;
+			Core.HSReplay.Events.CollectionUploadThrottled += () =>
 			{
 				CollectionUpToDate = false;
 				CollectionUpdateThrottled = true;
@@ -45,9 +45,9 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.HSReplay
 			OnPropertyChanged(nameof(CollectionSynced));
 		}
 
-		public bool IsAuthenticated => HSReplayNetOAuth.IsFullyAuthenticated;
+		public bool IsAuthenticated => Core.HSReplay.OAuth.IsFullyAuthenticated;
 
-		public bool CollectionSynced => Account.Instance.CollectionState.Any();
+		public bool CollectionSynced => Core.HSReplay.Account.CollectionState.Any();
 
 		public bool CollectionUpToDate
 		{
@@ -70,7 +70,7 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.HSReplay
 		}
 
 		public string SyncAge => CollectionSynced
-			? LocUtil.GetAge(Account.Instance.CollectionState.Values.Max(x => x.Date))
+			? LocUtil.GetAge(Core.HSReplay.Account.CollectionState.Values.Max(x => x.Date))
 			: string.Empty;
 
 		public object HSReplayDecksCommand => new Command(()
