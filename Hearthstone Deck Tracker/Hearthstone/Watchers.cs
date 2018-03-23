@@ -18,25 +18,16 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 			ArenaWatcher.OnCompleteDeck += (sender, args) => DeckManager.AutoImportArena(Config.Instance.SelectedArenaImportingBehaviour ?? ArenaImportingBehaviour.AutoImportSave, args.Info);
 			DungeonRunWatcher.DungeonRunMatchStarted += DeckManager.DungeonRunMatchStarted;
 			DungeonRunWatcher.DungeonInfoChanged += DeckManager.UpdateDungeonRunDeck;
-			FriendlyChallengeWatcher.OnFriendlyChallenge += OnFriendlyChallenge;
 		}
 
 		internal static void Stop()
 		{
 			ArenaWatcher.Stop();
 			DungeonRunWatcher.Stop();
-			FriendlyChallengeWatcher.Stop();
-		}
-
-		internal static void OnFriendlyChallenge(object sender, HearthWatcher.EventArgs.FriendlyChallengeEventArgs args)
-		{
-			if(args.DialogVisible && Config.Instance.FlashHsOnFriendlyChallenge)
-				User32.FlashHs();
 		}
 
 		public static ArenaWatcher ArenaWatcher { get; } = new ArenaWatcher(new HearthMirrorArenaProvider());
 		public static DungeonRunWatcher DungeonRunWatcher { get; } = new DungeonRunWatcher(new GameDataProvider());
-		public static FriendlyChallengeWatcher FriendlyChallengeWatcher { get; } = new FriendlyChallengeWatcher(new HearthMirrorFriendlyChallengeProvider());
 	}
 
 	public class GameDataProvider : IGameDataProvider
@@ -50,10 +41,5 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 	{
 		public ArenaInfo GetArenaInfo() => DeckImporter.FromArena(false);
 		public HearthMirror.Objects.Card[] GetDraftChoices() => Reflection.GetArenaDraftChoices()?.ToArray();
-	}
-
-	public class HearthMirrorFriendlyChallengeProvider : IFriendlyChallengeProvider
-	{
-		public bool DialogVisible => Reflection.IsFriendlyChallengeDialogVisible();
 	}
 }

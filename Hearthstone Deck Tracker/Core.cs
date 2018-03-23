@@ -79,6 +79,13 @@ namespace Hearthstone_Deck_Tracker
 			_manager = new Manager(hsReplayConfig);
 			_manager.Start();
 
+			//TODO: Figure out where to put these
+			_manager.Game.FriendlyChallenge += () =>
+			{
+				if(Config.Instance.FlashHsOnFriendlyChallenge)
+					User32.FlashHs();
+			};
+
 			Log.Info($"HDT: {Helper.GetCurrentVersion()}, Operating System: {Helper.GetWindowsVersion()}, .NET Framework: {Helper.GetInstalledDotNetVersion()}");
 			var splashScreenWindow = new SplashScreenWindow();
 #if(SQUIRREL)
