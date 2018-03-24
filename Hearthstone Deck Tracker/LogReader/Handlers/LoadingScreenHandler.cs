@@ -1,10 +1,7 @@
-#region
-
 using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Threading.Tasks;
-using System.Windows;
 using HearthMirror;
 using HearthMirror.Enums;
 using Hearthstone_Deck_Tracker.Enums.Hearthstone;
@@ -14,10 +11,7 @@ using Hearthstone_Deck_Tracker.LogReader.Interfaces;
 using Hearthstone_Deck_Tracker.Utility.Analytics;
 using Hearthstone_Deck_Tracker.Utility.Extensions;
 using Hearthstone_Deck_Tracker.Utility.Logging;
-using Hearthstone_Deck_Tracker.Windows;
-using HearthWatcher.LogReader;
-
-#endregion
+using HearthSim.Core.LogReading.Data;
 
 namespace Hearthstone_Deck_Tracker.LogReader.Handlers
 {
@@ -27,9 +21,9 @@ namespace Hearthstone_Deck_Tracker.LogReader.Handlers
 		private bool _checkedMirrorStatus;
 		public event Action OnHearthMirrorCheckFailed;
 
-		public void Handle(LogLine logLine, IHsGameState gameState, IGame game)
+		public void Handle(Line logLine, IHsGameState gameState, IGame game)
 		{
-			var match = LogConstants.GameModeRegex.Match(logLine.Line);
+			var match = LogConstants.GameModeRegex.Match(logLine.Text);
 			if(match.Success)
 			{
 				game.CurrentMode = GetMode(match.Groups["curr"].Value);
@@ -64,7 +58,7 @@ namespace Hearthstone_Deck_Tracker.LogReader.Handlers
 
 				API.GameEvents.OnModeChanged.Execute(game.CurrentMode);
 			}
-			else if(logLine.Line.Contains("Gameplay.Start"))
+			else if(logLine.Text.Contains("Gameplay.Start"))
 			{
 				gameState.Reset();
 				gameState.GameHandler.HandleGameStart(logLine.Time);

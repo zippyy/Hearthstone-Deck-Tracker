@@ -7,6 +7,7 @@ using System.IO;
 using System.Net;
 using System.Threading.Tasks;
 using System.Windows;
+using Hearthstone_Deck_Tracker.Controls.Error;
 using Hearthstone_Deck_Tracker.Controls.Stats;
 using Hearthstone_Deck_Tracker.Enums;
 using Hearthstone_Deck_Tracker.Hearthstone;
@@ -25,6 +26,7 @@ using Hearthstone_Deck_Tracker.Utility.Themes;
 using Hearthstone_Deck_Tracker.Utility.Updating;
 using HearthSim.Core;
 using HearthSim.Core.HSReplay;
+using HearthSim.Core.LogReading;
 using WPFLocalizeExtension.Engine;
 using Log = HearthSim.Util.Logging.Log;
 
@@ -41,14 +43,15 @@ namespace Hearthstone_Deck_Tracker
 		private static int _updateRequestsPlayer;
 		private static int _updateRequestsOpponent;
 		private static DateTime _startUpTime;
-		private static readonly LogWatcherManager LogWatcherManger = new LogWatcherManager();
+		private static LogWatcherManager _logWatcherManger;
 		public static Version Version { get; set; }
 		public static GameV2 Game { get; set; }
 		public static MainWindow MainWindow { get; set; }
 
-		private static Manager _manager;
-		internal static HSReplayNet HSReplay => _manager.HSReplayNet;
-		internal static HearthSim.Core.Hearthstone.Game Hearthstone => _manager.Game;
+		internal static HSReplayNet HSReplay => Manager?.HSReplayNet;
+		internal static HearthSim.Core.Hearthstone.Game Hearthstone => Manager?.Game;
+		internal static ILogInput LogReader => Manager?.LogReader;
+		internal static Manager Manager { get; private set; }
 
 		public static Overview StatsOverview => _statsOverview ?? (_statsOverview = new Overview());
 
@@ -76,29 +79,35 @@ namespace Hearthstone_Deck_Tracker
 			var hsReplayConfig = new HSReplayNetConfig(Config.Instance.DataDir, "089b2bc6-3c26-4aab-adbe-bcfd5bb48671",
 				"jIpNwuUWLFI6S3oeQkO3xlW6UCnfogw1IpAbFXqq", Helper.GetUserAgent(), GameTypeHelper.All,
 				Config.Instance.HsReplayUploadPacks ?? false, Config.Instance.SelectedTwitchUser);
-			_manager = new Manager(hsReplayConfig);
-			_manager.Start();
+			Manager = new Manager(hsReplayConfig);
+			Manager.Start();
 
 			//TODO: Figure out where to put these
-			_manager.Game.FriendlyChallenge += () =>
+			Manager.Game.FriendlyChallenge += () =>
 			{
 				if(Config.Instance.FlashHsOnFriendlyChallenge)
 					User32.FlashHs();
 			};
-			_manager.Game.DungeonRunMatchStarted += args =>
+			Manager.Game.DungeonRunMatchStarted += args =>
 			{
 				DeckManager.DungeonRunMatchStarted(args.IsNew, args.Deck); 
 			};
-			_manager.Game.DungeonRunDeckUpdated += args =>
+			Manager.Game.DungeonRunDeckUpdated += args =>
 			{
 				DeckManager.UpdateDungeonRunDeck(args.Deck); 
 			};
-			_manager.Game.Arena.DraftComplete += args =>
+			Manager.Game.Arena.DraftComplete += args =>
 			{
 				var behaviour = Config.Instance.SelectedArenaImportingBehaviour
 								?? ArenaImportingBehaviour.AutoImportSave;
 				DeckManager.AutoImportArena(behaviour, args.Info);
 			};
+			Manager.Game.HearthstoneInstallationNotFound += () =>
+			{
+				ErrorManager.AddError("Could not find Hearthstone installation",
+					"Please set Hearthstone installation path via 'options > tracker > settings > set hearthstone path'.");
+			};
+			_logWatcherManger = new LogWatcherManager();
 
 			Log.Info($"HDT: {Helper.GetCurrentVersion()}, Operating System: {Helper.GetWindowsVersion()}, .NET Framework: {Helper.GetInstalledDotNetVersion()}");
 			var splashScreenWindow = new SplashScreenWindow();
@@ -179,7 +188,6 @@ namespace Hearthstone_Deck_Tracker
 				MainWindow.ShowMessageAsync("Hearthstone restart required", "The log.config file has been updated. HDT may not work properly until Hearthstone has been restarted.").Forget();
 				Overlay.ShowRestartRequiredWarning();
 			}
-			LogWatcherManger.Start(Game).Forget();
 
 			RemoteConfig.Instance.Load();
 			HotKeyManager.Load();
@@ -309,13 +317,13 @@ namespace Hearthstone_Deck_Tracker
 				return;
 			}
 			_resetting = true;
-			var stoppedReader = await LogWatcherManger.Stop();
+			//var stoppedReader = await LogWatcherManger.Stop();
 			Game.Reset();
 			if(DeckList.Instance.ActiveDeck != null)
 				Game.IsUsingPremade = true;
 			await Task.Delay(1000);
-			if(stoppedReader)
-				LogWatcherManger.Start(Game).Forget();
+			//if(stoppedReader)
+			//	LogWatcherManger.Start(Game).Forget();
 			Overlay.HideSecrets();
 			Overlay.Update(false);
 			UpdatePlayerCards(true);
@@ -345,8 +353,6 @@ namespace Hearthstone_Deck_Tracker
 			if(Windows.OpponentWindow.IsVisible)
 				Windows.OpponentWindow.UpdateOpponentCards(new List<Card>(Game.Opponent.OpponentCardList), reset);
 		}
-
-		internal static async Task StopLogWacher() => await LogWatcherManger.Stop(true);
 
 		public static class Windows
 		{

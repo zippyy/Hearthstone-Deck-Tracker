@@ -1576,10 +1576,6 @@
       <Project>{a6264074-8a96-417c-9673-5ee7e9820b1f}</Project>
       <Name>HSReplay</Name>
     </ProjectReference>
-    <ProjectReference Include="..\HearthWatcher\HearthWatcher.csproj">
-      <Project>{02e1843d-3f5d-45e0-9b16-1f28209eed82}</Project>
-      <Name>HearthWatcher</Name>
-    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
