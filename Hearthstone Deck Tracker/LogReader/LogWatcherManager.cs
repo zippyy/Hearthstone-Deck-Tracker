@@ -23,7 +23,6 @@ namespace Hearthstone_Deck_Tracker.LogReader
 	{
 		private readonly PowerHandler _powerLineHandler = new PowerHandler();
 		private readonly RachelleHandler _rachelleHandler = new RachelleHandler();
-		private readonly ArenaHandler _arenaHandler = new ArenaHandler();
 		private readonly LoadingScreenHandler _loadingScreenHandler = new LoadingScreenHandler();
 		private readonly FullScreenFxHandler _fullScreenFxHandler = new FullScreenFxHandler();
 		private HsGameState _gameState;
@@ -137,10 +136,6 @@ namespace Hearthstone_Deck_Tracker.LogReader
 					case "Rachelle":
 						_rachelleHandler.Handle(line.Line, _gameState, _game);
 						OnRachelleLogLine.Execute(line.Line);
-						break;
-					case "Arena":
-						_arenaHandler.Handle(line, _gameState, _game);
-						OnArenaLogLine.Execute(line.Line);
 						break;
 					case "LoadingScreen":
 						_loadingScreenHandler.Handle(line, _gameState, _game);

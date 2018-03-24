@@ -59,11 +59,6 @@ namespace Hearthstone_Deck_Tracker.LogReader.Handlers
 				if(game.PreviousMode == Mode.GAMEPLAY && game.CurrentMode != Mode.GAMEPLAY)
 					gameState.GameHandler.HandleInMenu();
 
-				if(game.CurrentMode == Mode.DRAFT)
-					Watchers.ArenaWatcher.Run();
-				else
-					Watchers.ArenaWatcher.Stop();
-
 				if(game.CurrentMode == Mode.TAVERN_BRAWL)
 					Core.Game.CacheBrawlInfo();
 

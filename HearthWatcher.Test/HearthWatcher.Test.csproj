@@ -69,7 +69,6 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
-    <Compile Include="ArenaWatcherTests.cs" />
     <Compile Include="LogLineTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

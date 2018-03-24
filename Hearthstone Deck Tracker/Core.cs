@@ -93,6 +93,12 @@ namespace Hearthstone_Deck_Tracker
 			{
 				DeckManager.UpdateDungeonRunDeck(args.Deck); 
 			};
+			_manager.Game.Arena.DraftComplete += args =>
+			{
+				var behaviour = Config.Instance.SelectedArenaImportingBehaviour
+								?? ArenaImportingBehaviour.AutoImportSave;
+				DeckManager.AutoImportArena(behaviour, args.Info);
+			};
 
 			Log.Info($"HDT: {Helper.GetCurrentVersion()}, Operating System: {Helper.GetWindowsVersion()}, .NET Framework: {Helper.GetInstalledDotNetVersion()}");
 			var splashScreenWindow = new SplashScreenWindow();
@@ -265,7 +271,6 @@ namespace Hearthstone_Deck_Tracker
 					Game.IsRunning = false;
 					GameIsRunningChanged?.Invoke(false);
 					Overlay.ShowOverlay(false);
-					Watchers.Stop();
 					if(Windows.CapturableOverlay != null)
 					{
 						Windows.CapturableOverlay.UpdateContentVisibility();
