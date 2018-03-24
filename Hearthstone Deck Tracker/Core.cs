@@ -85,6 +85,14 @@ namespace Hearthstone_Deck_Tracker
 				if(Config.Instance.FlashHsOnFriendlyChallenge)
 					User32.FlashHs();
 			};
+			_manager.Game.DungeonRunMatchStarted += args =>
+			{
+				DeckManager.DungeonRunMatchStarted(args.IsNew, args.Deck); 
+			};
+			_manager.Game.DungeonRunDeckUpdated += args =>
+			{
+				DeckManager.UpdateDungeonRunDeck(args.Deck); 
+			};
 
 			Log.Info($"HDT: {Helper.GetCurrentVersion()}, Operating System: {Helper.GetWindowsVersion()}, .NET Framework: {Helper.GetInstalledDotNetVersion()}");
 			var splashScreenWindow = new SplashScreenWindow();

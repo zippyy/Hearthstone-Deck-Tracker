@@ -376,68 +376,53 @@ namespace Hearthstone_Deck_Tracker
 			DeckManagerEvents.OnDeckUpdated.Execute(newVersion);
 		}
 
-		public static void DungeonRunMatchStarted(bool newRun)
+		public static void DungeonRunMatchStarted(bool newRun, HearthSim.Core.Hearthstone.Deck deck)
 		{
 			if(!Config.Instance.DungeonAutoImport)
 				return;
 			Log.Info($"Dungeon run detected! New={newRun}");
-			var playerClass = Core.Game.Player.Class;
-			var revealed = RevealedEntites;
-			var existingDeck = DeckList.Instance.Decks
-				.Where(x => x.IsDungeonDeck && x.Class == playerClass
-							&& !(x.IsDungeonRunCompleted ?? false)
-							&& (!newRun || x.Cards.Count == 10)
-							&& GetMissingCards(revealed, x).Count == 0)
-				.OrderByDescending(x => x.LastEdited).FirstOrDefault();
-			if(existingDeck == null)
+			if(newRun && deck != null)
+				CreateDungeonDeck(deck);
+			else if(deck == null)
 			{
-				if(newRun)
+				var playerClass = Core.Game.Player.Class;
+				var revealed = RevealedEntites;
+				var existingDeck = DeckList.Instance.Decks
+					.Where(x => x.IsDungeonDeck && x.Class.ToUpperInvariant() == playerClass
+								&& !(x.IsDungeonRunCompleted ?? false)
+								&& (!newRun || x.Cards.Count == 10)
+								&& GetMissingCards(revealed, x).Count == 0)
+					.OrderByDescending(x => x.LastEdited).FirstOrDefault();
+				if(existingDeck == null)
 				{
+					Log.Info("We don't have an existing deck for this run");
 					var hero = Core.Game.Opponent.PlayerEntities.FirstOrDefault(x => x.IsHero)?.CardId;
 					var set = Database.GetCardFromId(hero)?.CardSet;
 					CreateDungeonDeck(playerClass, set ?? CardSet.INVALID);
 				}
-				else
-				{
-					Log.Info("We don't have an existing deck for this run, but it's not a new run");
 					if(DeckList.Instance.ActiveDeck != null)
 					{
 						Log.Info("Switching to no deck mode");
 						Core.MainWindow.SelectDeck(null, true);
 					}
 				}
-			}
-			else if(!existingDeck.Equals(DeckList.Instance.ActiveDeck))
-			{
-				Log.Info($"Selecting existing deck: {existingDeck.Name}");
-				Core.MainWindow.SelectDeck(existingDeck, true);
+				else if(!existingDeck.Equals(DeckList.Instance.ActiveDeck))
+				{
+					Log.Info($"Selecting existing deck: {existingDeck.Name}");
+					Core.MainWindow.SelectDeck(existingDeck, true);
+				}
 			}
 		}
 
-		public static void UpdateDungeonRunDeck(DungeonInfo info)
+		public static void UpdateDungeonRunDeck(HearthSim.Core.Hearthstone.Deck info)
 		{
-			if(!Config.Instance.DungeonAutoImport)
+			if(!Config.Instance.DungeonAutoImport || info == null)
 				return;
 			Log.Info("Found dungeon run deck!");
-			var allCards = info.DbfIds.ToList();
-			if(info.PlayerChosenLoot > 0)
-			{
-				var loot = new[] { info.LootA, info.LootB, info.LootC };
-				var chosen = loot[info.PlayerChosenLoot - 1];
-				for(var i = 1; i < chosen.Count; i++)
-					allCards.Add(chosen[i]);
-			}
-			if(info.PlayerChosenTreasure > 0)
-				allCards.Add(info.Treasure[info.PlayerChosenTreasure - 1]);
-			var cards = allCards.GroupBy(x => x).Select(x =>
-			{
-				var card = Database.GetCardFromDbfId(x.Key, false);
-				card.Count = x.Count();
-				return card;
-			}).ToList();
+			var cards = info.Cards.ToList();
 			if(!Config.Instance.DungeonRunIncludePassiveCards)
-				cards.RemoveAll(c => !c.Collectible && c.HideStats);
-			var playerClass = ((CardClass)info.HeroCardClass).ToString().ToUpperInvariant();
+				cards.RemoveAll(c => !c.Data.Collectible && c.Data.Entity.GetTag(GameTag.HIDE_STATS) > 0);
+			var playerClass = info.Class.ToString().ToUpperInvariant();
 			var deck = DeckList.Instance.Decks.FirstOrDefault(x => x.IsDungeonDeck && x.Class.ToUpperInvariant() == playerClass
 																		&& !(x.IsDungeonRunCompleted ?? false)
 																		&& x.Cards.All(e => cards.Any(c => c.Id == e.Id && c.Count >= e.Count)));
@@ -454,27 +439,29 @@ namespace Hearthstone_Deck_Tracker
 			deck.Cards.Clear();
 			Helper.SortCardCollection(cards, false);
 			foreach(var card in cards)
-				deck.Cards.Add(card);
+				deck.Cards.Add(new Card(card.Data));
 			deck.LastEdited = DateTime.Now;
 			DeckList.Save();
 			Core.UpdatePlayerCards(true);
 			Log.Info("Updated dungeon run deck");
 		}
 
-		private static Deck CreateDungeonDeck(string playerClass, CardSet set)
+		private static Deck CreateDungeonDeck(HearthSim.Core.Hearthstone.Deck deck, CardSet set)
 		{
 			Log.Info($"Creating new {playerClass} dungeon run deck (CardSet={set})");
-			var deck = DungeonRun.GetDefaultDeck(playerClass, set);
-			if(deck == null)
+			var newDeck = new Deck
 			{
-				Log.Info($"Could not find default deck for {playerClass}");
-				return null;
-			}
-			DeckList.Instance.Decks.Add(deck);
+				Cards = new ObservableCollection<Card>(deck.Cards.Select(x => new Card(x.Data))),
+				Class = CultureInfo.InvariantCulture.TextInfo.ToTitleCase(deck.Class.ToString().ToLowerInvariant()),
+				IsDungeonDeck = true,
+				LastEdited = DateTime.Now
+			};
+			newDeck.Name = Helper.ParseDeckNameTemplate(Config.Instance.DungeonRunDeckNameTemplate, newDeck);
+			DeckList.Instance.Decks.Add(newDeck);
 			DeckList.Save();
 			Core.MainWindow.DeckPickerList.UpdateDecks();
-			Core.MainWindow.SelectDeck(deck, true);
-			return deck;
+			Core.MainWindow.SelectDeck(newDeck, true);
+			return newDeck;
 		}
 	}
 

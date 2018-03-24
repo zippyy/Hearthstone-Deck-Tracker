@@ -21,6 +21,7 @@ using Hearthstone_Deck_Tracker.HsReplay.Utility;
 using Hearthstone_Deck_Tracker.Properties;
 using Hearthstone_Deck_Tracker.Utility;
 using Hearthstone_Deck_Tracker.Utility.Logging;
+using HearthSim.Core.Hearthstone;
 using Card = Hearthstone_Deck_Tracker.Hearthstone.Card;
 using Deck = Hearthstone_Deck_Tracker.Hearthstone.Deck;
 

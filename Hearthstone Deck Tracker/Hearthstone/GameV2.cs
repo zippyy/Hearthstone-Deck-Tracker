@@ -15,6 +15,7 @@ using Hearthstone_Deck_Tracker.Replay;
 using Hearthstone_Deck_Tracker.Stats;
 using Hearthstone_Deck_Tracker.Utility.Logging;
 using Hearthstone_Deck_Tracker.Windows;
+using HearthSim.Core.Hearthstone;
 using MahApps.Metro.Controls.Dialogs;
 
 #endregion
