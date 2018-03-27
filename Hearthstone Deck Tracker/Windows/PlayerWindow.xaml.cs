@@ -7,10 +7,13 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Forms;
+using HearthDb.Enums;
 using Hearthstone_Deck_Tracker.Annotations;
 using Hearthstone_Deck_Tracker.Enums;
-using Hearthstone_Deck_Tracker.Hearthstone;
 using Hearthstone_Deck_Tracker.Utility;
+using HearthSim.Core.Hearthstone;
+using Card = Hearthstone_Deck_Tracker.Hearthstone.Card;
+using Deck = Hearthstone_Deck_Tracker.Hearthstone.Deck;
 using Panel = System.Windows.Controls.Panel;
 using Point = System.Drawing.Point;
 
@@ -24,10 +27,10 @@ namespace Hearthstone_Deck_Tracker
 	public partial class PlayerWindow : INotifyPropertyChanged
 	{
 		private const string LocFatigue = "Overlay_DeckList_Label_Fatigue";
-		private readonly GameV2 _game;
+		private readonly Game _game;
 		private bool _appIsClosing;
 
-		public PlayerWindow(GameV2 game, List<Card> forScreenshot = null)
+		public PlayerWindow(Game game, List<Card> forScreenshot = null)
 		{
 			InitializeComponent();
 			_game = game;
@@ -69,7 +72,8 @@ namespace Hearthstone_Deck_Tracker
 		public double PlayerLabelsHeight => CanvasPlayerChance.ActualHeight + CanvasPlayerCount.ActualHeight
 			+ LblPlayerFatigue.ActualHeight + LblDeckTitle.ActualHeight + LblWins.ActualHeight + 42;
 
-		public List<Card> PlayerDeck => _game.Player.PlayerCardList;
+		public List<Card> PlayerDeck => _game.CurrentGame.LocalPlayer.GetRemainingCards()
+			.Select(x => new Card(x)).ToList();
 
 		public bool ShowToolTip => Config.Instance.WindowCardToolTips;
 
@@ -77,25 +81,25 @@ namespace Hearthstone_Deck_Tracker
 
 		public void Update()
 		{
+			var deck = DeckList.Instance.GetDeck(_game.CurrentGame.LocalPlayer.Deck);
 			CanvasPlayerChance.Visibility = Config.Instance.HideDrawChances ? Visibility.Collapsed : Visibility.Visible;
 			CanvasPlayerCount.Visibility = Config.Instance.HidePlayerCardCount ? Visibility.Collapsed : Visibility.Visible;
 			ListViewPlayer.Visibility = Config.Instance.HidePlayerCards ? Visibility.Collapsed : Visibility.Visible;
-			LblWins.Visibility = Config.Instance.ShowDeckWins && _game.IsUsingPremade ? Visibility.Visible : Visibility.Collapsed;
-			LblDeckTitle.Visibility = Config.Instance.ShowDeckTitle && _game.IsUsingPremade ? Visibility.Visible : Visibility.Collapsed;
+			LblWins.Visibility = Config.Instance.ShowDeckWins && deck != null ? Visibility.Visible : Visibility.Collapsed;
+			LblDeckTitle.Visibility = Config.Instance.ShowDeckTitle && deck != null ? Visibility.Visible : Visibility.Collapsed;
 
-			SetDeckTitle();
-			SetWinRates();
+			SetDeckTitle(deck);
+			SetWinRates(deck);
 		}
 
-		private void SetWinRates()
+		private void SetWinRates(Deck deck)
 		{
-			var selectedDeck = DeckList.Instance.ActiveDeck;
-			if(selectedDeck == null)
+			if(deck == null)
 				return;
-			LblWins.Text = $"{selectedDeck.WinLossString} ({selectedDeck.WinPercentString})";
+			LblWins.Text = $"{deck.WinLossString} ({deck.WinPercentString})";
 		}
 
-		private void SetDeckTitle() => LblDeckTitle.Text = DeckList.Instance.ActiveDeck?.Name ?? string.Empty;
+		private void SetDeckTitle(Deck deck) => LblDeckTitle.Text = deck?.Name ?? string.Empty;
 
 		public void UpdatePlayerLayout()
 		{
@@ -134,7 +138,8 @@ namespace Hearthstone_Deck_Tracker
 
 			if(cardsLeftInDeck <= 0)
 			{
-				LblPlayerFatigue.Text = LocUtil.Get(LocFatigue) + " " + (_game.Player.Fatigue + 1);
+				LblPlayerFatigue.Text = LocUtil.Get(LocFatigue) + " "
+					+ (_game.CurrentGame.LocalPlayerEntity.GetTag(GameTag.FATIGUE) + 1);
 
 				LblDrawChance2.Text = "0%";
 				LblDrawChance1.Text = "0%";

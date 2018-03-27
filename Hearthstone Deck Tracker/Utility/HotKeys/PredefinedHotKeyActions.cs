@@ -51,7 +51,7 @@ namespace Hearthstone_Deck_Tracker.Utility.HotKeys
 		[PredefinedHotKeyAction("Toggle overlay", "Turns the overlay on or off (if the game is running).")]
 		public static void ToggleOverlay()
 		{
-			if(!Core.Game.IsRunning)
+			if(!Core.Hearthstone.IsRunning)
 				return;
 			Config.Instance.HideOverlay = !Config.Instance.HideOverlay;
 			Config.Save();
@@ -62,7 +62,7 @@ namespace Hearthstone_Deck_Tracker.Utility.HotKeys
 			"Turns the card marks and age on the overlay on or off (if the game is running).")]
 		public static void ToggleOverlayCardMarks()
 		{
-			if(!Core.Game.IsRunning)
+			if(!Core.Hearthstone.IsRunning)
 				return;
 			Config.Instance.HideOpponentCardMarks = !Config.Instance.HideOpponentCardMarks;
 			Config.Instance.HideOpponentCardAge = Config.Instance.HideOpponentCardMarks;
@@ -73,7 +73,7 @@ namespace Hearthstone_Deck_Tracker.Utility.HotKeys
 		[PredefinedHotKeyAction("Toggle overlay: secrets", "Turns the secrets panel on the overlay on or off (if the game is running).")]
 		public static void ToggleOverlaySecrets()
 		{
-			if(!Core.Game.IsRunning)
+			if(!Core.Hearthstone.IsRunning)
 				return;
 			Config.Instance.HideSecrets = !Config.Instance.HideSecrets;
 			Core.MainWindow.Options.OptionsOverlayOpponent.CheckboxHideSecrets.IsChecked = Config.Instance.HideSecrets;
@@ -87,7 +87,7 @@ namespace Hearthstone_Deck_Tracker.Utility.HotKeys
 		[PredefinedHotKeyAction("Toggle overlay: timers", "Turns the timers on the overlay on or off (if the game is running).")]
 		public static void ToggleOverlayTimer()
 		{
-			if(!Core.Game.IsRunning)
+			if(!Core.Hearthstone.IsRunning)
 				return;
 			Config.Instance.HideTimers = !Config.Instance.HideTimers;
 			Config.Save();
@@ -98,7 +98,7 @@ namespace Hearthstone_Deck_Tracker.Utility.HotKeys
 		]
 		public static void ToggleOverlayAttack()
 		{
-			if(!Core.Game.IsRunning)
+			if(!Core.Hearthstone.IsRunning)
 				return;
 			Config.Instance.HidePlayerAttackIcon = !Config.Instance.HidePlayerAttackIcon;
 			Config.Instance.HideOpponentAttackIcon = Config.Instance.HidePlayerAttackIcon;
@@ -227,8 +227,8 @@ namespace Hearthstone_Deck_Tracker.Utility.HotKeys
 		[PredefinedHotKeyAction("Note Dialog", "Brings up the note dialog for the current (running) game.")]
 		public static void NoteDialog()
 		{
-			if(Core.Game.IsRunning && !Core.Game.IsInMenu)
-				new NoteDialog(Core.Game.CurrentGameStats).Show();
+			//if(Core.Hearthstone.IsRunning && !Core.Hearthstone.IsInMenu)
+			//	new NoteDialog(Core.CurrentGameStats).Show();
 		}
 
 		[PredefinedHotKeyAction("Start Hearthstone", "Starts the Battle.net launcher and/or Hearthstone.")]

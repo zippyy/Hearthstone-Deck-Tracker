@@ -48,7 +48,7 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Streaming
 				Config.Instance.SendTwitchExtensionData = value;
 				Config.Save();
 				OnPropertyChanged();
-				if(!Core.Game.IsInMenu)
+				if(!Core.Hearthstone.IsInMenu)
 				{
 					if(value)
 						Core.HSReplay.Twitch.WatchBoardState(Core.Hearthstone.CurrentGame);

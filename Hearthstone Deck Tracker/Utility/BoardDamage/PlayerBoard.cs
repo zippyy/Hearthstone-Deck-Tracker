@@ -1,12 +1,8 @@
-﻿#region
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using HearthDb.Enums;
-using Hearthstone_Deck_Tracker.Hearthstone.Entities;
+using HearthSim.Core.Hearthstone.Entities;
 using static HearthDb.Enums.GameTag;
-
-#endregion
 
 namespace Hearthstone_Deck_Tracker.Utility.BoardDamage
 {

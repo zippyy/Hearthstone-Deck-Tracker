@@ -313,7 +313,7 @@ namespace Hearthstone_Deck_Tracker.Windows
 			}
 			else
 				Log.Info("...discarded by user.");
-			Core.Game.IgnoredArenaDecks.Add(deck.Id);
+			Core.IgnoredArenaDecks.Add(deck.Id);
 			_awaitingMainWindowOpen = false;
 		}
 

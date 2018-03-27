@@ -22,7 +22,7 @@ namespace Hearthstone_Deck_Tracker.Windows
 			UpdatePosition();
 		}
 
-		public Visibility ContentVisibility => Core.Game.IsRunning ? Visibility.Visible : Visibility.Hidden;
+		public Visibility ContentVisibility => Core.Hearthstone.IsRunning ? Visibility.Visible : Visibility.Hidden;
 
 		public WindowState? ForcedWindowState { get; internal set; } = WindowState.Minimized;
 

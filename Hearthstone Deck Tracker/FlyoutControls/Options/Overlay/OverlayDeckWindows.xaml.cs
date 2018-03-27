@@ -1,24 +1,13 @@
-#region
-
-using System.Drawing;
+using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Media;
-using Hearthstone_Deck_Tracker.Hearthstone;
 using Brush = System.Windows.Media.Brush;
-using Color = System.Windows.Media.Color;
 using SystemColors = System.Windows.SystemColors;
-
-#endregion
 
 namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Overlay
 {
-	/// <summary>
-	/// Interaction logic for DeckWindows.xaml
-	/// </summary>
 	public partial class OverlayDeckWindows
 	{
-		private GameV2 _game;
 		private bool _initialized;
 
 		public OverlayDeckWindows()
@@ -26,9 +15,8 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Overlay
 			InitializeComponent();
 		}
 
-		public void Load(GameV2 game)
+		public void Load()
 		{
-			_game = game;
 			CheckboxWindowsTopmost.IsChecked = Config.Instance.WindowsTopmost;
 			CheckboxPlayerWindowOpenAutomatically.IsChecked = Config.Instance.PlayerWindowOnStart;
 			CheckboxOpponentWindowOpenAutomatically.IsChecked = Config.Instance.OpponentWindowOnStart;
@@ -203,7 +191,9 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Overlay
 				return;
 			Core.Windows.PlayerWindow.Show();
 			Core.Windows.PlayerWindow.Activate();
-			Core.Windows.PlayerWindow.SetCardCount(_game.Player.HandCount, _game.IsInMenu ? 30 : _game.Player.DeckCount);
+			var player = Core.Hearthstone.CurrentGame.LocalPlayer;
+			Core.Windows.PlayerWindow.SetCardCount(player.InHand.Count(),
+				Core.Hearthstone.IsInMenu ? 30 : player.InDeck.Count());
 			Config.Instance.PlayerWindowOnStart = true;
 			Config.Save();
 		}
@@ -223,7 +213,9 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Overlay
 				return;
 			Core.Windows.OpponentWindow.Show();
 			Core.Windows.OpponentWindow.Activate();
-			Core.Windows.OpponentWindow.SetOpponentCardCount(_game.Opponent.HandCount, _game.IsInMenu ? 30 : _game.Opponent.DeckCount, _game.Opponent.HasCoin);
+			var opponent = Core.Hearthstone.CurrentGame.OpposingPlayer;
+			Core.Windows.OpponentWindow.SetOpponentCardCount(opponent.InHand.Count(),
+				Core.Hearthstone.IsInMenu ? 30 : opponent.InDeck.Count(), opponent.HasTheCoin);
 			Config.Instance.OpponentWindowOnStart = true;
 			Config.Save();
 		}

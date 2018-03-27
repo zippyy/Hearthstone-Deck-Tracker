@@ -1,6 +1,4 @@
-﻿#region
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -10,11 +8,9 @@ using System.Windows.Media;
 using System.Windows.Shapes;
 using HearthDb.Enums;
 using Hearthstone_Deck_Tracker.API;
-using Hearthstone_Deck_Tracker.Hearthstone.Entities;
+using HearthSim.Core.Hearthstone.Entities;
 using Point = System.Drawing.Point;
 using Rectangle = System.Windows.Shapes.Rectangle;
-
-#endregion
 
 namespace Hearthstone_Deck_Tracker.Windows
 {
@@ -60,7 +56,7 @@ namespace Hearthstone_Deck_Tracker.Windows
 						AddMinionDebugOverlay(playerBoard[i], _playerBoard[i]);
 				}
 			}
-			var playerHandCount = _game.Player.HandCount;
+			var playerHandCount = _game.CurrentGame?.LocalPlayer.InHand.Count() ?? 0;
 			for(var i = 0; i < MaxHandSize; i++)
 			{
 				if(isGameOver)
@@ -82,7 +78,8 @@ namespace Hearthstone_Deck_Tracker.Windows
 			}
 		}
 
-		private bool IsGameOver => _game.IsInMenu || _game.GameEntity == null || _game.GameEntity.GetTag(GameTag.STATE) == (int)State.COMPLETE;
+		private bool IsGameOver => _game.IsInMenu || _game.CurrentGame?.GameEntity == null
+										|| _game.CurrentGame?.GameEntity.GetTag(GameTag.STATE) == (int)State.COMPLETE;
 
 		private double GetCardAngle(int playerHandCount, System.Windows.Point pos, int i)
 		{
@@ -132,7 +129,8 @@ namespace Hearthstone_Deck_Tracker.Windows
 
 		private void DetectMouseOver(List<Entity> playerBoard, List<Entity> oppBoard)
 		{
-			if(playerBoard.Count == 0 && oppBoard.Count == 0 && _game.Player.HandCount == 0 || IsGameOver)
+			if(playerBoard.Count == 0 && oppBoard.Count == 0
+									&& (!_game.CurrentGame?.LocalPlayer.InHand.Any() ?? true) || IsGameOver)
 			{
 				FlavorTextVisibility = Visibility.Collapsed;
 				return;
@@ -176,12 +174,13 @@ namespace Hearthstone_Deck_Tracker.Windows
 					return;
 				}
 			}
-			var handCount = Math.Min(_game.Player.HandCount, MaxHandSize);
+			var handCount = Math.Min(_game.CurrentGame?.LocalPlayer.InHand.Count() ?? 0, MaxHandSize);
 			for(var i = handCount - 1; i >= 0; i--)
 			{
 				if(RotatedRectContains(_playerHand[i], relativeCanvas))
 				{
-					var entity = Core.Game.Player.Hand.FirstOrDefault(x => x.GetTag(GameTag.ZONE_POSITION) == i+1);
+					var entity = _game.CurrentGame?.LocalPlayer.InHand.
+						FirstOrDefault(x => x.GetTag(GameTag.ZONE_POSITION) == i + 1);
 					if(entity == null || _currentMouseOverTarget == entity)
 						return;
 					_currentMouseOverTarget = entity;

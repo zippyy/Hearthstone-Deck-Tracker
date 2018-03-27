@@ -3,18 +3,16 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
-using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Shapes;
 using Hearthstone_Deck_Tracker.Annotations;
 using Hearthstone_Deck_Tracker.Controls;
-using Hearthstone_Deck_Tracker.Enums;
-using Hearthstone_Deck_Tracker.Hearthstone;
-using Hearthstone_Deck_Tracker.Utility.Logging;
+using HearthSim.Core.Hearthstone;
 using static System.Windows.Visibility;
 using Card = Hearthstone_Deck_Tracker.Hearthstone.Card;
 
@@ -22,9 +20,6 @@ using Card = Hearthstone_Deck_Tracker.Hearthstone.Card;
 
 namespace Hearthstone_Deck_Tracker.Windows
 {
-	/// <summary>
-	///     Interaction logic for OverlayWindow.xaml
-	/// </summary>
 	// ReSharper disable once RedundantExtendsListEntry
 	public partial class OverlayWindow : Window, INotifyPropertyChanged
 	{
@@ -35,7 +30,7 @@ namespace Hearthstone_Deck_Tracker.Windows
 		private readonly int _customHeight;
 		private readonly int _customWidth;
 		private readonly List<UIElement> _debugBoardObjects = new List<UIElement>();
-		private readonly GameV2 _game;
+		private readonly Game _game;
 		private readonly Dictionary<UIElement, ResizeGrip> _movableElements = new Dictionary<UIElement, ResizeGrip>();
 		private readonly int _offsetX;
 		private readonly int _offsetY;
@@ -54,7 +49,7 @@ namespace Hearthstone_Deck_Tracker.Windows
 		private UIElement _selectedUiElement;
 		private bool _uiMovable;
 
-		public OverlayWindow(GameV2 game)
+		public OverlayWindow(Game game)
 		{
 			_game = game;
 			InitializeComponent();
@@ -84,8 +79,10 @@ namespace Hearthstone_Deck_Tracker.Windows
 		private double ScreenRatio => (4.0 / 3.0) / (Width / Height);
 		public bool ForceHidden { get; set; }
 		public Visibility WarningVisibility { get; set; }
-		public List<Card> PlayerDeck => _game.Player.PlayerCardList;
-		public List<Card> OpponentDeck => _game.Opponent.OpponentCardList;
+		public List<Card> PlayerDeck => _game.CurrentGame.LocalPlayer.GetRemainingCards()
+			.Select(x => new Card(x)).ToList();
+		public List<Card> OpponentDeck => _game.CurrentGame.OpposingPlayer.GetRemainingCards()
+			.Select(x => new Card(x)).ToList();
 		public event PropertyChangedEventHandler PropertyChanged;
 
 		public double PlayerStackHeight => (Config.Instance.PlayerDeckHeight / 100 * Height) / (Config.Instance.OverlayPlayerScaling / 100);

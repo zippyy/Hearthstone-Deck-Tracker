@@ -40,15 +40,14 @@ namespace Hearthstone_Deck_Tracker.Windows
 	{
 		public event PropertyChangedEventHandler PropertyChanged;
 
-		public async void UseDeck(Deck selected)
-		{
-			if(selected != null)
-				DeckList.Instance.ActiveDeck = selected;
-			MainWindowMenu.SelectedDecks = selected != null ? new List<Deck> { selected } : new List<Deck>();
-			DeckCharts.SetDeck(selected);
-			HsReplayDeckInfo.SetDeck(selected);
-			await Core.Reset();
-		}
+		//public async void UseDeck(Deck selected)
+		//{
+		//	if(selected != null)
+		//		DeckList.Instance.ActiveDeck = selected;
+		//	MainWindowMenu.SelectedDecks = selected != null ? new List<Deck> { selected } : new List<Deck>();
+		//	DeckCharts.SetDeck(selected);
+		//	HsReplayDeckInfo.SetDeck(selected);
+		//}
 
 		public void UpdateDeckList(Deck selected)
 		{
@@ -117,8 +116,8 @@ namespace Hearthstone_Deck_Tracker.Windows
 			UpdateDeckList(deck);
 			ManaCurveMyDecks.UpdateValues();
 			OnPropertyChanged(nameof(HsReplayButtonVisibility));
-			if(deck.Equals(DeckList.Instance.ActiveDeck))
-				UseDeck(deck);
+			//if(deck.Equals(DeckList.Instance.ActiveDeck))
+			//	UseDeck(deck);
 			DeckCharts.SetDeck(deck);
 			HsReplayDeckInfo.SetDeck(deck);
 		}
@@ -511,7 +510,7 @@ namespace Hearthstone_Deck_Tracker.Windows
 			}
 			else
 			{
-				Core.Game.IsUsingPremade = false;
+				//Core.Game.IsUsingPremade = false;
 
 				if(DeckList.Instance.ActiveDeck != null)
 					DeckList.Instance.ActiveDeck.IsSelectedInGui = false;
@@ -523,8 +522,8 @@ namespace Hearthstone_Deck_Tracker.Windows
 				Core.TrayIcon.MenuItemUseNoDeck.Checked = true;
 			}
 
-			if(setActive)
-				UseDeck(deck);
+			//if(setActive)
+			//	UseDeck(deck);
 			DeckPickerList.SelectDeck(deck);
 			UpdateDeckList(deck);
 			ManaCurveMyDecks.SetDeck(deck);

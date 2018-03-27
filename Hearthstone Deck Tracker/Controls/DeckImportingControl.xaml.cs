@@ -41,7 +41,7 @@ namespace Hearthstone_Deck_Tracker.Controls
 
 		public Visibility TextVisibility => _ready ? Collapsed : Visible;
 		public Visibility ContentVisibility => _ready ? Visible : Collapsed;
-		public Visibility StartButtonVisibility => Core.Game.IsRunning ? Collapsed : Visible;
+		public Visibility StartButtonVisibility => Core.Hearthstone.IsRunning ? Collapsed : Visible;
 		public Visibility AutoImportingVisibility => _brawl || Config.Instance.ConstructedAutoImportNew ? Collapsed : Visible;
 
 		public string Text
@@ -77,7 +77,7 @@ namespace Hearthstone_Deck_Tracker.Controls
 		{
 			_brawl = brawl;
 			_ready = false;
-			Text = Core.Game.IsRunning ? StartTextGameRunning : StartText;
+			Text = Core.Hearthstone.IsRunning ? StartTextGameRunning : StartText;
 			UpdateContent();
 			ButtonImport.IsEnabled = true;
 			ButtonStartHearthstoneText = LocUtil.Get(StartHearthstoneText, true);

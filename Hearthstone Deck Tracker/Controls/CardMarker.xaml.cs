@@ -7,10 +7,13 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using HearthDb.Enums;
 using Hearthstone_Deck_Tracker.Annotations;
 using Hearthstone_Deck_Tracker.Enums;
 using Hearthstone_Deck_Tracker.Utility.Attributes;
+using HearthSim.Core.Hearthstone.Entities;
 using static System.Windows.Visibility;
+using static HearthDb.CardIds;
 
 #endregion
 
@@ -103,6 +106,23 @@ namespace Hearthstone_Deck_Tracker.Controls
 		}
 
 		public event PropertyChangedEventHandler PropertyChanged;
+
+		public void UpdateIcon(Entity entity)
+		{
+			var mark = CardMark.None;
+			if(entity.Info.Hidden)
+				mark = CardMark.None;
+			if(entity.CardId == NonCollectible.Neutral.TheCoin
+				|| entity.CardId == NonCollectible.Neutral.TradePrinceGallywix_GallywixsCoinToken)
+				mark = CardMark.Coin;
+			if(entity.Info.ReturnedToHand)
+				mark = CardMark.Returned;
+			if(entity.IsCreated || entity.Info.Stolen)
+				mark = CardMark.Created;
+			if(entity.Info.Mulliganed)
+				mark =  CardMark.Mulliganed;
+			UpdateIcon(mark);
+		}
 
 		public void UpdateIcon(CardMark mark)
 		{

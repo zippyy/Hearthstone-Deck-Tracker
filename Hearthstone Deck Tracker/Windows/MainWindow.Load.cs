@@ -47,7 +47,7 @@ namespace Hearthstone_Deck_Tracker.Windows
 					MinimizeToTray();
 			}
 
-			Options.Load(Core.Game);
+			Options.Load();
 
 			Core.TrayIcon.MenuItemAutoSelect.Checked = Config.Instance.AutoDeckDetection;
 

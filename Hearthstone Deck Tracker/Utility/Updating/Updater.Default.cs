@@ -17,7 +17,7 @@ namespace Hearthstone_Deck_Tracker.Utility.Updating
 		private static bool TempUpdateCheckDisabled { get; set; }
 
 		private static bool ShouldCheckForUpdates()
-			=> Config.Instance.CheckForUpdates && !TempUpdateCheckDisabled && !Core.Game.IsRunning && !_showingUpdateMessage
+			=> Config.Instance.CheckForUpdates && !TempUpdateCheckDisabled && !Core.Hearthstone.IsRunning && !_showingUpdateMessage
 				&& DateTime.Now - _lastUpdateCheck >= new TimeSpan(0, 10, 0);
 
 		public static async void CheckForUpdates(bool force = false)

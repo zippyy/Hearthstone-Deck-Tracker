@@ -13,7 +13,8 @@ namespace Hearthstone_Deck_Tracker.Controls
 		{
 			InitializeComponent();
 			HearthstoneRunner.StartingHearthstone += starting => Enabled = !starting;
-			Core.GameIsRunningChanged += running => OnPropertyChanged(nameof(HearthstoneIsRunning));
+			Core.Hearthstone.HearthstoneStarted += () => OnPropertyChanged(nameof(HearthstoneIsRunning));
+			Core.Hearthstone.HearthstoneExited += () => OnPropertyChanged(nameof(HearthstoneIsRunning));
 		}
 
 		private bool _enabled = true;
@@ -31,7 +32,7 @@ namespace Hearthstone_Deck_Tracker.Controls
 			}
 		}
 
-		public bool HearthstoneIsRunning => Core.Game.IsRunning;
+		public bool HearthstoneIsRunning => Core.Hearthstone.IsRunning;
 
 		public ICommand StartHearthstone => new Command(() => HearthstoneRunner.StartHearthstone().Forget());
 		public event PropertyChangedEventHandler PropertyChanged;

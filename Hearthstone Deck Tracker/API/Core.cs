@@ -1,16 +1,12 @@
-﻿#region
-
-using System.Windows.Controls;
-using Hearthstone_Deck_Tracker.Hearthstone;
+﻿using System.Windows.Controls;
 using Hearthstone_Deck_Tracker.Windows;
-
-#endregion
+using HearthSim.Core.Hearthstone;
 
 namespace Hearthstone_Deck_Tracker.API
 {
 	public class Core
 	{
-		public static GameV2 Game => Hearthstone_Deck_Tracker.Core.Game;
+		public static Game Game => Hearthstone_Deck_Tracker.Core.Hearthstone;
 
 		public static Canvas OverlayCanvas => Hearthstone_Deck_Tracker.Core.Overlay.CanvasInfo;
 

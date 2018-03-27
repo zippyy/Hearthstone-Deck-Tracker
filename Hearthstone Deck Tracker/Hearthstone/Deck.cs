@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Globalization;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
@@ -127,6 +128,22 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 			if(reward != null)
 				_arenaReward = reward;
 			HsId = hsId;
+		}
+
+		public CardClass CardClass
+		{
+			get
+			{
+				if(string.IsNullOrEmpty(Class))
+					return CardClass.INVALID;
+				return Enum.TryParse(Class, out CardClass cardClass) ? cardClass : CardClass.INVALID;
+			}
+			set
+			{
+				if(value == CardClass.INVALID)
+					Class = null;
+				Class = CultureInfo.InvariantCulture.TextInfo.ToTitleCase(value.ToString().ToLowerInvariant());
+			}
 		}
 
 		public bool Archived

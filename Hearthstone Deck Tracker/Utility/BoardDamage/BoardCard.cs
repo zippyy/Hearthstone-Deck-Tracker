@@ -3,7 +3,7 @@
 using System;
 using HearthDb.Enums;
 using Hearthstone_Deck_Tracker.Hearthstone;
-using Hearthstone_Deck_Tracker.Hearthstone.Entities;
+using HearthSim.Core.Hearthstone.Entities;
 using static HearthDb.Enums.GameTag;
 
 #endregion
@@ -23,8 +23,6 @@ namespace Hearthstone_Deck_Tracker.Utility.BoardDamage
 		public BoardCard(Entity e, bool active = true)
 		{
 			var card = Database.GetCardFromId(e.CardId);
-			var cardName = card != null ? card.Name : "";
-			var name = string.IsNullOrEmpty(e.Name) ? cardName : e.Name;
 
 			_stdAttack = e.HasTag(HIDE_STATS) ? 0 : e.GetTag(ATK);
 			_health = e.HasTag(HIDE_STATS) ? 0 : e.GetTag(HEALTH);
@@ -38,7 +36,7 @@ namespace Hearthstone_Deck_Tracker.Utility.BoardDamage
 			Windfury = e.GetTag(WINDFURY) == 1;
 			AttacksThisTurn = e.GetTag(NUM_ATTACKS_THIS_TURN);
 
-			Name = name;
+			Name = card?.Name ?? string.Empty;
 			CardId = e.CardId;
 			Taunt = e.GetTag(TAUNT) == 1;
 			Zone = Enum.Parse(typeof(Zone), e.GetTag(ZONE).ToString()).ToString();

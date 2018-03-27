@@ -24,11 +24,13 @@ using Hearthstone_Deck_Tracker.FlyoutControls;
 using Hearthstone_Deck_Tracker.Hearthstone;
 using Hearthstone_Deck_Tracker.Utility.Extensions;
 using Hearthstone_Deck_Tracker.Utility.Logging;
+using HearthSim.Core.Hearthstone;
 using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using Card = Hearthstone_Deck_Tracker.Hearthstone.Card;
+using Deck = Hearthstone_Deck_Tracker.Hearthstone.Deck;
 using MediaColor = System.Windows.Media.Color;
 using Region = Hearthstone_Deck_Tracker.Enums.Region;
 using SaveFileDialog = Microsoft.Win32.SaveFileDialog;
@@ -204,17 +206,24 @@ namespace Hearthstone_Deck_Tracker
 		public static string DeckToIdString(Deck deck)
 			=> deck.GetSelectedDeckVersion().Cards.Aggregate("", (current, card) => current + (card.Id + ":" + card.Count + ";"));
 
-		public static void UpdateEverything(GameV2 game)
+		public static void UpdateEverything(Game game)
 		{
 			if(Core.Overlay.IsVisible || Core.Windows.CapturableOverlay != null)
 				Core.Overlay.Update(false);
 
-			var gameStarted = !game.IsInMenu && game.SetupDone && game.Player.PlayerEntities.Any();
+			var gameStarted = !game.IsInMenu && game.SetupDone;
 			if(Core.Windows.PlayerWindow.IsVisible)
-				Core.Windows.PlayerWindow.SetCardCount(game.Player.HandCount, !gameStarted ? 30 : game.Player.DeckCount);
+			{
+				Core.Windows.PlayerWindow.SetCardCount(game.CurrentGame.LocalPlayer.InHand.Count(),
+					!gameStarted ? 30 : game.CurrentGame.LocalPlayer.InDeck.Count());
+			}
 
 			if(Core.Windows.OpponentWindow.IsVisible)
-				Core.Windows.OpponentWindow.SetOpponentCardCount(game.Opponent.HandCount, !gameStarted ? 30 : game.Opponent.DeckCount, game.Opponent.HasCoin);
+			{
+				Core.Windows.OpponentWindow.SetOpponentCardCount(game.CurrentGame.OpposingPlayer.InHand.Count(),
+					!gameStarted ? 30 : game.CurrentGame.OpposingPlayer.InDeck.Count(),
+					game.CurrentGame.OpposingPlayer.HasTheCoin);
+			}
 		}
 
 		//http://stackoverflow.com/questions/23927702/move-a-folder-from-one-drive-to-another-in-c-sharp
@@ -630,33 +639,6 @@ namespace Hearthstone_Deck_Tracker
 			foreach(var dir in dirInfo.GetDirectories())
 			foreach(var fileInfo in dir.GetFiles())
 				yield return fileInfo;
-		}
-
-		internal static void VerifyHearthstonePath()
-		{
-			var proc = User32.GetHearthstoneProc();
-			if(proc == null)
-			{
-				Log.Warn("Could not find Hearthstone process");
-				return;
-			}
-			try
-			{
-				var executable = new FileInfo(proc.MainModule.FileName);
-				var currentPath = Config.Instance.HearthstoneDirectory;
-				var procPath = executable.Directory?.FullName;
-				if(procPath != null && procPath != currentPath)
-				{
-					Log.Warn($"Current path (\"{currentPath}\") does not match the running Hearthstone process: \"{procPath}\". Updating path");
-					Config.Instance.HearthstoneDirectory = procPath;
-					Config.Save();
-					Core.Reset().Forget();
-				}
-			}
-			catch(Exception e)
-			{
-				Log.Error(e);
-			}
 		}
 
 		public static bool TryGetAttribute<T>(object obj, out T attribute) where T : Attribute

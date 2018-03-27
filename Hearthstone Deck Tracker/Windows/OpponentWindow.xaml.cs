@@ -8,10 +8,13 @@ using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Forms;
+using HearthDb.Enums;
 using Hearthstone_Deck_Tracker.Annotations;
 using Hearthstone_Deck_Tracker.Enums;
-using Hearthstone_Deck_Tracker.Hearthstone;
+using Hearthstone_Deck_Tracker.Stats;
 using Hearthstone_Deck_Tracker.Utility;
+using HearthSim.Core.Hearthstone;
+using Card = Hearthstone_Deck_Tracker.Hearthstone.Card;
 using Point = System.Drawing.Point;
 using Panel = System.Windows.Controls.Panel;
 
@@ -25,10 +28,10 @@ namespace Hearthstone_Deck_Tracker
 	public partial class OpponentWindow : INotifyPropertyChanged
 	{
 		private const string LocFatigue = "Overlay_DeckList_Label_Fatigue";
-		private readonly GameV2 _game;
+		private readonly Game _game;
 		private bool _appIsClosing;
 
-		public OpponentWindow(GameV2 game)
+		public OpponentWindow(Game game)
 		{
 			InitializeComponent();
 			_game = game;
@@ -53,7 +56,8 @@ namespace Hearthstone_Deck_Tracker
 			}
 		}
 
-		public List<Card> OpponentDeck => _game.Opponent.OpponentCardList;
+		public List<Card> OpponentDeck =>
+			_game.CurrentGame.OpposingPlayer.GetRemainingCards().Select(x => new Card(x)).ToList();
 
 		public bool ShowToolTip => Config.Instance.WindowCardToolTips;
 
@@ -61,7 +65,8 @@ namespace Hearthstone_Deck_Tracker
 
 		public void Update()
 		{
-			LblWinRateAgainst.Visibility = Config.Instance.ShowWinRateAgainst && _game.IsUsingPremade ? Visibility.Visible : Visibility.Collapsed;
+			var deck = DeckList.Instance.GetDeck(_game.CurrentGame.LocalPlayer.Deck);
+			LblWinRateAgainst.Visibility = Config.Instance.ShowWinRateAgainst && deck != null ? Visibility.Visible : Visibility.Collapsed;
 			CanvasOpponentChance.Visibility = Config.Instance.HideOpponentDrawChances ? Visibility.Collapsed : Visibility.Visible;
 			CanvasOpponentCount.Visibility = Config.Instance.HideOpponentCardCount ? Visibility.Collapsed : Visibility.Visible;
 			ListViewOpponent.Visibility = Config.Instance.HideOpponentCards ? Visibility.Collapsed : Visibility.Visible;
@@ -69,13 +74,19 @@ namespace Hearthstone_Deck_Tracker
 			var selectedDeck = DeckList.Instance.ActiveDeck;
 			if(selectedDeck == null)
 				return;
-			if(!string.IsNullOrEmpty(_game.Opponent.Class))
+
+			var opponentClass =
+				(CardClass)(_game.CurrentGame.OpposingPlayer.InPlay.FirstOrDefault(x => x.IsHero)?.GetTag(GameTag.CLASS)
+							?? 0);
+			if(opponentClass != CardClass.INVALID)
 			{
-				var winsVs = selectedDeck.GetRelevantGames().Count(g => g.Result == GameResult.Win && g.OpponentHero == _game.Opponent.Class);
-				var lossesVs = selectedDeck.GetRelevantGames().Count(g => g.Result == GameResult.Loss && g.OpponentHero == _game.Opponent.Class);
+				bool HasMatchingOpponent(GameStats game) => opponentClass.ToString()
+					.Equals(game.OpponentHero, StringComparison.InvariantCultureIgnoreCase);
+				var winsVs = selectedDeck.GetRelevantGames().Count(g => g.Result == GameResult.Win && HasMatchingOpponent(g));
+				var lossesVs = selectedDeck.GetRelevantGames().Count(g => g.Result == GameResult.Loss && HasMatchingOpponent(g));
 				var percent = (winsVs + lossesVs) > 0
 					              ? Math.Round(winsVs * 100.0 / (winsVs + lossesVs), 0).ToString(CultureInfo.InvariantCulture) : "-";
-				LblWinRateAgainst.Text = $"VS {_game.Opponent.Class}: {winsVs}-{lossesVs} ({percent}%)";
+				LblWinRateAgainst.Text = $"VS {opponentClass}: {winsVs}-{lossesVs} ({percent}%)";
 			}
 		}
 
@@ -113,7 +124,8 @@ namespace Hearthstone_Deck_Tracker
 
 			if(cardsLeftInDeck <= 0)
 			{
-				LblOpponentFatigue.Text = LocUtil.Get(LocFatigue) + " " + (_game.Opponent.Fatigue + 1);
+				LblOpponentFatigue.Text = LocUtil.Get(LocFatigue) + " "
+					+ (_game.CurrentGame.OpposingPlayerEntity.GetTag(GameTag.FATIGUE) + 1);
 
 				LblOpponentDrawChance2.Text = "0%";
 				LblOpponentDrawChance1.Text = "0%";

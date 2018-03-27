@@ -10,6 +10,7 @@ using System.Windows;
 using System.Windows.Media;
 using System.Xml.Serialization;
 using HearthDb.Enums;
+using HearthSim.Core.Hearthstone;
 using Hearthstone_Deck_Tracker.Annotations;
 using Hearthstone_Deck_Tracker.Utility;
 using Hearthstone_Deck_Tracker.Utility.Logging;
@@ -149,6 +150,11 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 				}
 			}
 			_loaded = true;
+		}
+
+		public Card(HearthSim.Core.Hearthstone.Card x) : this(x.Data)
+		{
+			Count = x.Count;
 		}
 
 		public int Count

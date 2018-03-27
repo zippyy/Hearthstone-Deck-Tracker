@@ -1,13 +1,9 @@
-﻿#region
-
-using System;
+﻿using System;
 using System.Collections.ObjectModel;
-using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Media.Animation;
 using Hearthstone_Deck_Tracker.Hearthstone;
 using Hearthstone_Deck_Tracker.Importing;
 using Hearthstone_Deck_Tracker.Utility;
@@ -15,15 +11,10 @@ using Hearthstone_Deck_Tracker.Utility.Extensions;
 using Hearthstone_Deck_Tracker.Utility.Logging;
 using MahApps.Metro.Controls.Dialogs;
 using Microsoft.Win32;
-using Point = System.Drawing.Point;
 using HearthDb.Enums;
-using HearthMirror;
 using Hearthstone_Deck_Tracker.Enums;
-using Hearthstone_Deck_Tracker.Enums.Hearthstone;
-using Hearthstone_Deck_Tracker.Importing.Game;
+using HearthSim.Core.Hearthstone.Enums;
 using Deck = Hearthstone_Deck_Tracker.Hearthstone.Deck;
-
-#endregion
 
 namespace Hearthstone_Deck_Tracker.Windows
 {
@@ -182,18 +173,17 @@ namespace Hearthstone_Deck_Tracker.Windows
 
 		internal void ImportFromLastGame()
 		{
-			if(Core.Game.DrawnLastGame == null)
+			if(Core.Hearthstone.CurrentGame == null)
 				return;
 			var deck = new Deck();
-			foreach(var card in Core.Game.DrawnLastGame)
+			var revealedEntities = Core.Hearthstone.CurrentGame.LocalPlayer.RevealedCards
+				.Where(x => !x.IsCreated && !x.Info.Stolen);
+			foreach(var entity in revealedEntities)
 			{
-				if(card.IsCreated)
-					continue;
-
-				deck.Cards.Add(card);
-
-				if(string.IsNullOrEmpty(deck.Class) && card.GetPlayerClass != "Neutral")
-					deck.Class = card.PlayerClass;
+				deck.Cards.Add(new Card(entity.Card));
+				if(string.IsNullOrEmpty(deck.Class) && entity.Class >= CardClass.DRUID
+													&& entity.Class <= CardClass.WARRIOR)
+					deck.CardClass = entity.Class;
 			}
 
 			ShowDeckEditorFlyout(deck, true);
@@ -202,7 +192,7 @@ namespace Hearthstone_Deck_Tracker.Windows
 		public async Task StartArenaImporting()
 		{
 			ProgressDialogController controller = null;
-			if(!Core.Game.IsRunning)
+			if(!Core.Hearthstone.IsRunning)
 			{
 				Log.Info("Waiting for game...");
 				var result = await this.ShowMessageAsync("Importing arena deck", "Start Hearthstone and enter the 'Arena' screen.",
@@ -212,7 +202,7 @@ namespace Hearthstone_Deck_Tracker.Windows
 					return;
 				HearthstoneRunner.StartHearthstone().Forget();
 				controller = await this.ShowProgressAsync("Importing arena deck", "Waiting for Hearthstone...", true);
-				while(!Core.Game.IsRunning)
+				while(!Core.Hearthstone.IsRunning)
 				{
 					if(controller.IsCanceled)
 					{
@@ -222,13 +212,13 @@ namespace Hearthstone_Deck_Tracker.Windows
 					await Task.Delay(500);
 				}
 			}
-			if(Core.Game.CurrentMode != Mode.DRAFT)
+			if(Core.Hearthstone.CurrentMode != Mode.DRAFT)
 			{
 				if(controller == null)
 					controller = await this.ShowProgressAsync("Importing arena deck", "", true);
 				controller.SetMessage("Enter the 'Arena' screen.");
 				Log.Info("Waiting for DRAFT screen...");
-				while(Core.Game.CurrentMode != Mode.DRAFT)
+				while(Core.Hearthstone.CurrentMode != Mode.DRAFT)
 				{
 					if(controller.IsCanceled)
 					{
@@ -294,18 +284,18 @@ namespace Hearthstone_Deck_Tracker.Windows
 		{
 			DeckImportingFlyout.Reset(brawl);
 			FlyoutDeckImporting.IsOpen = true;
-			if(!Core.Game.IsRunning)
+			if(!Core.Hearthstone.IsRunning)
 			{
 				Log.Info("Waiting for game...");
-				while(!Core.Game.IsRunning)
+				while(!Core.Hearthstone.IsRunning)
 					await Task.Delay(500);
 			}
 			DeckImportingFlyout.StartedGame();
 			var mode = brawl ? Mode.TAVERN_BRAWL : Mode.TOURNAMENT;
-			if(Core.Game.CurrentMode != mode)
+			if(Core.Hearthstone.CurrentMode != mode)
 			{
 				Log.Info($"Waiting for {mode} screen...");
-				while(Core.Game.CurrentMode != mode)
+				while(Core.Hearthstone.CurrentMode != mode)
 					await Task.Delay(500);
 			}
 			var decks = brawl ? DeckImporter.FromBrawl() : DeckImporter.FromConstructed();

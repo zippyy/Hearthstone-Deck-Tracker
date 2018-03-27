@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -6,10 +7,11 @@ using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Media;
 using Hearthstone_Deck_Tracker.Enums;
-using Hearthstone_Deck_Tracker.Enums.Hearthstone;
 using Hearthstone_Deck_Tracker.Utility;
 using Hearthstone_Deck_Tracker.Utility.BoardDamage;
 using Hearthstone_Deck_Tracker.Utility.Logging;
+using HearthSim.Core.Hearthstone.Entities;
+using HearthSim.Core.Hearthstone.Enums;
 using static System.Windows.Visibility;
 using static HearthDb.Enums.GameTag;
 using static Hearthstone_Deck_Tracker.Controls.Overlay.WotogCounterStyle;
@@ -52,21 +54,21 @@ namespace Hearthstone_Deck_Tracker.Windows
 				SetTopmost();
 			}
 
-			var opponentHandCount = _game.Opponent.HandCount;
+			var opponentHandCount = _game.CurrentGame?.OpposingPlayer.InHand.Count() ?? 0;
 			for (var i = 0; i < 10; i++)
 			{
 				if (i < opponentHandCount)
 				{
-					var entity = _game.Opponent.Hand.FirstOrDefault(x => x.GetTag(ZONE_POSITION) == i + 1);
+					var entity = _game.CurrentGame?.OpposingPlayer.InHand.FirstOrDefault(x => x.GetTag(ZONE_POSITION) == i + 1);
 					if(entity == null)
 						continue;
 					if(!Config.Instance.HideOpponentCardAge)
-						_cardMarks[i].UpdateCardAge(entity.Info.Turn);
+						_cardMarks[i].UpdateCardAge(entity.Info.LastZoneChange);
 					else 
 						_cardMarks[i].UpdateCardAge(null);
 					if(!Config.Instance.HideOpponentCardMarks)
 					{
-						_cardMarks[i].UpdateIcon(entity.Info.CardMark);
+						_cardMarks[i].UpdateIcon(entity);
 						_cardMarks[i].UpdateCostReduction(entity.Info.CostReduction);
 					}
 					else
@@ -78,10 +80,14 @@ namespace Hearthstone_Deck_Tracker.Windows
 					_cardMarks[i].Visibility = Collapsed;
 			}
 
-			var oppBoard = Core.Game.Opponent.Board.Where(x => x.IsMinion).OrderBy(x => x.GetTag(ZONE_POSITION)).ToList();
-			var playerBoard = Core.Game.Player.Board.Where(x => x.IsMinion).OrderBy(x => x.GetTag(ZONE_POSITION)).ToList();
+			var oppBoard =
+				Core.Hearthstone.CurrentGame?.OpposingPlayer.InPlay.Where(x => x.IsMinion).OrderBy(x => x.GetTag(ZONE_POSITION))
+					.ToList() ?? new List<Entity>();
+			var playerBoard =
+				Core.Hearthstone.CurrentGame?.LocalPlayer.InPlay.Where(x => x.IsMinion).OrderBy(x => x.GetTag(ZONE_POSITION))
+					.ToList() ?? new List<Entity>();
 			UpdateMouseOverDetectionRegions(oppBoard, playerBoard);
-			if(!_game.IsInMenu && _game.IsMulliganDone && User32.IsHearthstoneInForeground() && IsVisible)
+			if(!_game.IsInMenu && (_game.CurrentGame?.IsMulliganDone ?? false) && User32.IsHearthstoneInForeground() && IsVisible)
 				DetectMouseOver(playerBoard, oppBoard);
 			else
 				FlavorTextVisibility = Collapsed;
@@ -117,16 +123,18 @@ namespace Hearthstone_Deck_Tracker.Windows
 			ListViewOpponent.Visibility = Config.Instance.HideOpponentCards ? Collapsed : Visible;
 			ListViewPlayer.Visibility = Config.Instance.HidePlayerCards ? Collapsed : Visible;
 
-			var gameStarted = !_game.IsInMenu && _game.SetupDone && _game.Player.PlayerEntities.Any();
-			SetCardCount(_game.Player.HandCount, !gameStarted ? 30 : _game.Player.DeckCount);
+			var gameStarted = !_game.IsInMenu && _game.CurrentGame?.SetupDone;
+			SetCardCount(_game.CurrentGame?.LocalPlayer.InHand.Count() ?? 0,
+				!gameStarted ? 30 : _game.CurrentGame?.LocalPlayer.InDeck.Count() ?? 0);
 
-			SetOpponentCardCount(_game.Opponent.HandCount, !gameStarted ? 30 : _game.Opponent.DeckCount);
+			SetOpponentCardCount(_game.CurrentGame?.OpposingPlayer.InHand.Count() ?? 0,
+				!gameStarted ? 30 : _game.CurrentGame?.OpposingPlayer.InDeck.Count() ?? 0);
 
 
-			LblWins.Visibility = Config.Instance.ShowDeckWins && _game.IsUsingPremade ? Visible : Collapsed;
-			LblDeckTitle.Visibility = Config.Instance.ShowDeckTitle && _game.IsUsingPremade ? Visible : Collapsed;
-			LblWinRateAgainst.Visibility = Config.Instance.ShowWinRateAgainst && _game.IsUsingPremade
-											   ? Visible : Collapsed;
+			bool hasDeck = _game.CurrentGame?.LocalPlayer.Deck != null;
+			LblWins.Visibility = Config.Instance.ShowDeckWins && hasDeck ? Visible : Collapsed;
+			LblDeckTitle.Visibility = Config.Instance.ShowDeckTitle && hasDeck ? Visible : Collapsed;
+			LblWinRateAgainst.Visibility = Config.Instance.ShowWinRateAgainst && hasDeck ? Visible : Collapsed;
 
 			var showWarning = !_game.IsInMenu && DeckList.Instance.ActiveDeckVersion != null && DeckManager.NotFoundCards.Any() && DeckManager.IgnoredDeckId != DeckList.Instance.ActiveDeckVersion.DeckId;
 			StackPanelWarning.Visibility = showWarning ? Visible : Collapsed;
@@ -170,7 +178,7 @@ namespace Hearthstone_Deck_Tracker.Windows
 			IconBoardAttackOpponent.Visibility = Config.Instance.HideOpponentAttackIcon || _game.IsInMenu ? Collapsed : Visible;
 
 			// do the calculation if at least one of the icons is visible
-			if (_game.SetupDone && (IconBoardAttackPlayer.Visibility == Visible || IconBoardAttackOpponent.Visibility == Visible))
+			if (_game.CurrentGame?.SetupDone && (IconBoardAttackPlayer.Visibility == Visible || IconBoardAttackOpponent.Visibility == Visible))
 			{
 				var board = new BoardState();
 				TextBlockPlayerAttack.Text = board.Player.Damage.ToString();
@@ -188,7 +196,7 @@ namespace Hearthstone_Deck_Tracker.Windows
 				WotogIconsPlayer.Health = (proxy?.Health ?? 6).ToString();
 			}
 			if(showPlayerSpellsCounter)
-				WotogIconsPlayer.Spells = _game.Player.SpellsPlayedCount.ToString();
+				WotogIconsPlayer.Spells = (_game.CurrentGame?.LocalPlayer.SpellsPlayed ?? 0).ToString();
 			if(showPlayerJadeCounter)
 				WotogIconsPlayer.Jade = WotogCounterHelper.PlayerNextJadeGolem.ToString();
 			WotogIconsPlayer.WotogCounterStyle = showPlayerCthunCounter && showPlayerSpellsCounter ? Full : (showPlayerCthunCounter ? Cthun : (showPlayerSpellsCounter ? Spells : None));
@@ -204,7 +212,7 @@ namespace Hearthstone_Deck_Tracker.Windows
 				WotogIconsOpponent.Health = (proxy?.Health ?? 6).ToString();
 			}
 			if(showOpponentSpellsCounter)
-				WotogIconsOpponent.Spells = _game.Opponent.SpellsPlayedCount.ToString();
+				WotogIconsOpponent.Spells = (_game.CurrentGame?.OpposingPlayer.SpellsPlayed ?? 0).ToString();
 			if(showOpponentJadeCounter)
 				WotogIconsOpponent.Jade = WotogCounterHelper.OpponentNextJadeGolem.ToString();
 			WotogIconsOpponent.WotogCounterStyle = showOpponentCthunCounter && showOpponentSpellsCounter ? Full : (showOpponentCthunCounter ? Cthun : (showOpponentSpellsCounter ? Spells : None));
@@ -214,7 +222,7 @@ namespace Hearthstone_Deck_Tracker.Windows
 
 		private void UpdateGoldProgress()
 		{
-			var region = (int)_game.CurrentRegion - 1;
+			var region = (int)_game.Region - 1;
 			if (region < 0)
 				return;
 			var wins = Config.Instance.GoldProgress[region];
@@ -227,9 +235,10 @@ namespace Hearthstone_Deck_Tracker.Windows
 		{
 			//hide the overlay depenting on options
 			ShowOverlay(
-						!((Config.Instance.HideInBackground && !User32.IsHearthstoneInForeground())
-						  || (Config.Instance.HideOverlayInSpectator && _game.CurrentGameMode == GameMode.Spectator) || Config.Instance.HideOverlay
-						  || ForceHidden || Helper.GameWindowState == WindowState.Minimized));
+				!((Config.Instance.HideInBackground && !User32.IsHearthstoneInForeground())
+				|| (Config.Instance.HideOverlayInSpectator && (_game.CurrentGame?.MatchInfo?.Spectator ?? false))
+				|| Config.Instance.HideOverlay
+				|| ForceHidden || Helper.GameWindowState == WindowState.Minimized));
 
 
 			var hsRect = User32.GetHearthstoneRect(true);
@@ -321,7 +330,7 @@ namespace Hearthstone_Deck_Tracker.Windows
 				Canvas.SetTop(GridFlavorText, Height - GridFlavorText.ActualHeight - 10);
 				Canvas.SetLeft(GridFlavorText, Width - GridFlavorText.ActualWidth - 10);
 			}
-			var handCount = _game.Opponent.HandCount > 10 ? 10 : _game.Opponent.HandCount;
+			var handCount = _game.CurrentGame?.OpposingPlayer.InHand.Count() > 10 ? 10 : _game.CurrentGame?.OpposingPlayer.InHand.Count() ?? 0;
 			var opponentScaling = Config.Instance.OverlayOpponentScaling / 100;
 			var opponentOpacity = Config.Instance.OpponentOpacity / 100;
 			for (var i = 0; i < handCount; i++)

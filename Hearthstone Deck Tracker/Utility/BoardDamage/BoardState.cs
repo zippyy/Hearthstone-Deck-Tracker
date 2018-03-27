@@ -1,11 +1,6 @@
-﻿#region
-
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using Hearthstone_Deck_Tracker.Hearthstone;
-using Hearthstone_Deck_Tracker.Hearthstone.Entities;
-
-#endregion
+using HearthSim.Core.Hearthstone.Entities;
 
 namespace Hearthstone_Deck_Tracker.Utility.BoardDamage
 {
@@ -30,9 +25,13 @@ namespace Hearthstone_Deck_Tracker.Utility.BoardDamage
 
 		public bool IsOpponentDeadToBoard() => Opponent.Hero == null || Player.Damage >= Opponent.Hero.Health;
 
-		private PlayerBoard CreatePlayerBoard() => CreateBoard(new List<Entity>(Core.Game.Player.Board), Core.Game.Entities, true, Core.Game.Player.Id);
+		private PlayerBoard CreatePlayerBoard() =>
+			CreateBoard(new List<Entity>(Core.Hearthstone.CurrentGame.LocalPlayer.InPlay),
+				Core.Hearthstone.CurrentGame.Entities, true, Core.Hearthstone.CurrentGame.LocalPlayer.PlayerId);
 
-		private PlayerBoard CreateOpponentBoard() => CreateBoard(new List<Entity>(Core.Game.Opponent.Board), Core.Game.Entities, false, Core.Game.Player.Id);
+		private PlayerBoard CreateOpponentBoard() =>
+			CreateBoard(new List<Entity>(Core.Hearthstone.CurrentGame.OpposingPlayer.InPlay),
+				Core.Hearthstone.CurrentGame.Entities, false, Core.Hearthstone.CurrentGame.OpposingPlayer.PlayerId);
 
 		private PlayerBoard CreateBoard(List<Entity> list, Dictionary<int, Entity> entities, bool isPlayer, int playerId)
 		{

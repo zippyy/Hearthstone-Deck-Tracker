@@ -1,5 +1,3 @@
-#region
-
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -10,16 +8,12 @@ using System.Windows;
 using Hearthstone_Deck_Tracker.Controls.Error;
 using Hearthstone_Deck_Tracker.Controls.Stats;
 using Hearthstone_Deck_Tracker.Enums;
-using Hearthstone_Deck_Tracker.Hearthstone;
-using Hearthstone_Deck_Tracker.HsReplay;
-using Hearthstone_Deck_Tracker.LogReader;
 using Hearthstone_Deck_Tracker.Plugins;
 using Hearthstone_Deck_Tracker.Utility;
 using Hearthstone_Deck_Tracker.Utility.Analytics;
 using Hearthstone_Deck_Tracker.Utility.Extensions;
 using Hearthstone_Deck_Tracker.Utility.HotKeys;
 using Hearthstone_Deck_Tracker.Utility.LogConfig;
-using Hearthstone_Deck_Tracker.Utility.Logging;
 using Hearthstone_Deck_Tracker.Windows;
 using MahApps.Metro.Controls.Dialogs;
 using Hearthstone_Deck_Tracker.Utility.Themes;
@@ -29,8 +23,6 @@ using HearthSim.Core.HSReplay;
 using HearthSim.Core.LogReading;
 using WPFLocalizeExtension.Engine;
 using Log = HearthSim.Util.Logging.Log;
-
-#endregion
 
 namespace Hearthstone_Deck_Tracker
 {
@@ -43,9 +35,7 @@ namespace Hearthstone_Deck_Tracker
 		private static int _updateRequestsPlayer;
 		private static int _updateRequestsOpponent;
 		private static DateTime _startUpTime;
-		private static LogWatcherManager _logWatcherManger;
 		public static Version Version { get; set; }
-		public static GameV2 Game { get; set; }
 		public static MainWindow MainWindow { get; set; }
 
 		internal static HSReplayNet HSReplay => Manager?.HSReplayNet;
@@ -59,13 +49,11 @@ namespace Hearthstone_Deck_Tracker
 
 		public static TrayIcon TrayIcon => _trayIcon ?? (_trayIcon = new TrayIcon());
 
-		public static OverlayWindow Overlay => _overlay ?? (_overlay = new OverlayWindow(Game));
+		public static OverlayWindow Overlay => _overlay ?? (_overlay = new OverlayWindow(Hearthstone));
 
 		internal static bool UpdateOverlay { get; set; } = true;
 		internal static bool Update { get; set; }
 		internal static bool CanShutdown { get; set; }
-
-		internal static event Action<bool> GameIsRunningChanged;
 
 #pragma warning disable 1998
 		public static async void Initialize()
@@ -107,7 +95,6 @@ namespace Hearthstone_Deck_Tracker
 				ErrorManager.AddError("Could not find Hearthstone installation",
 					"Please set Hearthstone installation path via 'options > tracker > settings > set hearthstone path'.");
 			};
-			_logWatcherManger = new LogWatcherManager();
 
 			Log.Info($"HDT: {Helper.GetCurrentVersion()}, Operating System: {Helper.GetWindowsVersion()}, .NET Framework: {Helper.GetInstalledDotNetVersion()}");
 			var splashScreenWindow = new SplashScreenWindow();
@@ -133,8 +120,7 @@ namespace Hearthstone_Deck_Tracker
 			UITheme.InitializeTheme();
 			ThemeManager.Run();
 			ResourceMonitor.Run();
-			Game = new GameV2();
-			Game.SecretsManager.OnSecretsChanged += cards => Overlay.ShowSecrets(cards);
+			//Game.SecretsManager.OnSecretsChanged += cards => Overlay.ShowSecrets(cards);
 			MainWindow = new MainWindow();
 			MainWindow.LoadConfigSettings();
 			MainWindow.Show();
@@ -183,7 +169,7 @@ namespace Hearthstone_Deck_Tracker
 
 			if(LogConfigUpdater.LogConfigUpdateFailed)
 				MainWindow.ShowLogConfigUpdateFailedMessage().Forget();
-			else if(LogConfigUpdater.LogConfigUpdated && Game.IsRunning)
+			else if(LogConfigUpdater.LogConfigUpdated && Hearthstone.IsRunning)
 			{
 				MainWindow.ShowMessageAsync("Hearthstone restart required", "The log.config file has been updated. HDT may not work properly until Hearthstone has been restarted.").Forget();
 				Overlay.ShowRestartRequiredWarning();
@@ -192,7 +178,7 @@ namespace Hearthstone_Deck_Tracker
 			RemoteConfig.Instance.Load();
 			HotKeyManager.Load();
 
-			if(Helper.HearthstoneDirExists && Config.Instance.StartHearthstoneWithHDT && !Game.IsRunning)
+			if(Helper.HearthstoneDirExists && Config.Instance.StartHearthstoneWithHDT && !Hearthstone.IsRunning)
 				HearthstoneRunner.StartHearthstone().Forget();
 
 			Initialized = true;
@@ -220,29 +206,17 @@ namespace Hearthstone_Deck_Tracker
 					Updater.CheckForUpdates();
 				if(User32.GetHearthstoneWindow() != IntPtr.Zero)
 				{
-					if(Game.CurrentRegion == Region.UNKNOWN)
-					{
-						//game started
-						Helper.VerifyHearthstonePath();
-						Game.CurrentRegion = await Helper.GetCurrentRegion();
-						if(Game.CurrentRegion != Region.UNKNOWN)
-						{
-							BackupManager.Run();
-							Game.MetaData.HearthstoneBuild = null;
-						}
-					}
+					// TODO: on hearthstone start
+					//		BackupManager.Run();
 					Overlay.UpdatePosition();
 
-					if(!Game.IsRunning)
+					if(!Hearthstone.IsRunning)
 					{
 						Overlay.Update(true);
 						Windows.CapturableOverlay?.UpdateContentVisibility();
 					}
 
 					TrayIcon.MenuItemStartHearthstone.Visible = false;
-
-					Game.IsRunning = true;
-					GameIsRunningChanged?.Invoke(true);
 
 					Helper.GameWindowState = User32.GetHearthstoneWindowState();
 					Windows.CapturableOverlay?.Update();
@@ -274,10 +248,8 @@ namespace Hearthstone_Deck_Tracker
 						hsForegroundChanged = true;
 					}
 				}
-				else if(Game.IsRunning)
+				else if(Hearthstone.IsRunning)
 				{
-					Game.IsRunning = false;
-					GameIsRunningChanged?.Invoke(false);
 					Overlay.ShowOverlay(false);
 					if(Windows.CapturableOverlay != null)
 					{
@@ -286,12 +258,6 @@ namespace Hearthstone_Deck_Tracker
 						Windows.CapturableOverlay.ForcedWindowState = WindowState.Minimized;
 						Windows.CapturableOverlay.WindowState = WindowState.Minimized;
 					}
-					Log.Info("Exited game");
-					Game.CurrentRegion = Region.UNKNOWN;
-					Log.Info("Reset region");
-					await Reset();
-					Game.IsInMenu = true;
-					Game.InvalidateMatchInfoCache();
 					Overlay.HideRestartRequiredWarning();
 					Helper.ClearCachedHearthstoneBuild();
 					TurnTimer.Instance.Stop();
@@ -307,29 +273,6 @@ namespace Hearthstone_Deck_Tracker
 			CanShutdown = true;
 		}
 
-		private static bool _resetting;
-		public static async Task Reset()
-		{
-
-			if(_resetting)
-			{
-				Log.Warn("Reset already in progress.");
-				return;
-			}
-			_resetting = true;
-			//var stoppedReader = await LogWatcherManger.Stop();
-			Game.Reset();
-			if(DeckList.Instance.ActiveDeck != null)
-				Game.IsUsingPremade = true;
-			await Task.Delay(1000);
-			//if(stoppedReader)
-			//	LogWatcherManger.Start(Game).Forget();
-			Overlay.HideSecrets();
-			Overlay.Update(false);
-			UpdatePlayerCards(true);
-			_resetting = false;
-		}
-
 		internal static async void UpdatePlayerCards(bool reset = false)
 		{
 			_updateRequestsPlayer++;
@@ -337,9 +280,9 @@ namespace Hearthstone_Deck_Tracker
 			_updateRequestsPlayer--;
 			if(_updateRequestsPlayer > 0)
 				return;
-			Overlay.UpdatePlayerCards(new List<Card>(Game.Player.PlayerCardList), reset);
-			if(Windows.PlayerWindow.IsVisible)
-				Windows.PlayerWindow.UpdatePlayerCards(new List<Card>(Game.Player.PlayerCardList), reset);
+			//Overlay.UpdatePlayerCards(new List<Card>(Game.Player.PlayerCardList), reset);
+			//if(Windows.PlayerWindow.IsVisible)
+			//	Windows.PlayerWindow.UpdatePlayerCards(new List<Card>(Game.Player.PlayerCardList), reset);
 		}
 
 		internal static async void UpdateOpponentCards(bool reset = false)
@@ -349,9 +292,9 @@ namespace Hearthstone_Deck_Tracker
 			_updateRequestsOpponent--;
 			if(_updateRequestsOpponent > 0)
 				return;
-			Overlay.UpdateOpponentCards(new List<Card>(Game.Opponent.OpponentCardList), reset);
-			if(Windows.OpponentWindow.IsVisible)
-				Windows.OpponentWindow.UpdateOpponentCards(new List<Card>(Game.Opponent.OpponentCardList), reset);
+			//Overlay.UpdateOpponentCards(new List<Card>(Game.Opponent.OpponentCardList), reset);
+			//if(Windows.OpponentWindow.IsVisible)
+			//	Windows.OpponentWindow.UpdateOpponentCards(new List<Card>(Game.Opponent.OpponentCardList), reset);
 		}
 
 		public static class Windows
@@ -361,13 +304,16 @@ namespace Hearthstone_Deck_Tracker
 			private static TimerWindow _timerWindow;
 			private static StatsWindow _statsWindow;
 
-			public static PlayerWindow PlayerWindow => _playerWindow ?? (_playerWindow = new PlayerWindow(Game));
-			public static OpponentWindow OpponentWindow => _opponentWindow ?? (_opponentWindow = new OpponentWindow(Game));
+			//TODO
+			public static PlayerWindow PlayerWindow => _playerWindow ?? (_playerWindow = new PlayerWindow(Hearthstone));
+			public static OpponentWindow OpponentWindow => _opponentWindow ?? (_opponentWindow = new OpponentWindow(Hearthstone));
+
 			public static TimerWindow TimerWindow => _timerWindow ?? (_timerWindow = new TimerWindow(Config.Instance));
 			public static StatsWindow StatsWindow => _statsWindow ?? (_statsWindow = new StatsWindow());
 			public static CapturableOverlayWindow CapturableOverlay;
 		}
 
 		internal static bool StatsOverviewInitialized => _statsOverview != null;
+		public static List<long> IgnoredArenaDecks { get; } = new List<long>();
 	}
 }

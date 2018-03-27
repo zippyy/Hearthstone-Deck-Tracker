@@ -5,7 +5,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Linq;
 using System.Windows.Forms;
-using Hearthstone_Deck_Tracker.Enums.Hearthstone;
+using HearthSim.Core.Hearthstone.Enums;
 using Brushes = System.Windows.Media.Brushes;
 
 #endregion
@@ -50,7 +50,7 @@ namespace Hearthstone_Deck_Tracker
 
 		internal void Update(TimerState timerState)
 		{
-			if((timerState.PlayerSeconds <= 0 && timerState.OpponentSeconds <= 0) || Core.Game.CurrentMode != Mode.GAMEPLAY)
+			if((timerState.PlayerSeconds <= 0 && timerState.OpponentSeconds <= 0) || Core.Hearthstone.CurrentMode != Mode.GAMEPLAY)
 				return;
 			var seconds = (int)Math.Abs(timerState.Seconds);
 			LblTurnTime.Text = double.IsPositiveInfinity(timerState.Seconds) ? "\u221E" : $"{(seconds / 60) % 60:00}:{seconds % 60:00}";

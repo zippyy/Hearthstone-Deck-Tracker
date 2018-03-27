@@ -1,6 +1,4 @@
-﻿#region
-
-using System;
+﻿using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,24 +8,20 @@ using System.Windows.Controls;
 using System.Windows.Media;
 using HearthDb.Enums;
 using Hearthstone_Deck_Tracker.Hearthstone;
-using Hearthstone_Deck_Tracker.Hearthstone.Entities;
 using Hearthstone_Deck_Tracker.Utility.BoardDamage;
-
-#endregion
+using HearthSim.Core.Hearthstone;
+using HearthSim.Core.Hearthstone.Entities;
 
 namespace Hearthstone_Deck_Tracker.Windows
 {
-	/// <summary>
-	/// Interaction logic for DebugWindow.xaml
-	/// </summary>
-	public partial class DebugWindow : Window
+	public partial class DebugWindow
 	{
-		private readonly GameV2 _game;
+		private readonly Game _game;
 		private readonly List<string> _expanded = new List<string>();
 		private List<object> _previous = new List<object>();
 		private bool _update;
 
-		public DebugWindow(GameV2 game)
+		public DebugWindow(Game game)
 		{
 			_game = game;
 			InitializeComponent();
@@ -65,18 +59,18 @@ namespace Hearthstone_Deck_Tracker.Windows
 			TreeViewCards.Items.Clear();
 			var collections = new[]
 			{
-				new CollectionItem(_game.Player.Hand, "Player Hand"),
-				new CollectionItem(_game.Player.Board, "Player Board"),
-				new CollectionItem(_game.Player.Deck, "Player Deck"),
-				new CollectionItem(_game.Player.Graveyard, "Player Graveyard"),
-				new CollectionItem(_game.Player.Secrets, "Player Secrets"),
-				new CollectionItem(_game.Player.RevealedEntities, "Player RevealedEntities"),
-				new CollectionItem(_game.Opponent.Hand, "Opponent Hand"),
-				new CollectionItem(_game.Opponent.Board, "Opponent Board"),
-				new CollectionItem(_game.Opponent.Deck, "Opponent Deck"),
-				new CollectionItem(_game.Opponent.Graveyard, "Opponent Graveyard"),
-				new CollectionItem(_game.Opponent.Secrets, "Opponent Secrets"),
-				new CollectionItem(_game.Opponent.RevealedEntities, "Opponent RevealedEntities")
+				new CollectionItem(_game.CurrentGame.LocalPlayer.InHand, "Player Hand"),
+				new CollectionItem(_game.CurrentGame.LocalPlayer.InPlay, "Player Board"),
+				new CollectionItem(_game.CurrentGame.LocalPlayer.InDeck, "Player Deck"),
+				new CollectionItem(_game.CurrentGame.LocalPlayer.InGraveyard, "Player Graveyard"),
+				new CollectionItem(_game.CurrentGame.LocalPlayer.InSecret, "Player Secrets"),
+				new CollectionItem(_game.CurrentGame.LocalPlayer.RevealedCards, "Player RevealedEntities"),
+				new CollectionItem(_game.CurrentGame.OpposingPlayer.InHand, "Opponent Hand"),
+				new CollectionItem(_game.CurrentGame.OpposingPlayer.InPlay, "Opponent Board"),
+				new CollectionItem(_game.CurrentGame.OpposingPlayer.InDeck, "Opponent Deck"),
+				new CollectionItem(_game.CurrentGame.OpposingPlayer.InGraveyard, "Opponent Graveyard"),
+				new CollectionItem(_game.CurrentGame.OpposingPlayer.InSecret, "Opponent Secrets"),
+				new CollectionItem(_game.CurrentGame.OpposingPlayer.RevealedCards, "Opponent RevealedEntities")
 			};
 			foreach(var collection in collections)
 			{
@@ -93,7 +87,7 @@ namespace Hearthstone_Deck_Tracker.Windows
 
 		private void UpdateBoardDamage()
 		{
-			if(!Core.Game.SetupDone)
+			if(_game.CurrentGame.SetupDone)
 				return;
 			var board = new BoardState();
 			PlayerDataGrid.ItemsSource = board.Player.Cards;
@@ -106,13 +100,11 @@ namespace Hearthstone_Deck_Tracker.Windows
 		private void FilterEntities()
 		{
 			var list = new List<object>();
-			foreach(var entity in _game.Entities)
+			foreach(var entity in _game.CurrentGame.Entities)
 			{
 				var tags = entity.Value.Tags.Select(GetTagKeyValue).Aggregate((c, n) => c + " | " + n);
 				var card = Database.GetCardFromId(entity.Value.CardId);
-				var cardName = card != null ? card.Name : "";
-				var name = string.IsNullOrEmpty(entity.Value.Name) ? cardName : entity.Value.Name;
-				list.Add(new {Name = name, entity.Value.CardId, Tags = tags});
+				list.Add(new {Name = card.Name ?? string.Empty, entity.Value.CardId, Tags = tags});
 			}
 
 			var firstNotSecond = list.Except(_previous).ToList();
@@ -154,7 +146,7 @@ namespace Hearthstone_Deck_Tracker.Windows
 		private void FilterGame()
 		{
 			var list = new List<object>();
-			var props = typeof(GameV2).GetProperties().OrderBy(x => x.Name);
+			var props = typeof(Game).GetProperties().OrderBy(x => x.Name);
 			foreach(var prop in props)
 			{
 				if(prop.Name == "HSLogLines" || prop.Name == "Entities")

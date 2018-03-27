@@ -1,6 +1,4 @@
-﻿#region
-
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
@@ -10,18 +8,11 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Hearthstone_Deck_Tracker.Annotations;
 using Hearthstone_Deck_Tracker.Enums;
-using Hearthstone_Deck_Tracker.Hearthstone;
-
-#endregion
 
 namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Overlay
 {
-	/// <summary>
-	/// Interaction logic for Player.xaml
-	/// </summary>
 	public partial class OverlayPlayer : INotifyPropertyChanged
 	{
-		private GameV2 _game;
 		private bool _initialized;
 
 		public OverlayPlayer()
@@ -52,9 +43,8 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Overlay
 
 		public event PropertyChangedEventHandler PropertyChanged;
 
-		public void Load(GameV2 game)
+		public void Load()
 		{
-			_game = game;
 			CheckboxHighlightCardsInHand.IsChecked = Config.Instance.HighlightCardsInHand;
 			CheckboxRemoveCards.IsChecked = Config.Instance.RemoveCardsFromDeck;
 			CheckboxHighlightLastDrawn.IsChecked = Config.Instance.HighlightLastDrawn;
@@ -130,23 +120,21 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Overlay
 			SaveConfig(true);
 		}
 
-		private async void CheckboxRemoveCards_Checked(object sender, RoutedEventArgs e)
+		private void CheckboxRemoveCards_Checked(object sender, RoutedEventArgs e)
 		{
-			if(!_initialized || !_game.IsUsingPremade)
+			if(!_initialized)
 				return;
 			Config.Instance.RemoveCardsFromDeck = true;
 			SaveConfig(false);
-			await Core.Reset();
 			Core.Overlay.Update(true);
 		}
 
-		private async void CheckboxRemoveCards_Unchecked(object sender, RoutedEventArgs e)
+		private void CheckboxRemoveCards_Unchecked(object sender, RoutedEventArgs e)
 		{
-			if(!_initialized || !_game.IsUsingPremade)
+			if(!_initialized)
 				return;
 			Config.Instance.RemoveCardsFromDeck = false;
 			SaveConfig(false);
-			await Core.Reset();
 			Core.Overlay.Update(true);
 		}
 

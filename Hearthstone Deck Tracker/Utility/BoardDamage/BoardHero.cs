@@ -1,9 +1,5 @@
-﻿#region
-
-using HearthDb.Enums;
-using Hearthstone_Deck_Tracker.Hearthstone.Entities;
-
-#endregion
+﻿using HearthDb.Enums;
+using HearthSim.Core.Hearthstone.Entities;
 
 namespace Hearthstone_Deck_Tracker.Utility.BoardDamage
 {

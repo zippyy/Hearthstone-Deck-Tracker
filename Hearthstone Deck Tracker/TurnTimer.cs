@@ -1,15 +1,11 @@
-﻿#region
-
-using System;
+﻿using System;
 using System.Media;
 using System.Threading.Tasks;
 using System.Timers;
 using HearthDb.Enums;
 using Hearthstone_Deck_Tracker.Enums;
-using Hearthstone_Deck_Tracker.Hearthstone;
 using Hearthstone_Deck_Tracker.Utility.Logging;
-
-#endregion
+using HearthSim.Core.Hearthstone;
 
 namespace Hearthstone_Deck_Tracker
 {
@@ -30,7 +26,7 @@ namespace Hearthstone_Deck_Tracker
 	internal class TurnTimer
 	{
 		private readonly Timer _timer = new Timer(1000) {AutoReset = true};
-		private GameV2 _game;
+		private Game _game;
 
 		private TurnTimer()
 		{
@@ -45,14 +41,14 @@ namespace Hearthstone_Deck_Tracker
 		public int PlayerSeconds { get; private set; }
 		public int OpponentSeconds { get; private set; }
 
-		private bool IsPlayersTurn => _game.PlayerEntity?.HasTag(GameTag.CURRENT_PLAYER) ?? false;
+		private bool IsPlayersTurn => _game.CurrentGame.LocalPlayerEntity?.HasTag(GameTag.CURRENT_PLAYER) ?? false;
 
 		public static TurnTimer Instance { get; } = new TurnTimer();
 
 		private void TimerOnElapsed(object sender, ElapsedEventArgs elapsedEventArgs)
 		{
 			Seconds--;
-			if(_game.IsMulliganDone)
+			if(_game.CurrentGame.IsMulliganDone)
 			{
 				if(IsPlayersTurn)
 					PlayerSeconds++;
@@ -62,7 +58,7 @@ namespace Hearthstone_Deck_Tracker
 			TimerTick(new TimerState(Seconds, PlayerSeconds, OpponentSeconds));
 		}
 
-		public async Task Start(GameV2 game)
+		public async Task Start(Game game)
 		{
 			if(game == null)
 			{
@@ -79,13 +75,13 @@ namespace Hearthstone_Deck_Tracker
 			PlayerSeconds = 0;
 			OpponentSeconds = 0;
 			Seconds = 75;
-			if(game.PlayerEntity == null)
+			if(game.CurrentGame.LocalPlayerEntity == null)
 				Log.Warn("Waiting for player entity");
-			while(game.PlayerEntity == null)
+			while(game.CurrentGame.LocalPlayerEntity == null)
 				await Task.Delay(100);
-			if(game.OpponentEntity == null)
+			if(game.CurrentGame.OpposingPlayerEntity == null)
 				Log.Warn("Waiting for player entity");
-			while(game.OpponentEntity == null)
+			while(game.CurrentGame.OpposingPlayerEntity == null)
 				await Task.Delay(100);
 			TimerTick(new TimerState(Seconds, PlayerSeconds, OpponentSeconds));
 			_timer.Start();
@@ -124,10 +120,17 @@ namespace Hearthstone_Deck_Tracker
 				Log.Warn("Set timer to 75, game is null");
 				return;
 			}
-			if(player == ActivePlayer.Player && _game.PlayerEntity != null)
-				Seconds = _game.PlayerEntity.HasTag(GameTag.TIMEOUT) ? _game.PlayerEntity.GetTag(GameTag.TIMEOUT) : double.PositiveInfinity;
-			else if(player == ActivePlayer.Opponent && _game.OpponentEntity != null)
-				Seconds = _game.OpponentEntity.HasTag(GameTag.TIMEOUT) ? _game.OpponentEntity.GetTag(GameTag.TIMEOUT) : double.PositiveInfinity;
+
+			if(player == ActivePlayer.Player && _game.CurrentGame.LocalPlayerEntity != null)
+			{
+				Seconds = _game.CurrentGame.LocalPlayerEntity.HasTag(GameTag.TIMEOUT)
+					? _game.CurrentGame.LocalPlayerEntity.GetTag(GameTag.TIMEOUT) : double.PositiveInfinity;
+			}
+			else if(player == ActivePlayer.Opponent && _game.CurrentGame.OpposingPlayerEntity != null)
+			{
+				Seconds = _game.CurrentGame.OpposingPlayerEntity.HasTag(GameTag.TIMEOUT)
+					? _game.CurrentGame.OpposingPlayerEntity.GetTag(GameTag.TIMEOUT) : double.PositiveInfinity;
+			}
 			else
 			{
 				Seconds = 75;

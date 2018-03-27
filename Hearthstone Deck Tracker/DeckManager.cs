@@ -9,13 +9,13 @@ using HearthMirror.Objects;
 using Hearthstone_Deck_Tracker.API;
 using Hearthstone_Deck_Tracker.Enums;
 using Hearthstone_Deck_Tracker.Hearthstone;
-using Hearthstone_Deck_Tracker.Hearthstone.Entities;
 using Hearthstone_Deck_Tracker.Importing;
 using Hearthstone_Deck_Tracker.Importing.Game;
 using Hearthstone_Deck_Tracker.Importing.Game.ImportOptions;
 using Hearthstone_Deck_Tracker.Utility.Extensions;
 using Hearthstone_Deck_Tracker.Utility.Logging;
 using Hearthstone_Deck_Tracker.Windows;
+using HearthSim.Core.Hearthstone.Entities;
 using Card = Hearthstone_Deck_Tracker.Hearthstone.Card;
 using Deck = Hearthstone_Deck_Tracker.Hearthstone.Deck;
 
@@ -23,7 +23,7 @@ namespace Hearthstone_Deck_Tracker
 {
 	public class DeckManager
 	{
-		private static bool _waitingForClass;
+		private static bool _waitingForHero;
 		private static bool _waitingForUserInput;
 		private static int _waitingForDraws;
 		private static int _autoSelectCount;
@@ -34,15 +34,16 @@ namespace Hearthstone_Deck_Tracker
 
 		public static async Task DetectCurrentDeck()
 		{
+			var game = Core.Hearthstone.CurrentGame;
 			var deck = DeckList.Instance.ActiveDeck;
-			if(deck == null || deck.DeckId == IgnoredDeckId || _waitingForClass || _waitingForUserInput)
+			if(deck == null || deck.DeckId == IgnoredDeckId || _waitingForHero || _waitingForUserInput)
 				return;
-			if(string.IsNullOrEmpty(Core.Game.Player.Class))
+			if(game.LocalPlayer.CurrentHero == null)
 			{
-				_waitingForClass = true;
-				while(string.IsNullOrEmpty(Core.Game.Player.Class))
+				_waitingForHero = true;
+				while(game.LocalPlayer.CurrentHero == null)
 					await Task.Delay(100);
-				_waitingForClass = false;
+				_waitingForHero = false;
 			}
 			var cardEntites = RevealedEntites;
 			var notFound = GetMissingCards(cardEntites, deck);
@@ -58,30 +59,34 @@ namespace Hearthstone_Deck_Tracker
 					Core.MainWindow.SelectDeck(deck, true);
 					return;
 				}	
-				NotFoundCards = notFound.SelectMany(x => x).Select(x => x.Card).Distinct().ToList();
+				NotFoundCards = notFound.SelectMany(x => x).Select(x => new Card(x.Card)).Distinct().ToList();
 				Log.Warn("Cards not found in deck: " + string.Join(", ", NotFoundCards.Select(x => $"{x.Name} ({x.Id})")));
 				if(Config.Instance.AutoDeckDetection)
-					await AutoSelectDeck(deck, Core.Game.Player.Class, Core.Game.CurrentGameMode, Core.Game.CurrentFormat, cardEntites);
+				{
+					await AutoSelectDeck(deck, game.LocalPlayer.CurrentHero.Class, (GameType)(game.MatchInfo?.GameType ?? 0),
+						(FormatType)(game.MatchInfo?.FormatType ?? 0), cardEntites);
+				}
 			}
 			else
 				NotFoundCards.Clear();
 		}
 
-		private static List<IGrouping<string, Entity>> RevealedEntites => Core.Game.Player.RevealedEntities
-			.Where(x => x.IsPlayableCard && !x.Info.Created && !x.Info.Stolen && x.Card.Collectible).GroupBy(x => x.CardId)
+		private static List<IGrouping<string, Entity>> RevealedEntites => Core.Hearthstone.CurrentGame.LocalPlayer.RevealedCards
+			.Where(x => !x.IsCreated && !x.Info.Stolen && (x.Card.Data?.Collectible ?? false)).GroupBy(x => x.CardId)
 			.ToList();
 
 		private static List<IGrouping<string, Entity>> GetMissingCards(List<IGrouping<string, Entity>> revealed, Deck deck) =>
 			revealed.Where(x => !deck.GetSelectedDeckVersion().Cards.Any(c => c.Id == x.Key && c.Count >= x.Count())).ToList();
 
-		private static async Task AutoSelectDeck(Deck currentDeck, string heroClass, GameMode mode, Format? currentFormat, List<IGrouping<string, Entity>> cardEntites = null)
+		private static async Task AutoSelectDeck(Deck currentDeck, CardClass heroClass, GameType mode, FormatType currentFormat, List<IGrouping<string, Entity>> cardEntites = null)
 		{
 			_waitingForDraws++;
 			await Task.Delay(500);
 			_waitingForDraws--;
 			if(_waitingForDraws > 0)
 				return;
-			var validDecks = DeckList.Instance.Decks.Where(x => x.Class == heroClass && !x.Archived && !x.IsDungeonDeck).ToList();
+			var validDecks = DeckList.Instance.Decks.Where(x => heroClass == x.CardClass
+																&& !x.Archived && !x.IsDungeonDeck).ToList();
 			if(currentDeck != null)
 				validDecks.Remove(currentDeck);
 			validDecks = validDecks.FilterByMode(mode, currentFormat);
@@ -110,7 +115,7 @@ namespace Hearthstone_Deck_Tracker
 				_autoSelectCount++;
 				return;
 			}
-			var lastUsed = DeckList.Instance.LastDeckClass.FirstOrDefault(x => x.Class == heroClass);
+			var lastUsed = DeckList.Instance.LastDeckClass.FirstOrDefault(x => x.CardClass == heroClass);
 			if(lastUsed != null)
 			{
 				var deck = validDecks.FirstOrDefault(x => x.DeckId == lastUsed.Id);
@@ -126,9 +131,9 @@ namespace Hearthstone_Deck_Tracker
 				ShowDeckSelectionDialog(validDecks);
 		}
 
-		private static bool AutoSelectDeckVersion(string heroClass, GameMode mode, Format? format, List<IGrouping<string, Entity>> cardEntites)
+		private static bool AutoSelectDeckVersion(CardClass heroClass, GameType mode, FormatType format, List<IGrouping<string, Entity>> cardEntites)
 		{
-			var validDecks = DeckList.Instance.Decks.Where(x => x.Class == heroClass && !x.Archived && !x.IsDungeonDeck).ToList();
+			var validDecks = DeckList.Instance.Decks.Where(x => x.CardClass == heroClass && !x.Archived && !x.IsDungeonDeck).ToList();
 			validDecks = validDecks.FilterByMode(mode, format);
 			foreach(var deck in validDecks)
 			{
@@ -300,14 +305,14 @@ namespace Hearthstone_Deck_Tracker
 			if((DateTime.UtcNow - _lastAutoImport).TotalSeconds < 5)
 				return false;
 			_lastAutoImport = DateTime.UtcNow;
-			switch(Core.Game.CurrentGameMode)
+			switch((GameType)(Core.Hearthstone.CurrentGame.MatchInfo?.GameType ?? 0))
 			{
-				case GameMode.Ranked:
-				case GameMode.Casual:
-				case GameMode.Friendly:
-				case GameMode.Practice:
+				case GameType.GT_RANKED:
+				case GameType.GT_CASUAL:
+				case GameType.GT_VS_FRIEND:
+				case GameType.GT_VS_AI:
 					return AutoImportConstructed(select);
-				case GameMode.Arena:
+				case GameType.GT_ARENA:
 					AutoImportArena(Config.Instance.SelectedArenaImportingBehaviour ?? ArenaImportingBehaviour.AutoImportSave);
 					break;
 			}
@@ -336,7 +341,7 @@ namespace Hearthstone_Deck_Tracker
 					d => d.LastPlayedNewFirst).Take(15);
 			if(recentArenaDecks.Any(d => d.Cards.All(c => deck.Deck.Cards.Any(c2 => c.Id == c2.Id && c.Count == c2.Count))))
 				Log.Info("...but we already have that one. Discarding.");
-			else if(Core.Game.IgnoredArenaDecks.Contains(deck.Deck.Id))
+			else if(Core.IgnoredArenaDecks.Contains(deck.Deck.Id))
 				Log.Info("...but it was already discarded by the user. No automatic action taken.");
 			else if(behaviour == ArenaImportingBehaviour.AutoAsk)
 			{
@@ -385,13 +390,11 @@ namespace Hearthstone_Deck_Tracker
 				CreateDungeonDeck(deck);
 			else if(deck == null)
 			{
-				var playerClass = Core.Game.Player.Class;
+				var playerClass = Core.Hearthstone.CurrentGame.LocalPlayer.CurrentHero?.Class ?? CardClass.INVALID;
 				var revealed = RevealedEntites;
 				var existingDeck = DeckList.Instance.Decks
-					.Where(x => x.IsDungeonDeck && x.Class.ToUpperInvariant() == playerClass
-								&& !(x.IsDungeonRunCompleted ?? false)
-								&& (!newRun || x.Cards.Count == 10)
-								&& GetMissingCards(revealed, x).Count == 0)
+					.Where(x => x.IsDungeonDeck && playerClass == x.CardClass && !(x.IsDungeonRunCompleted ?? false)
+								&& (!newRun || x.Cards.Count == 10) && GetMissingCards(revealed, x).Count == 0)
 					.OrderByDescending(x => x.LastEdited).FirstOrDefault();
 				if(existingDeck == null)
 				{
@@ -414,21 +417,20 @@ namespace Hearthstone_Deck_Tracker
 			}
 		}
 
-		public static void UpdateDungeonRunDeck(HearthSim.Core.Hearthstone.Deck info)
+		public static void UpdateDungeonRunDeck(HearthSim.Core.Hearthstone.Deck dungeonDeck)
 		{
-			if(!Config.Instance.DungeonAutoImport || info == null)
+			if(!Config.Instance.DungeonAutoImport || dungeonDeck == null)
 				return;
 			Log.Info("Found dungeon run deck!");
-			var cards = info.Cards.ToList();
+			var cards = dungeonDeck.Cards.ToList();
 			if(!Config.Instance.DungeonRunIncludePassiveCards)
 				cards.RemoveAll(c => !c.Data.Collectible && c.Data.Entity.GetTag(GameTag.HIDE_STATS) > 0);
-			var playerClass = info.Class.ToString().ToUpperInvariant();
-			var deck = DeckList.Instance.Decks.FirstOrDefault(x => x.IsDungeonDeck && x.Class.ToUpperInvariant() == playerClass
-																		&& !(x.IsDungeonRunCompleted ?? false)
-																		&& x.Cards.All(e => cards.Any(c => c.Id == e.Id && c.Count >= e.Count)));
-			if(deck == null && (deck = CreateDungeonDeck(playerClass, (CardSet)info.CardSet)) == null)
+			var deck = DeckList.Instance.Decks.FirstOrDefault(x => x.IsDungeonDeck && x.CardClass == dungeonDeck.Class
+											&& !(x.IsDungeonRunCompleted ?? false)
+											&& x.Cards.All(e => cards.Any(c => c.Id == e.Id && c.Count >= e.Count)));
+			if(deck == null && (deck = CreateDungeonDeck(dungeonDeck)) == null)
 			{
-				Log.Info($"No existing deck - can't find default deck for {playerClass}");
+				Log.Info($"No existing deck - can't find default deck for {dungeonDeck.Class}");
 				return;
 			}
 			if(cards.All(c => deck.Cards.Any(e => c.Id == e.Id && c.Count == e.Count)))
@@ -467,15 +469,15 @@ namespace Hearthstone_Deck_Tracker
 
 	public static class DeckListExtensions
 	{
-		public static List<Deck> FilterByMode(this List<Deck> decks, GameMode mode, Format? format)
+		public static List<Deck> FilterByMode(this List<Deck> decks, GameType mode, FormatType? format)
 		{
 			var filtered = new List<Deck>(decks);
-			if(mode == GameMode.Arena)
+			if(mode == GameType.GT_ARENA)
 				filtered = filtered.Where(x => x.IsArenaDeck && x.IsArenaRunCompleted != true).ToList();
-			else if(mode != GameMode.None)
+			else if(mode != GameType.GT_UNKNOWN)
 			{
 				filtered = filtered.Where(x => !x.IsArenaDeck).ToList();
-				if(format == Format.Standard)
+				if(format == FormatType.FT_STANDARD)
 					filtered = filtered.Where(x => x.StandardViable).ToList();
 			}
 			return filtered;

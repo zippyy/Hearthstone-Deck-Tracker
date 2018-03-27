@@ -6,6 +6,7 @@ using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Xml.Serialization;
+using HearthDb.Enums;
 using Hearthstone_Deck_Tracker.Hearthstone;
 using Hearthstone_Deck_Tracker.Utility;
 using Hearthstone_Deck_Tracker.Utility.Logging;
@@ -159,6 +160,11 @@ namespace Hearthstone_Deck_Tracker
 		public static void Save() => Save(Instance);
 
 		internal static void Reload() => _instance = new Lazy<DeckList>(Load);
+
+		public Deck GetDeck(HearthSim.Core.Hearthstone.Deck localPlayerDeck)
+		{
+			return null;
+		}
 	}
 
 	public class DeckInfo
@@ -166,5 +172,16 @@ namespace Hearthstone_Deck_Tracker
 		public string Class;
 		public Guid Id;
 		public string Name;
+
+		public CardClass CardClass
+		{
+			get
+			{
+				if(string.IsNullOrEmpty(Class))
+					return CardClass.INVALID;
+				return Enum.TryParse(Class, out CardClass cardClass) ? cardClass : CardClass.INVALID;
+			}
+		}
+
 	}
 }

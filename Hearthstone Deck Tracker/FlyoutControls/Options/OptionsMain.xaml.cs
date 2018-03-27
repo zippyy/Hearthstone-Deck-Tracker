@@ -81,12 +81,12 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls
 			}
 		}
 
-		public void Load(GameV2 game)
+		public void Load()
 		{
-			OptionsOverlayGeneral.Load(game);
-			OptionsOverlayDeckWindows.Load(game);
-			OptionsOverlayPlayer.Load(game);
-			OptionsOverlayOpponent.Load(game);
+			OptionsOverlayGeneral.Load();
+			OptionsOverlayDeckWindows.Load();
+			OptionsOverlayPlayer.Load();
+			OptionsOverlayOpponent.Load();
 			OptionsOverlayInteractivity.Load();
 			OptionsTrackerSettings.Load();
 			OptionsTrackerImporting.Load();

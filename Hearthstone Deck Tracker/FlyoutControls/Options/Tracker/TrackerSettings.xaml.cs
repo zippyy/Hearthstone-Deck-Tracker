@@ -413,7 +413,7 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Tracker
 
 		private void ButtonDebugWindow_Click(object sender, RoutedEventArgs e)
 		{
-			new DebugWindow(Core.Game).Show();
+			new DebugWindow(Core.Hearthstone).Show();
 		}
 	}
 }

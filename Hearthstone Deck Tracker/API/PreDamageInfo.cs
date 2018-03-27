@@ -1,4 +1,4 @@
-using Hearthstone_Deck_Tracker.Hearthstone.Entities;
+using HearthSim.Core.Hearthstone.Entities;
 
 namespace Hearthstone_Deck_Tracker.API
 {

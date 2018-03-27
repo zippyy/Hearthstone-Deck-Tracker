@@ -1,20 +1,15 @@
-﻿#region
-
-using System;
+﻿using System;
 using System.Linq;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 using HearthDb.Enums;
 using HearthMirror;
 using Hearthstone_Deck_Tracker.Controls;
 using Hearthstone_Deck_Tracker.Hearthstone;
-using Hearthstone_Deck_Tracker.Hearthstone.Entities;
 using Hearthstone_Deck_Tracker.Utility.Logging;
+using HearthSim.Core.Hearthstone.Entities;
 using static System.Windows.Visibility;
 using Card = Hearthstone_Deck_Tracker.Hearthstone.Card;
-
-#endregion
 
 namespace Hearthstone_Deck_Tracker.Windows
 {
@@ -77,7 +72,8 @@ namespace Hearthstone_Deck_Tracker.Windows
 			if(!Config.Instance.HideOpponentCardMarks && cardMark != null)
 			{
 				var index = _cardMarks.IndexOf(cardMark.Label);
-				var card = _game.Opponent.Hand.FirstOrDefault(x => x.GetTag(GameTag.ZONE_POSITION) == index + 1 && x.HasCardId && !x.Info.Hidden)?.Card;
+				var card = _game.CurrentGame.OpposingPlayer.InHand
+					.FirstOrDefault(x => x.GetTag(GameTag.ZONE_POSITION) == index + 1 && x.HasCardId && !x.Info.Hidden)?.Card;
 				if(card != null)
 				{
 					ToolTipCard.SetValue(DataContextProperty, card);
@@ -310,10 +306,13 @@ namespace Hearthstone_Deck_Tracker.Windows
 		{
 			try
 			{
-				if(!Config.Instance.ShowFlavorText || string.IsNullOrEmpty(entity?.Card?.FormattedFlavorText))
+				if(!Config.Instance.ShowFlavorText || entity?.Card == null)
 					return;
-				FlavorText = entity.Card.FormattedFlavorText;
-				FlavorTextCardName = entity.Card.LocalizedName;
+				var card = new Card(entity.Card);
+				if(string.IsNullOrEmpty(card.FormattedFlavorText))
+					return;
+				FlavorText = card.FormattedFlavorText;
+				FlavorTextCardName = card.LocalizedName;
 				FlavorTextVisibility = Visible;
 			}
 			catch(Exception e)

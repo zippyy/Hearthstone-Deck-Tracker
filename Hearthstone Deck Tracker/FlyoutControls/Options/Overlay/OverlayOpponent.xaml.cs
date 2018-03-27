@@ -1,6 +1,4 @@
-﻿#region
-
-using System;
+﻿using System;
 using System.ComponentModel;
 using System.Linq;
 using System.Runtime.CompilerServices;
@@ -9,18 +7,11 @@ using System.Windows.Controls;
 using System.Windows.Input;
 using Hearthstone_Deck_Tracker.Annotations;
 using Hearthstone_Deck_Tracker.Enums;
-using Hearthstone_Deck_Tracker.Hearthstone;
-
-#endregion
 
 namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Overlay
 {
-	/// <summary>
-	/// Interaction logic for Opponent.xaml
-	/// </summary>
 	public partial class OverlayOpponent : INotifyPropertyChanged
 	{
-		private GameV2 _game;
 		private bool _initialized;
 
 		public OverlayOpponent()
@@ -71,9 +62,8 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Overlay
 
 		public event PropertyChangedEventHandler PropertyChanged;
 
-		public void Load(GameV2 game)
+		public void Load()
 		{
-			_game = game;
 			CheckboxHighlightDiscarded.IsChecked = Config.Instance.HighlightDiscarded;
 			SliderOpponentOpacity.Value = Config.Instance.OpponentOpacity;
 			SliderOverlayOpponentScaling.Value = Config.Instance.OverlayOpponentScaling;
@@ -316,7 +306,7 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Overlay
 				return;
 			Config.Instance.HideSecrets = false;
 			SaveConfig(false);
-			Core.Overlay.ShowSecrets(Core.Game.SecretsManager.GetSecretList());
+			//Core.Overlay.ShowSecrets();
 		}
 	}
 }

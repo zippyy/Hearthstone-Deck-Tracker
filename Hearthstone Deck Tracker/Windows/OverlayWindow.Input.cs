@@ -199,7 +199,6 @@ namespace Hearthstone_Deck_Tracker.Windows
 			}
 
 			HideCardsWhenFriendsListOpen(PointFromScreen(_mousePos));
-			GrayOutSecrets(_mousePos);
 		}
 
 
@@ -332,18 +331,6 @@ namespace Hearthstone_Deck_Tracker.Windows
 			_mouseInput.Dispose();
 			_mouseInput = null;
 			Log.Info("Disabled mouse hook");
-		}
-
-		private void GrayOutSecrets(Point mousePos)
-		{
-			if (!PointInsideControl(StackPanelSecrets.PointFromScreen(mousePos), StackPanelSecrets.ActualWidth, StackPanelSecrets.ActualHeight))
-				return;
-
-			var card = ToolTipCard.DataContext as Card;
-			if (card == null)
-				return;
-
-			_game.SecretsManager.Toggle(card.Id);
 		}
 
 		private async void HideCardsWhenFriendsListOpen(Point clickPos)

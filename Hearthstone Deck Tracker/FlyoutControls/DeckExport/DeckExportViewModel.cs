@@ -38,16 +38,16 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.DeckExport
 		{
 			CopyAllButtonText = LocUtil.Get(LocCopyAll, true);
 			CopyCodeButtonText = LocUtil.Get(LocCopyCode, true);
-			CollectionHelper.OnCollectionChanged += UpdateMissingCards;
+			Core.Hearthstone.Collection.CardsChanged += args => UpdateMissingCards();
 		}
 
-		private async void UpdateMissingCards()
+		private void UpdateMissingCards()
 		{
-			if(Deck == null || _updatingCollection)
+			if(Deck == null || _updatingCollection || !Core.Hearthstone.Collection.IsLoaded)
 				return;
 			_updatingCollection = true;
-			var collection = await CollectionHelper.GetCollection();
-			if(!collection?.Cards.Any() ?? true)
+			var collectionCards = Core.Hearthstone.Collection.Cards.ToList();
+			if(!collectionCards.Any())
 			{
 				_updatingCollection = false;
 				return;
@@ -55,8 +55,8 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.DeckExport
 			var missingCards = new List<DustCostViewModel>();
 			foreach(var card in Deck.Cards)
 			{
-				collection.Cards.TryGetValue(card.DbfIf, out var counts);
-				var missingCount = card.Count - counts?.Sum(x => x) ?? 0;
+				var cCard = collectionCards.FirstOrDefault(x => x.Id == card.Id);
+				var missingCount = card.Count - (cCard?.Normal + cCard?.Golden ?? 0);
 				if(missingCount > 0)
 				{
 					var missing = (Card)card.Clone();

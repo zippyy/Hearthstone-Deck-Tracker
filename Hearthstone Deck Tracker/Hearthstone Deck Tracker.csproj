@@ -268,7 +268,6 @@
     <Compile Include="FlyoutControls\Options\Streaming\StreamingTwitchExtension.xaml.cs">
       <DependentUpon>StreamingTwitchExtension.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Hearthstone\Collection.cs" />
     <Compile Include="HsReplay\HSReplayNetHelper.cs" />
     <Compile Include="Utility\ComboBoxHelper.cs" />
     <Compile Include="Utility\DataLoader.cs" />
@@ -292,10 +291,6 @@
     <Compile Include="FlyoutControls\DeckHistory\DeckHistoryView.xaml.cs">
       <DependentUpon>DeckHistoryView.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Hearthstone\CollectionHelper.cs" />
-    <Compile Include="Hearthstone\Secrets\Secret.cs" />
-    <Compile Include="Hearthstone\Secrets\SecretsEventHandler.cs" />
-    <Compile Include="Hearthstone\Secrets\SecretsManager.cs" />
     <Compile Include="HsReplay\HsReplayDataManager.cs" />
     <Compile Include="HsReplay\Data\HsReplayWinrates.cs" />
     <Compile Include="FlyoutControls\DeckExport\DeckExportView.xaml.cs">
@@ -501,8 +496,6 @@
       <DependentUpon>TrackerNotifications.xaml</DependentUpon>
     </Compile>
     <Compile Include="DeckManager.cs" />
-    <Compile Include="Hearthstone\DeckState.cs" />
-    <Compile Include="Hearthstone\PredictedCard.cs" />
     <Compile Include="Importing\Game\ImportOptions\IImportOption.cs" />
     <Compile Include="Importing\MetaTagImporter.cs" />
     <Compile Include="Importing\Websites\Manacrystals.cs" />
@@ -536,13 +529,11 @@
     <Compile Include="Utility\Extensions\RectExtensions.cs" />
     <Compile Include="Utility\GaussianBlur.cs" />
     <Compile Include="Utility\Themes\CardBarImageBuilder.cs" />
-    <Compile Include="Hearthstone\GameTime.cs" />
     <Compile Include="Hearthstone\HearthDbConverter.cs" />
     <Compile Include="Hearthstone\GameMetaData.cs" />
     <Compile Include="HsReplay\Utility\BuildDates.cs" />
     <Compile Include="HsReplay\Utility\HsReplayInfo.cs" />
     <Compile Include="HsReplay\ReplayLauncher.cs" />
-    <Compile Include="Enums\Hearthstone\Mode.cs" />
     <Compile Include="Stats\CompiledStats\ArenaRun.cs" />
     <Compile Include="Stats\CompiledStats\ChartStats.cs" />
     <Compile Include="Stats\CompiledStats\ClassStats.cs" />
@@ -633,10 +624,7 @@
       <DependentUpon>UpdateNotes.xaml</DependentUpon>
     </Compile>
     <Compile Include="Hearthstone\Database.cs" />
-    <Compile Include="Hearthstone\GameV2.cs" />
-    <Compile Include="Hearthstone\IGame.cs" />
     <Compile Include="Hearthstone\Mechanic.cs" />
-    <Compile Include="Hearthstone\Player.cs" />
     <Compile Include="Plugins\IPlugin.cs" />
     <Compile Include="Plugins\PluginManager.cs" />
     <Compile Include="Plugins\PluginSettings.cs" />
@@ -740,7 +728,6 @@
     <Compile Include="FlyoutControls\Help.xaml.cs">
       <DependentUpon>Help.xaml</DependentUpon>
     </Compile>
-    <Compile Include="GameEventHandler.cs" />
     <Compile Include="Hearthstone\Card.cs" />
     <Compile Include="FlyoutControls\DeckNotes.xaml.cs">
       <DependentUpon>DeckNotes.xaml</DependentUpon>
@@ -763,8 +750,6 @@
     <Compile Include="Hearthstone\Deck.cs" />
     <Compile Include="Importing\DeckImporter.cs" />
     <Compile Include="Enums\GameMode.cs" />
-    <Compile Include="Hearthstone\Entities\Entity.cs" />
-    <Compile Include="IGameHandler.cs" />
     <Compile Include="Replay\ReplayMaker.cs" />
     <Compile Include="Stats\DeckStatsList.cs" />
     <Compile Include="Stats\DefaultDeckStats.cs" />
