@@ -14,7 +14,6 @@ using Hearthstone_Deck_Tracker.Utility;
 using Hearthstone_Deck_Tracker.Utility.Analytics;
 using Hearthstone_Deck_Tracker.Utility.Extensions;
 using Hearthstone_Deck_Tracker.Utility.HotKeys;
-using Hearthstone_Deck_Tracker.Utility.LogConfig;
 using Hearthstone_Deck_Tracker.Windows;
 using MahApps.Metro.Controls.Dialogs;
 using Hearthstone_Deck_Tracker.Utility.Updating;
@@ -103,6 +102,14 @@ namespace Hearthstone_Deck_Tracker
 				UpdateOpponentCards();
 			};
 			Manager.Game.GameCreated += args => { Manager.Game.CurrentGame.LocalPlayer.Deck = Manager.Game.SelectedDeck; };
+			Manager.Game.LogConfigError += args => MainWindow.ShowLogConfigUpdateFailedMessage().Forget();
+			Manager.Game.HearthstoneRestartRequired += () =>
+			{
+				MainWindow.ShowMessageAsync("Hearthstone restart required",
+					"The log.config file has been updated. "
+					+ "HDT may not work properly until Hearthstone has been restarted.").Forget();
+				Overlay.ShowRestartRequiredWarning();
+			};
 
 			Log.Info($"HDT: {Helper.GetCurrentVersion()}, Operating System: {Helper.GetWindowsVersion()}, .NET Framework: {Helper.GetInstalledDotNetVersion()}");
 			var splashScreenWindow = new SplashScreenWindow();
@@ -123,8 +130,7 @@ namespace Hearthstone_Deck_Tracker
 			ConfigManager.Run();
 			LocUtil.UpdateCultureInfo();
 			var newUser = ConfigManager.PreviousVersion == null;
-			LogConfigUpdater.Run().Forget();
-			LogConfigWatcher.Start();
+			Manager.UpdateLogConfig().Forget();
 			UITheme.InitializeTheme();
 			ResourceMonitor.Run();
 			//Game.SecretsManager.OnSecretsChanged += cards => Overlay.ShowSecrets(cards);
@@ -172,14 +178,6 @@ namespace Hearthstone_Deck_Tracker
 			{
 				Windows.CapturableOverlay = new CapturableOverlayWindow();
 				Windows.CapturableOverlay.Show();
-			}
-
-			if(LogConfigUpdater.LogConfigUpdateFailed)
-				MainWindow.ShowLogConfigUpdateFailedMessage().Forget();
-			else if(LogConfigUpdater.LogConfigUpdated && Hearthstone.IsRunning)
-			{
-				MainWindow.ShowMessageAsync("Hearthstone restart required", "The log.config file has been updated. HDT may not work properly until Hearthstone has been restarted.").Forget();
-				Overlay.ShowRestartRequiredWarning();
 			}
 
 			RemoteConfig.Instance.Load();
