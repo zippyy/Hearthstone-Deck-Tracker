@@ -35,7 +35,7 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Tracker
 			ComboBoxIconSet.ItemsSource = new[] {IconStyle.Round, IconStyle.Square};
 			ComboBoxClassColors.ItemsSource = Enum.GetValues(typeof(ClassColorScheme));
 			CheckboxUseAnimations.IsChecked = Config.Instance.UseAnimations;
-			ComboBoxCardTheme.ItemsSource = Utility.Themes.ThemeManager.Themes;
+			//ComboBoxCardTheme.ItemsSource = Utility.Themes.ThemeManager.Themes;
 
 			ComboboxTheme.SelectedItem = Config.Instance.AppTheme;
 			ComboboxAccent.SelectedItem = UITheme.CurrentAccent;
@@ -45,7 +45,7 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Tracker
 			ComboBoxDeckLayout.SelectedItem = Config.Instance.DeckPickerItemLayout;
 			ComboBoxClassColors.SelectedItem = Config.Instance.ClassColorScheme;
 			CheckBoxArenaStatsTextColoring.IsChecked = Config.Instance.ArenaStatsTextColoring;
-			ComboBoxCardTheme.SelectedItem = Utility.Themes.ThemeManager.FindTheme(Config.Instance.CardBarTheme);
+			//ComboBoxCardTheme.SelectedItem = Utility.Themes.ThemeManager.FindTheme(Config.Instance.CardBarTheme);
 			CheckboxCardFrameRarity.IsChecked = Config.Instance.RarityCardFrames;
 			CheckboxCardGemRarity.IsChecked = Config.Instance.RarityCardGems;
 			_initialized = true;
@@ -89,7 +89,7 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Tracker
 				return;
 			Config.Instance.CardBarTheme = ComboBoxCardTheme.SelectedItem.ToString().ToLowerInvariant();
 			Config.Save();
-			Utility.Themes.ThemeManager.SetTheme(Config.Instance.CardBarTheme);
+			//Utility.Themes.ThemeManager.SetTheme(Config.Instance.CardBarTheme);
 		}
 
 		private void ComboboxDeckLayout_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -152,7 +152,7 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Tracker
 				return;
 			Config.Instance.RarityCardFrames = true;
 			Config.Save();
-			Utility.Themes.ThemeManager.UpdateCards();
+			//Utility.Themes.ThemeManager.UpdateCards();
 		}
 
 		private void CheckboxCardFrameRarity_OnUnchecked(object sender, RoutedEventArgs e)
@@ -161,7 +161,7 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Tracker
 				return;
 			Config.Instance.RarityCardFrames = false;
 			Config.Save();
-			Utility.Themes.ThemeManager.UpdateCards();
+			//Utility.Themes.ThemeManager.UpdateCards();
 		}
 
 		private void CheckboxCardGemRarity_OnChecked(object sender, RoutedEventArgs e)
@@ -170,7 +170,7 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Tracker
 				return;
 			Config.Instance.RarityCardGems = true;
 			Config.Save();
-			Utility.Themes.ThemeManager.UpdateCards();
+			//Utility.Themes.ThemeManager.UpdateCards();
 		}
 
 		private void CheckboxCardGemRarity_OnUnchecked(object sender, RoutedEventArgs e)
@@ -179,7 +179,7 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Tracker
 				return;
 			Config.Instance.RarityCardGems = false;
 			Config.Save();
-			Utility.Themes.ThemeManager.UpdateCards();
+			//Utility.Themes.ThemeManager.UpdateCards();
 		}
 
 		private void ComboBoxLanguage_SelectionChanged(object sender, SelectionChangedEventArgs e)

@@ -7,6 +7,7 @@ using Hearthstone_Deck_Tracker.Enums;
 using Hearthstone_Deck_Tracker.Hearthstone;
 using Hearthstone_Deck_Tracker.Stats;
 using Hearthstone_Deck_Tracker.Utility;
+using HearthSim.UI;
 
 namespace Hearthstone_Deck_Tracker.Windows
 {
@@ -143,8 +144,8 @@ namespace Hearthstone_Deck_Tracker.Windows
 			LblDrawChance1.Text = Math.Round(100.0f / cardsLeftInDeck, 1) + "%";
 		}
 
-		public void UpdatePlayerCards(List<Card> cards, bool reset) => ListViewPlayer.Update(cards, reset);
+		public void UpdatePlayerCards(List<HearthSim.Core.Hearthstone.Card> cards, bool reset) => ListViewPlayer.Update(cards.Select(x => new CardViewModel(x)).ToList(), reset);
 
-		public void UpdateOpponentCards(List<Card> cards, bool reset) => ListViewOpponent.Update(cards, reset);
+		public void UpdateOpponentCards(List<HearthSim.Core.Hearthstone.Card> cards, bool reset) => ListViewOpponent.Update(cards.Select(x => new CardViewModel(x)).ToList(), reset);
 	}
 }

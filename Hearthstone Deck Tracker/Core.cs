@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Windows;
@@ -16,11 +17,11 @@ using Hearthstone_Deck_Tracker.Utility.HotKeys;
 using Hearthstone_Deck_Tracker.Utility.LogConfig;
 using Hearthstone_Deck_Tracker.Windows;
 using MahApps.Metro.Controls.Dialogs;
-using Hearthstone_Deck_Tracker.Utility.Themes;
 using Hearthstone_Deck_Tracker.Utility.Updating;
 using HearthSim.Core;
 using HearthSim.Core.HSReplay;
 using HearthSim.Core.LogReading;
+using HearthSim.UI.Themes;
 using WPFLocalizeExtension.Engine;
 using Log = HearthSim.Util.Logging.Log;
 
@@ -68,6 +69,7 @@ namespace Hearthstone_Deck_Tracker
 				"jIpNwuUWLFI6S3oeQkO3xlW6UCnfogw1IpAbFXqq", Helper.GetUserAgent(), GameTypeHelper.All,
 				Config.Instance.HsReplayUploadPacks ?? false, Config.Instance.SelectedTwitchUser);
 			Manager = new Manager(hsReplayConfig);
+			ThemeManager.Load(new ThemeConfig() {Theme = "Dark"});
 			Manager.Start();
 
 			//TODO: Figure out where to put these
@@ -95,6 +97,12 @@ namespace Hearthstone_Deck_Tracker
 				ErrorManager.AddError("Could not find Hearthstone installation",
 					"Please set Hearthstone installation path via 'options > tracker > settings > set hearthstone path'.");
 			};
+			Manager.Game.GameStateEvents.GameStateChanged += args =>
+			{
+				UpdatePlayerCards();
+				UpdateOpponentCards();
+			};
+			Manager.Game.GameCreated += args => { Manager.Game.CurrentGame.LocalPlayer.Deck = Manager.Game.SelectedDeck; };
 
 			Log.Info($"HDT: {Helper.GetCurrentVersion()}, Operating System: {Helper.GetWindowsVersion()}, .NET Framework: {Helper.GetInstalledDotNetVersion()}");
 			var splashScreenWindow = new SplashScreenWindow();
@@ -118,7 +126,6 @@ namespace Hearthstone_Deck_Tracker
 			LogConfigUpdater.Run().Forget();
 			LogConfigWatcher.Start();
 			UITheme.InitializeTheme();
-			ThemeManager.Run();
 			ResourceMonitor.Run();
 			//Game.SecretsManager.OnSecretsChanged += cards => Overlay.ShowSecrets(cards);
 			MainWindow = new MainWindow();
@@ -280,9 +287,10 @@ namespace Hearthstone_Deck_Tracker
 			_updateRequestsPlayer--;
 			if(_updateRequestsPlayer > 0)
 				return;
-			//Overlay.UpdatePlayerCards(new List<Card>(Game.Player.PlayerCardList), reset);
+			var cards = Hearthstone.CurrentGame?.LocalPlayer.GetRemainingCards().ToList();
+			Overlay.UpdatePlayerCards(cards, reset);
 			//if(Windows.PlayerWindow.IsVisible)
-			//	Windows.PlayerWindow.UpdatePlayerCards(new List<Card>(Game.Player.PlayerCardList), reset);
+			//	Windows.PlayerWindow.UpdatePlayerCards(cards, reset);
 		}
 
 		internal static async void UpdateOpponentCards(bool reset = false)
@@ -292,9 +300,10 @@ namespace Hearthstone_Deck_Tracker
 			_updateRequestsOpponent--;
 			if(_updateRequestsOpponent > 0)
 				return;
-			//Overlay.UpdateOpponentCards(new List<Card>(Game.Opponent.OpponentCardList), reset);
+			var cards = Hearthstone.CurrentGame?.OpposingPlayer.GetRemainingCards().ToList();
+			Overlay.UpdateOpponentCards(cards, reset);
 			//if(Windows.OpponentWindow.IsVisible)
-			//	Windows.OpponentWindow.UpdateOpponentCards(new List<Card>(Game.Opponent.OpponentCardList), reset);
+			//	Windows.OpponentWindow.UpdateOpponentCards(cards, reset);
 		}
 
 		public static class Windows

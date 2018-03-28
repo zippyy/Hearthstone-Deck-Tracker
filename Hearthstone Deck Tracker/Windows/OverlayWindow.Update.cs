@@ -49,8 +49,8 @@ namespace Hearthstone_Deck_Tracker.Windows
 		{
 			if (refresh)
 			{
-				ListViewPlayer.Items.Refresh();
-				ListViewOpponent.Items.Refresh();
+				//ListViewPlayer.Items.Refresh();
+				//ListViewOpponent.Items.Refresh();
 				SetTopmost();
 			}
 

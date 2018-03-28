@@ -214,12 +214,6 @@
     <Compile Include="API\GameEvents.cs" />
     <Compile Include="API\LogEvents.cs" />
     <Compile Include="API\PredamageInfo.cs" />
-    <Compile Include="Controls\AnimatedCard.xaml.cs">
-      <DependentUpon>AnimatedCard.xaml</DependentUpon>
-    </Compile>
-    <Compile Include="Controls\AnimatedCardList.xaml.cs">
-      <DependentUpon>AnimatedCardList.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Controls\Card.xaml.cs">
       <DependentUpon>Card.xaml</DependentUpon>
     </Compile>
@@ -485,9 +479,6 @@
     <Compile Include="Utility\RegistryHelper.cs" />
     <Compile Include="HsReplay\UploadMetaDataGenerator.cs" />
     <Compile Include="Importing\Game\ImportOptions\ExistingDeck.cs" />
-    <Compile Include="Controls\Information\CardThemesInfo.xaml.cs">
-      <DependentUpon>CardThemesInfo.xaml</DependentUpon>
-    </Compile>
     <Compile Include="FlyoutControls\Options\OptionsSearch.xaml.cs">
       <DependentUpon>OptionsSearch.xaml</DependentUpon>
     </Compile>
@@ -528,7 +519,6 @@
     <Compile Include="Utility\Extensions\GroupingExtensions.cs" />
     <Compile Include="Utility\Extensions\RectExtensions.cs" />
     <Compile Include="Utility\GaussianBlur.cs" />
-    <Compile Include="Utility\Themes\CardBarImageBuilder.cs" />
     <Compile Include="Hearthstone\HearthDbConverter.cs" />
     <Compile Include="Hearthstone\GameMetaData.cs" />
     <Compile Include="HsReplay\Utility\BuildDates.cs" />
@@ -633,14 +623,6 @@
     <Compile Include="Stats\CompiledStats\ArenaStats.cs" />
     <Compile Include="Utility\ConfigWrapper.cs" />
     <Compile Include="Utility\ScreenCapture.cs" />
-    <Compile Include="Utility\Themes\CardTextImageBuilder.cs" />
-    <Compile Include="Utility\Themes\ClassicImageBuilder.cs" />
-    <Compile Include="Utility\Themes\DefaultBarImageBuilder.cs" />
-    <Compile Include="Utility\Themes\FrostBarImageBuilder.cs" />
-    <Compile Include="Utility\Themes\MinimalBarImageBuilder.cs" />
-    <Compile Include="Utility\Themes\DarkBarImageBuilder.cs" />
-    <Compile Include="Utility\Themes\Theme.cs" />
-    <Compile Include="Utility\Themes\ThemeManager.cs" />
     <Compile Include="Utility\Toasts\ToastControls\ProgressIndicator.xaml.cs">
       <DependentUpon>ProgressIndicator.xaml</DependentUpon>
     </Compile>
@@ -832,14 +814,6 @@
       <DependentUpon>TimerWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Utility\XmlManager.cs" />
-    <Page Include="Controls\AnimatedCard.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Controls\AnimatedCardList.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Controls\Card.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
@@ -1053,10 +1027,6 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="FlyoutControls\DeckPanel.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
-    <Page Include="Controls\Information\CardThemesInfo.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

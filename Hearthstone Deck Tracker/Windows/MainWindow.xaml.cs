@@ -531,8 +531,8 @@ namespace Hearthstone_Deck_Tracker.Windows
 			GroupBoxHsReplayDeckInfo.Visibility = deck?.IsArenaDeck == true || deck?.IsDungeonDeck == true ? Collapsed : Visible;
 			if(setActive)
 			{
-				Core.Overlay.ListViewPlayer.Items.Refresh();
-				Core.Windows.PlayerWindow.ListViewPlayer.Items.Refresh();
+				//Core.Overlay.ListViewPlayer.Items.Refresh();
+				//Core.Windows.PlayerWindow.ListViewPlayer.Items.Refresh();
 			}
 			DeckManagerEvents.OnDeckSelected.Execute(deck);
 		}

@@ -7,7 +7,6 @@ using System.Windows.Media.Imaging;
 using HearthDb.Enums;
 using Hearthstone_Deck_Tracker.Hearthstone;
 using Hearthstone_Deck_Tracker.Utility;
-using Hearthstone_Deck_Tracker.Utility.Extensions;
 using static HearthDb.CardIds.Collectible;
 using static System.Windows.Visibility;
 
@@ -21,7 +20,7 @@ namespace Hearthstone_Deck_Tracker.Controls
 		{
 			InitializeComponent();
 			_allTags = deck.TagList.ToLowerInvariant().Replace("-", "");
-			ListViewPlayer.Update(deck.Cards.ToSortedCardList(), true);
+			//ListViewPlayer.Update(deck.Cards.ToSortedCardList(), true);
 
 			if(deckOnly)
 			{

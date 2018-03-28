@@ -6,6 +6,7 @@
              xmlns:local="clr-namespace:Hearthstone_Deck_Tracker"
              xmlns:controls1="clr-namespace:Hearthstone_Deck_Tracker.Controls"
              xmlns:deckSetIcons="clr-namespace:Hearthstone_Deck_Tracker.Controls.DeckSetIcons"
+             xmlns:ui="clr-namespace:HearthSim.UI;assembly=HearthSim.UI"
              mc:Ignorable="d" 
              d:DesignHeight="300" d:DesignWidth="300">
     <UserControl.Resources>
@@ -113,16 +114,16 @@
             </DockPanel>
             <!-- Card List -->
             <Viewbox Name="ViewBoxPlayer" StretchDirection="DownOnly" Stretch="Fill">
-                <controls1:AnimatedCardList x:Name="ListViewPlayer" Background="Transparent" BorderThickness="0"
+                <ui:AnimatedCardList x:Name="ListViewPlayer" Background="Transparent" BorderThickness="0"
                                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                                     ScrollViewer.VerticalScrollBarVisibility="Disabled" IsEnabled="False"
                                     ScrollViewer.CanContentScroll="False">
-                    <controls1:AnimatedCardList.ItemContainerStyle>
-                        <Style TargetType="controls1:AnimatedCard">
+                    <!--<ui:AnimatedCardList>
+                        <Style TargetType="ui:AnimatedCard">
                             <Setter Property="Margin" Value="0,1,0,0"/>
                         </Style>
-                    </controls1:AnimatedCardList.ItemContainerStyle>
-                </controls1:AnimatedCardList>
+                    </ui:AnimatedCardList>-->
+                </ui:AnimatedCardList>
             </Viewbox>
         </DockPanel>
     </Grid>

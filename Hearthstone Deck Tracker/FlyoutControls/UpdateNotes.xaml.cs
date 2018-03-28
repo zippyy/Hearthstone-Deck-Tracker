@@ -56,8 +56,6 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls
 			if(previousVersion == null)
 				return;
 			UserControl infoControl = null;
-			if(previousVersion < new Version(0, 13, 18))
-				infoControl = new CardThemesInfo();
 #if(!SQUIRREL)
 			if(previousVersion < new Version(0, 15, 14) && Config.Instance.SaveConfigInAppData != false
 														&& Config.Instance.SaveDataInAppData != false)

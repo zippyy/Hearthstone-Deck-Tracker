@@ -89,50 +89,50 @@ namespace Hearthstone_Deck_Tracker.Windows
 					&& PointInsideControl(relativePlayerDeckPos, ListViewPlayer.ActualWidth, ListViewPlayer.ActualHeight))
 			{
 				//card size = card list height / amount of cards
-				var cardSize = ViewBoxPlayer.ActualHeight / ListViewPlayer.Items.Count;
-				var cardIndex = (int)(relativePlayerDeckPos.Y / cardSize);
-				if(cardIndex < 0 || cardIndex >= ListViewPlayer.Items.Count)
-					return;
+				//var cardSize = ViewBoxPlayer.ActualHeight / ListViewPlayer.Items.Count;
+				//var cardIndex = (int)(relativePlayerDeckPos.Y / cardSize);
+				//if(cardIndex < 0 || cardIndex >= ListViewPlayer.Items.Count)
+				//	return;
 
-				ToolTipCard.SetValue(DataContextProperty, ListViewPlayer.Items.Cast<AnimatedCard>().ElementAt(cardIndex).Card);
+				//ToolTipCard.SetValue(DataContextProperty, ListViewPlayer.Items.Cast<AnimatedCard>().ElementAt(cardIndex).Card);
 
-				var centeredListOffset = Config.Instance.OverlayCenterPlayerStackPanel ? (BorderStackPanelPlayer.ActualHeight - StackPanelPlayer.ActualHeight) / 2 : 0;
-				//offset is affected by scaling
-				var topOffset = Canvas.GetTop(BorderStackPanelPlayer) + centeredListOffset
-								+ GetListViewOffset(StackPanelPlayer) + cardIndex * cardSize * Config.Instance.OverlayPlayerScaling / 100;
+				//var centeredListOffset = Config.Instance.OverlayCenterPlayerStackPanel ? (BorderStackPanelPlayer.ActualHeight - StackPanelPlayer.ActualHeight) / 2 : 0;
+				////offset is affected by scaling
+				//var topOffset = Canvas.GetTop(BorderStackPanelPlayer) + centeredListOffset
+				//				+ GetListViewOffset(StackPanelPlayer) + cardIndex * cardSize * Config.Instance.OverlayPlayerScaling / 100;
 
-				//prevent tooltip from going outside of the overlay
-				if(topOffset + ToolTipCard.ActualHeight > Height)
-					topOffset = Height - ToolTipCard.ActualHeight;
+				////prevent tooltip from going outside of the overlay
+				//if(topOffset + ToolTipCard.ActualHeight > Height)
+				//	topOffset = Height - ToolTipCard.ActualHeight;
 
-				SetTooltipPosition(topOffset, BorderStackPanelPlayer);
+				//SetTooltipPosition(topOffset, BorderStackPanelPlayer);
 
-				ToolTipCard.Visibility = visibility;
+				//ToolTipCard.Visibility = visibility;
 			}
 			//opponent card tooltips
 			else if(ListViewOpponent.Visibility == Visible && StackPanelOpponent.Visibility == Visible
 					&& PointInsideControl(relativeOpponentDeckPos, ListViewOpponent.ActualWidth, ListViewOpponent.ActualHeight))
 			{
-				//card size = card list height / amount of cards
-				var cardSize = ViewBoxOpponent.ActualHeight / ListViewOpponent.Items.Count;
-				var cardIndex = (int)(relativeOpponentDeckPos.Y / cardSize);
-				if(cardIndex < 0 || cardIndex >= ListViewOpponent.Items.Count)
-					return;
+				////card size = card list height / amount of cards
+				//var cardSize = ViewBoxOpponent.ActualHeight / ListViewOpponent.Items.Count;
+				//var cardIndex = (int)(relativeOpponentDeckPos.Y / cardSize);
+				//if(cardIndex < 0 || cardIndex >= ListViewOpponent.Items.Count)
+				//	return;
 
-				ToolTipCard.SetValue(DataContextProperty, ListViewOpponent.Items.Cast<AnimatedCard>().ElementAt(cardIndex).Card);
+				//ToolTipCard.SetValue(DataContextProperty, ListViewOpponent.Items.Cast<AnimatedCard>().ElementAt(cardIndex).Card);
 
-				var centeredListOffset = Config.Instance.OverlayCenterOpponentStackPanel ? (BorderStackPanelOpponent.ActualHeight - StackPanelOpponent.ActualHeight) / 2 : 0;
-				//offset is affected by scaling
-				var topOffset = Canvas.GetTop(BorderStackPanelOpponent) + centeredListOffset
-								+ GetListViewOffset(StackPanelOpponent) + cardIndex * cardSize * Config.Instance.OverlayOpponentScaling / 100;
+				//var centeredListOffset = Config.Instance.OverlayCenterOpponentStackPanel ? (BorderStackPanelOpponent.ActualHeight - StackPanelOpponent.ActualHeight) / 2 : 0;
+				////offset is affected by scaling
+				//var topOffset = Canvas.GetTop(BorderStackPanelOpponent) + centeredListOffset
+				//				+ GetListViewOffset(StackPanelOpponent) + cardIndex * cardSize * Config.Instance.OverlayOpponentScaling / 100;
 
-				//prevent tooltip from going outside of the overlay
-				if(topOffset + ToolTipCard.ActualHeight > Height)
-					topOffset = Height - ToolTipCard.ActualHeight;
+				////prevent tooltip from going outside of the overlay
+				//if(topOffset + ToolTipCard.ActualHeight > Height)
+				//	topOffset = Height - ToolTipCard.ActualHeight;
 
-				SetTooltipPosition(topOffset, BorderStackPanelOpponent);
+				//SetTooltipPosition(topOffset, BorderStackPanelOpponent);
 
-				ToolTipCard.Visibility = visibility;
+				//ToolTipCard.Visibility = visibility;
 			}
 			else if(StackPanelSecrets.Visibility == Visible
 					&& PointInsideControl(relativeSecretsPos, StackPanelSecrets.ActualWidth, StackPanelSecrets.ActualHeight))

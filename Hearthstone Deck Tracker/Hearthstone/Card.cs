@@ -1,5 +1,3 @@
-#region
-
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -10,13 +8,10 @@ using System.Windows;
 using System.Windows.Media;
 using System.Xml.Serialization;
 using HearthDb.Enums;
-using HearthSim.Core.Hearthstone;
 using Hearthstone_Deck_Tracker.Annotations;
-using Hearthstone_Deck_Tracker.Utility;
 using Hearthstone_Deck_Tracker.Utility.Logging;
-using Hearthstone_Deck_Tracker.Utility.Themes;
-
-#endregion
+using HearthSim.UI;
+using HearthSim.UI.Themes;
 
 namespace Hearthstone_Deck_Tracker.Hearthstone
 {
@@ -396,7 +391,7 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 				}
 				try
 				{
-					var image = ThemeManager.GetBarImageBuilder(this).Build();
+					var image = ThemeManager.GetBarImageBuilder(new CardViewModel(new HearthSim.Core.Hearthstone.Card(_dbCard))).Build();
 					if (image.CanFreeze)
 						image.Freeze();
 					cardImageObj = new CardImageObject(image, this);
