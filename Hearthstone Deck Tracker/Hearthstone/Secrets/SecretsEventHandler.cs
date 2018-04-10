@@ -122,23 +122,27 @@ namespace Hearthstone_Deck_Tracker.Hearthstone.Secrets
 			exclude.Add(Paladin.Repentance);
 
 			if(FreeSpaceOnBoard)
+			{
 				exclude.Add(Mage.MirrorEntity);
+				if(Game.OpponentEntity.GetTag(GameTag.NUM_CARDS_PLAYED_THIS_TURN) >= 2)
+					exclude.Add(Hunter.RatTrap);
+			}
 
 			if(FreeSpaceInHand)
+			{
 				exclude.Add(Mage.FrozenClone);
+				if(Game.OpponentEntity.GetTag(GameTag.NUM_CARDS_PLAYED_THIS_TURN) >= 2)
+					exclude.Add(Paladin.HiddenWisdom);
+			}
 
 			//Hidden cache will only trigger if the opponent has a minion in hand. 
 			//We might not know this for certain - requires additional tracking logic.
 			var cardsInOpponentsHand = Game.Entities.Select(kvp => kvp.Value).Where(e => e.IsInHand && e.IsControlledBy(Game.Opponent.Id)).ToList();
 			foreach (var cardInOpponentsHand in cardsInOpponentsHand)
-			{
 				EntititesInHandOnMinionsPlayed.Add(cardInOpponentsHand);
-			}
 
 			if (IsAnyMinionInOpponentsHand)
-			{
 				exclude.Add(Hunter.HiddenCache);
-			}
 
 			Exclude(exclude);
 		}
