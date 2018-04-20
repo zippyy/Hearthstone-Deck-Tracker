@@ -103,7 +103,13 @@ namespace Hearthstone_Deck_Tracker
 				UpdateOpponentCards();
 				Helper.UpdateEverything(Manager.Game);
 			};
-			Manager.Game.GameCreated += args => { Manager.Game.CurrentGame.LocalPlayer.Deck = Manager.Game.SelectedDeck; };
+			Manager.Game.GameCreated += args =>
+			{
+				Manager.Game.CurrentGame.LocalPlayer.Deck = Manager.Game.SelectedDeck; 
+				UpdatePlayerCards(true);
+				UpdateOpponentCards(true);
+				Helper.UpdateEverything(Manager.Game);
+			};
 			Manager.Game.LogConfigError += args => MainWindow.ShowLogConfigUpdateFailedMessage().Forget();
 			Manager.Game.HearthstoneRestartRequired += () =>
 			{
