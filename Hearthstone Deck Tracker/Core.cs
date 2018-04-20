@@ -80,6 +80,7 @@ namespace Hearthstone_Deck_Tracker
 			Manager.Game.DungeonRunMatchStarted += args =>
 			{
 				DeckManager.DungeonRunMatchStarted(args.IsNew, args.Deck); 
+				Manager.Game.CurrentGame.LocalPlayer.Deck = Manager.Game.SelectedDeck; 
 			};
 			Manager.Game.DungeonRunDeckUpdated += args =>
 			{
