@@ -287,7 +287,8 @@ namespace Hearthstone_Deck_Tracker
 			if(_updateRequestsPlayer > 0)
 				return;
 			var cards = Hearthstone.CurrentGame?.LocalPlayer.GetRemainingCards().ToList();
-			Overlay.UpdatePlayerCards(cards, reset);
+			if(cards != null)
+				Overlay.UpdatePlayerCards(cards, reset);
 			//if(Windows.PlayerWindow.IsVisible)
 			//	Windows.PlayerWindow.UpdatePlayerCards(cards, reset);
 		}
@@ -300,7 +301,8 @@ namespace Hearthstone_Deck_Tracker
 			if(_updateRequestsOpponent > 0)
 				return;
 			var cards = Hearthstone.CurrentGame?.OpposingPlayer.GetRemainingCards().ToList();
-			Overlay.UpdateOpponentCards(cards, reset);
+			if(cards != null)
+				Overlay.UpdateOpponentCards(cards, reset);
 			//if(Windows.OpponentWindow.IsVisible)
 			//	Windows.OpponentWindow.UpdateOpponentCards(cards, reset);
 		}
