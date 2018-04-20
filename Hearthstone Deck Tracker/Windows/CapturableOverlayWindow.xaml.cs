@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Windows;
 using System.Windows.Media;
 using Hearthstone_Deck_Tracker.Annotations;
+using HearthSim.Util;
 
 namespace Hearthstone_Deck_Tracker.Windows
 {
@@ -40,7 +41,7 @@ namespace Hearthstone_Deck_Tracker.Windows
 			if(_activated && state != WindowState.Minimized)
 			{
 				_activated = false;
-				User32.BringHsToForeground();
+				HearthstoneWindow.Activate();
 			}
 			if(ForcedWindowState == state)
 				return;

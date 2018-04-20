@@ -13,6 +13,7 @@ using System.Windows.Shapes;
 using Hearthstone_Deck_Tracker.Annotations;
 using Hearthstone_Deck_Tracker.Controls;
 using HearthSim.Core.Hearthstone;
+using HearthSim.Util;
 using static System.Windows.Visibility;
 using Card = Hearthstone_Deck_Tracker.Hearthstone.Card;
 
@@ -67,7 +68,7 @@ namespace Hearthstone_Deck_Tracker.Windows
 				EnableBatteryMonitor();
 			InitializeCollections();
 			GridMain.Visibility = Hidden;
-			if(User32.GetHearthstoneWindow() != IntPtr.Zero)
+			if(HearthstoneWindow.Exists())
 				UpdatePosition();
 			Update(true);
 			UpdateScaling();
@@ -107,8 +108,8 @@ namespace Hearthstone_Deck_Tracker.Windows
 			if(enable)
 			{
 				Show();
-				if(User32.GetForegroundWindow() == new WindowInteropHelper(this).Handle)
-					User32.BringHsToForeground();
+				if(WindowHelper.IsInForeground(new WindowInteropHelper(this).Handle))
+					HearthstoneWindow.Activate();
 			}
 			else
 				Hide();
@@ -136,9 +137,8 @@ namespace Hearthstone_Deck_Tracker.Windows
 		private void Window_SourceInitialized_1(object sender, EventArgs e)
 		{
 			var hwnd = new WindowInteropHelper(this).Handle;
-			User32.SetWindowExStyle(hwnd, User32.WsExTransparent | User32.WsExToolWindow);
+			WindowHelper.SetStyle(hwnd, WndStyle.Transparent | WndStyle.ToolWindow);
 		}
-
 
 		public void HideTimers() => LblPlayerTurnTime.Visibility = LblOpponentTurnTime.Visibility = LblTurnTime.Visibility = Hidden;
 

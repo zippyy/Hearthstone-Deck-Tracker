@@ -6,6 +6,7 @@ using HearthDb.Enums;
 using Hearthstone_Deck_Tracker.Enums;
 using Hearthstone_Deck_Tracker.Utility.Logging;
 using HearthSim.Core.Hearthstone;
+using HearthSim.Util;
 
 namespace Hearthstone_Deck_Tracker
 {
@@ -109,7 +110,7 @@ namespace Hearthstone_Deck_Tracker
 			if(!Config.Instance.TimerAlert || Seconds != Config.Instance.TimerAlertSeconds)
 				return;
 			SystemSounds.Asterisk.Play();
-			User32.FlashHs();
+			HearthstoneWindow.Flash();
 		}
 
 		public void SetPlayer(ActivePlayer player)

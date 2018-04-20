@@ -1,13 +1,10 @@
-#region
 
 using System;
 using System.Threading.Tasks;
-using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Interop;
 using System.Windows.Media.Animation;
-
-#endregion
+using HearthSim.Util;
 
 namespace Hearthstone_Deck_Tracker.Utility.Toasts
 {
@@ -36,7 +33,7 @@ namespace Hearthstone_Deck_Tracker.Utility.Toasts
 		private void Window_SourceInitialized(object sender, EventArgs e)
 		{
 			var hwnd = new WindowInteropHelper(this).Handle;
-			User32.SetWindowExStyle(hwnd, User32.WsExToolWindow);
+			WindowHelper.SetStyle(hwnd, WndStyle.ToolWindow);
 		}
 	}
 }

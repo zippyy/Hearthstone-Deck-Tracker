@@ -6,6 +6,7 @@ using System.Drawing.Imaging;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using Hearthstone_Deck_Tracker.Utility.Logging;
+using HearthSim.Util;
 
 #endregion
 
@@ -20,9 +21,9 @@ namespace Hearthstone_Deck_Tracker.Utility
 																 bool requireInForeground = true, bool? altScreenCapture = null)
 		{
 			if(wndHandle == default(IntPtr))
-				wndHandle = User32.GetHearthstoneWindow();
+				wndHandle = HearthstoneWindow.Get();
 
-			if(requireInForeground && !User32.IsHearthstoneInForeground())
+			if(requireInForeground && !HearthstoneWindow.IsInForeground())
 				return null;
 
 			try

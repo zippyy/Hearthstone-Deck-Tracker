@@ -1,5 +1,6 @@
 using System;
 using System.Windows;
+using HearthSim.Util;
 using MahApps.Metro.Controls.Dialogs;
 
 namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Overlay
@@ -63,7 +64,7 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Overlay
 
 		private async void BtnUnlockOverlay_Click(object sender, RoutedEventArgs e)
 		{
-			if(User32.GetHearthstoneWindow() == IntPtr.Zero)
+			if(!HearthstoneWindow.Exists())
 				return;
 			BtnUnlockOverlay.Content = await Core.Overlay.UnlockUi() ? "Lock" : "Unlock";
 		}

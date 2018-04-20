@@ -179,7 +179,7 @@ namespace Hearthstone_Deck_Tracker.Utility.HotKeys
 			)]
 		public static async void Screenshot()
 		{
-			var handle = User32.GetHearthstoneWindow();
+			var handle = HearthstoneWindow.Get();
 			if(handle == IntPtr.Zero)
 				return;
 			var rect = User32.GetHearthstoneRect(false);
@@ -204,7 +204,7 @@ namespace Hearthstone_Deck_Tracker.Utility.HotKeys
 			)]
 		public static async void GameScreenshot()
 		{
-			var handle = User32.GetHearthstoneWindow();
+			var handle = HearthstoneWindow.Get();
 			if(handle == IntPtr.Zero)
 				return;
 			var rect = User32.GetHearthstoneRect(false);

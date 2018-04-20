@@ -25,6 +25,7 @@ using Hearthstone_Deck_Tracker.Hearthstone;
 using Hearthstone_Deck_Tracker.Utility.Extensions;
 using Hearthstone_Deck_Tracker.Utility.Logging;
 using HearthSim.Core.Hearthstone;
+using HearthSim.Util;
 using MahApps.Metro.Controls;
 using MahApps.Metro.Controls.Dialogs;
 using Microsoft.Win32;
@@ -129,7 +130,7 @@ namespace Hearthstone_Deck_Tracker
 
 		public static int CurrentSeason => (DateTime.Now.Year - 2014) * 12 - 3 + DateTime.Now.Month;
 
-		public static WindowState GameWindowState { get; internal set; } = User32.GetHearthstoneWindowState();
+		public static WindowState GameWindowState { get; internal set; } = HearthstoneWindow.GetState();
 
 		public static Version GetCurrentVersion() => Assembly.GetExecutingAssembly().GetName().Version;
 

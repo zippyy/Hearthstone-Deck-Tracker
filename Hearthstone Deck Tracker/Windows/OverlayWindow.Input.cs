@@ -12,6 +12,7 @@ using Hearthstone_Deck_Tracker.Controls.Overlay;
 using Hearthstone_Deck_Tracker.Enums;
 using Hearthstone_Deck_Tracker.Hearthstone;
 using Hearthstone_Deck_Tracker.Utility.Logging;
+using HearthSim.Util;
 
 namespace Hearthstone_Deck_Tracker.Windows
 {
@@ -159,7 +160,7 @@ namespace Hearthstone_Deck_Tracker.Windows
 
 		private void MouseInputOnLmbDown(object sender, EventArgs eventArgs)
 		{
-			if (!User32.IsHearthstoneInForeground() || Visibility != Visibility.Visible)
+			if (!HearthstoneWindow.IsInForeground() || Visibility != Visibility.Visible)
 				return;
 
 			var pos = User32.GetMousePos();

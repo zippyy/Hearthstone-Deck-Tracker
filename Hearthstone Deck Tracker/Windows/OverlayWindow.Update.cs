@@ -12,6 +12,7 @@ using Hearthstone_Deck_Tracker.Utility.BoardDamage;
 using Hearthstone_Deck_Tracker.Utility.Logging;
 using HearthSim.Core.Hearthstone.Entities;
 using HearthSim.Core.Hearthstone.Enums;
+using HearthSim.Util;
 using static System.Windows.Visibility;
 using static HearthDb.Enums.GameTag;
 using static Hearthstone_Deck_Tracker.Controls.Overlay.WotogCounterStyle;
@@ -22,7 +23,7 @@ namespace Hearthstone_Deck_Tracker.Windows
 	{
 		private async void SetTopmost()
 		{
-			if(User32.GetHearthstoneWindow() == IntPtr.Zero)
+			if(HearthstoneWindow.Get() == IntPtr.Zero)
 			{
 				Log.Info("Hearthstone window not found");
 				return;
@@ -30,7 +31,7 @@ namespace Hearthstone_Deck_Tracker.Windows
 
 			for(var i = 0; i < 20; i++)
 			{
-				var isTopmost = User32.IsTopmost(new WindowInteropHelper(this).Handle);
+				var isTopmost = WindowHelper.IsTopmost(new WindowInteropHelper(this).Handle);
 				if(isTopmost)
 				{
 					Log.Info($"Overlay is topmost after {i + 1} tries.");
@@ -87,7 +88,7 @@ namespace Hearthstone_Deck_Tracker.Windows
 				Core.Hearthstone.CurrentGame?.LocalPlayer.InPlay.Where(x => x.IsMinion).OrderBy(x => x.GetTag(ZONE_POSITION))
 					.ToList() ?? new List<Entity>();
 			UpdateMouseOverDetectionRegions(oppBoard, playerBoard);
-			if(!_game.IsInMenu && (_game.CurrentGame?.IsMulliganDone ?? false) && User32.IsHearthstoneInForeground() && IsVisible)
+			if(!_game.IsInMenu && (_game.CurrentGame?.IsMulliganDone ?? false) && HearthstoneWindow.IsInForeground() && IsVisible)
 				DetectMouseOver(playerBoard, oppBoard);
 			else
 				FlavorTextVisibility = Collapsed;
@@ -235,7 +236,7 @@ namespace Hearthstone_Deck_Tracker.Windows
 		{
 			//hide the overlay depenting on options
 			ShowOverlay(
-				!((Config.Instance.HideInBackground && !User32.IsHearthstoneInForeground())
+				!((Config.Instance.HideInBackground && !HearthstoneWindow.IsInForeground())
 				|| (Config.Instance.HideOverlayInSpectator && (_game.CurrentGame?.MatchInfo?.Spectator ?? false))
 				|| Config.Instance.HideOverlay
 				|| ForceHidden || Helper.GameWindowState == WindowState.Minimized));

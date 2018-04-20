@@ -75,7 +75,7 @@ namespace Hearthstone_Deck_Tracker
 			Manager.Game.FriendlyChallenge += () =>
 			{
 				if(Config.Instance.FlashHsOnFriendlyChallenge)
-					User32.FlashHs();
+					HearthstoneWindow.Flash();
 			};
 			Manager.Game.DungeonRunMatchStarted += args =>
 			{
@@ -217,7 +217,7 @@ namespace Hearthstone_Deck_Tracker
 			{
 				if(Config.Instance.CheckForUpdates)
 					Updater.CheckForUpdates();
-				if(User32.GetHearthstoneWindow() != IntPtr.Zero)
+				if(HearthstoneWindow.Exists())
 				{
 					// TODO: on hearthstone start
 					//		BackupManager.Run();
@@ -231,9 +231,9 @@ namespace Hearthstone_Deck_Tracker
 
 					TrayIcon.MenuItemStartHearthstone.Visible = false;
 
-					Helper.GameWindowState = User32.GetHearthstoneWindowState();
+					Helper.GameWindowState = HearthstoneWindow.GetState();
 					Windows.CapturableOverlay?.Update();
-					if(User32.IsHearthstoneInForeground() && Helper.GameWindowState != WindowState.Minimized)
+					if(HearthstoneWindow.IsInForeground() && Helper.GameWindowState != WindowState.Minimized)
 					{
 						if(hsForegroundChanged)
 						{
