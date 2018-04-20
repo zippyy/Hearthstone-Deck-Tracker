@@ -298,7 +298,7 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Tracker
 		{
 			if(!_initialized)
 				return;
-			RegistryHelper.SetRunKey();
+			AutoRunHelper.Set();
 			Config.Instance.StartWithWindows = true;
 			Config.Save();
 		}
@@ -307,7 +307,7 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Tracker
 		{
 			if(!_initialized)
 				return;
-			RegistryHelper.DeleteRunKey();
+			AutoRunHelper.Delete();
 			Config.Instance.StartWithWindows = false;
 			Config.Save();
 		}

@@ -476,7 +476,7 @@
     <Compile Include="HsReplay\Data\HsReplayDecks.cs" />
     <Compile Include="HsReplay\Utility\ShortIdHelper.cs" />
     <Compile Include="Importing\StringImporter.cs" />
-    <Compile Include="Utility\RegistryHelper.cs" />
+    <Compile Include="Utility\AutoRunHelper.cs" />
     <Compile Include="HsReplay\UploadMetaDataGenerator.cs" />
     <Compile Include="Importing\Game\ImportOptions\ExistingDeck.cs" />
     <Compile Include="FlyoutControls\Options\OptionsSearch.xaml.cs">
