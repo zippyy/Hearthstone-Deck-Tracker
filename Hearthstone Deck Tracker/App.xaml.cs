@@ -71,7 +71,6 @@ namespace Hearthstone_Deck_Tracker
 				{
 					sr.WriteLine("########## " + DateTime.Now + " ##########");
 					sr.WriteLine(e.Exception);
-					sr.WriteLine("Logfile: " + Log.CurrentLogFile);
 				}
 #endif
 				e.Handled = true;
