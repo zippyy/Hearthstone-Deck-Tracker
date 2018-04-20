@@ -7,6 +7,7 @@ using System.Windows.Forms;
 using Hearthstone_Deck_Tracker.Utility;
 using Hearthstone_Deck_Tracker.Utility.Extensions;
 using Hearthstone_Deck_Tracker.Utility.Logging;
+using HearthSim.Util;
 
 #endregion
 
@@ -45,7 +46,7 @@ namespace Hearthstone_Deck_Tracker
 
 			MenuItemStartHearthstone = new MenuItem(LocUtil.Get("TrayIcon_MenuItemStartHearthstone"), (sender, args) => HearthstoneRunner.StartHearthstone().Forget());
 			NotifyIcon.ContextMenu.MenuItems.Add(MenuItemStartHearthstone);
-			HearthstoneRunner.StartingHearthstone += starting => MenuItemStartHearthstone.Enabled = !starting;
+			HearthstoneRunner.StartingHearthstone += state => MenuItemStartHearthstone.Enabled = state != HearthstoneRunner.State.Starting;
 
 			MenuItemUseNoDeck = new MenuItem(LocUtil.Get("TrayIcon_MenuItemUseNoDeck"), (sender, args) => UseNoDeckContextMenu());
 			NotifyIcon.ContextMenu.MenuItems.Add(MenuItemUseNoDeck);

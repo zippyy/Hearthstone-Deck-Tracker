@@ -21,6 +21,7 @@ using HearthSim.Core;
 using HearthSim.Core.HSReplay;
 using HearthSim.Core.LogReading;
 using HearthSim.UI.Themes;
+using HearthSim.Util;
 using WPFLocalizeExtension.Engine;
 using Log = HearthSim.Util.Logging.Log;
 
@@ -117,6 +118,16 @@ namespace Hearthstone_Deck_Tracker
 					"The log.config file has been updated. "
 					+ "HDT may not work properly until Hearthstone has been restarted.").Forget();
 				Overlay.ShowRestartRequiredWarning();
+			};
+
+			HearthstoneRunner.StartingHearthstone += state =>
+			{
+				if(state == HearthstoneRunner.State.Error)
+				{
+					ErrorManager.AddError("Could not start Battle.net Launcher",
+						"Starting the Battle.net launcher failed or was too slow. "
+						+ "Please try again once it started or run Hearthstone manually.", true);
+				}
 			};
 
 			Log.Info($"HDT: {Helper.GetCurrentVersion()}, Operating System: {Helper.GetWindowsVersion()}, .NET Framework: {Helper.GetInstalledDotNetVersion()}");

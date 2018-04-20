@@ -14,6 +14,7 @@ using Microsoft.Win32;
 using HearthDb.Enums;
 using Hearthstone_Deck_Tracker.Enums;
 using HearthSim.Core.Hearthstone.Enums;
+using HearthSim.Util;
 using Deck = Hearthstone_Deck_Tracker.Hearthstone.Deck;
 
 namespace Hearthstone_Deck_Tracker.Windows

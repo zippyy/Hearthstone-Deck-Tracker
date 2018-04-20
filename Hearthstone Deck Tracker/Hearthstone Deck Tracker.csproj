@@ -267,7 +267,6 @@
     <Compile Include="Utility\DataLoader.cs" />
     <Compile Include="Utility\GameTypeHelper.cs" />
     <Compile Include="Utility\GlobalCommands.cs" />
-    <Compile Include="Utility\HearthstoneRunner.cs" />
     <Compile Include="Utility\RateLimiter.cs" />
     <Compile Include="Utility\JsonSerializer.cs" />
     <Compile Include="Utility\Attributes\AssetNameAttribute.cs" />

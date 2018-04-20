@@ -11,6 +11,7 @@ using System.Windows.Forms;
 using System.Windows.Media.Imaging;
 using Hearthstone_Deck_Tracker.Utility.Extensions;
 using Hearthstone_Deck_Tracker.Utility.Logging;
+using HearthSim.Util;
 using Clipboard = System.Windows.Clipboard;
 
 #endregion

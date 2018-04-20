@@ -4,6 +4,7 @@ using System.Windows.Input;
 using Hearthstone_Deck_Tracker.Annotations;
 using Hearthstone_Deck_Tracker.Utility;
 using Hearthstone_Deck_Tracker.Utility.Extensions;
+using HearthSim.Util;
 
 namespace Hearthstone_Deck_Tracker.Controls
 {
@@ -12,7 +13,7 @@ namespace Hearthstone_Deck_Tracker.Controls
 		public StartHearthstoneButton()
 		{
 			InitializeComponent();
-			HearthstoneRunner.StartingHearthstone += starting => Enabled = !starting;
+			HearthstoneRunner.StartingHearthstone += state => Enabled = state != HearthstoneRunner.State.Starting;
 			Core.Hearthstone.HearthstoneStarted += () => OnPropertyChanged(nameof(HearthstoneIsRunning));
 			Core.Hearthstone.HearthstoneExited += () => OnPropertyChanged(nameof(HearthstoneIsRunning));
 		}
