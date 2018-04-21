@@ -156,14 +156,7 @@
                 <local:HearthstoneTextBlock x:Name="LblGoldProgress" Text="Wins: 0/3 (0/100G)" FontSize="16"
                                             TextAlignment="Left" VerticalAlignment="Center" Visibility="Visible"/>
             </Grid>
-            <StackPanel>
-                <StackPanel Orientation="Horizontal" Name="StackPanelWarning" Visibility="Collapsed">
-                    <local:HearthstoneTextBlock Text="{lex:Loc Overlay_Label_Warning}" Margin="3" FontSize="16" Fill="Red"/>
-                    <local:HearthstoneTextBlock x:Name="LblWarning" Text="{lex:Loc Overlay_Label_CardsNotFound}" Margin="3" FontSize="16" Fill="White"/>
-                    <local:HearthstoneTextBlock x:Name="LblWarningCards" Text="" Margin="3" FontSize="16" Fill="White"/>
-                </StackPanel>
-                <local:HearthstoneTextBlock x:Name="TextBlockRestartWarning" Text="{lex:Loc Overlay_Label_Restart}" Visibility="Collapsed" Margin="3" FontSize="16" Fill="Red"/>
-            </StackPanel>
+            <local:HearthstoneTextBlock x:Name="TextBlockRestartWarning" Text="{lex:Loc Overlay_Label_Restart}" Visibility="Collapsed" Margin="3" FontSize="16" Fill="Red"/>
             <Grid Name="IconBoardAttackOpponent" Canvas.Top="300" Canvas.Left="300" Width="75" Height="75">
                 <Image Source="/HearthstoneDeckTracker;component/Images/board_damage.png"/>
                 <local:HearthstoneTextBlock x:Name="TextBlockOpponentAttack" FontSize="24" Width="75" Height="75" Text="0" TextAlignment="Center" Margin="0,3,0,0"/>

@@ -137,15 +137,6 @@ namespace Hearthstone_Deck_Tracker.Windows
 			LblDeckTitle.Visibility = Config.Instance.ShowDeckTitle && hasDeck ? Visible : Collapsed;
 			LblWinRateAgainst.Visibility = Config.Instance.ShowWinRateAgainst && hasDeck ? Visible : Collapsed;
 
-			var showWarning = !_game.IsInMenu && DeckList.Instance.ActiveDeckVersion != null && DeckManager.NotFoundCards.Any() && DeckManager.IgnoredDeckId != DeckList.Instance.ActiveDeckVersion.DeckId;
-			StackPanelWarning.Visibility = showWarning ? Visible : Collapsed;
-			if(showWarning)
-			{
-				LblWarningCards.Text = string.Join(", ", DeckManager.NotFoundCards.Take(Math.Min(DeckManager.NotFoundCards.Count, 3)).Select(c => c.LocalizedName));
-				if(DeckManager.NotFoundCards.Count > 3)
-					LblWarningCards.Text += ", ...";
-			}
-
 			if (_game.IsInMenu)
 			{
 				if (Config.Instance.AlwaysShowGoldProgress)
