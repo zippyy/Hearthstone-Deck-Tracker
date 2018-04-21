@@ -137,7 +137,7 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 			{
 				if(string.IsNullOrEmpty(Class))
 					return CardClass.INVALID;
-				return Enum.TryParse(Class, out CardClass cardClass) ? cardClass : CardClass.INVALID;
+				return Enum.TryParse(Class?.ToUpper(), out CardClass cardClass) ? cardClass : CardClass.INVALID;
 			}
 			set
 			{
