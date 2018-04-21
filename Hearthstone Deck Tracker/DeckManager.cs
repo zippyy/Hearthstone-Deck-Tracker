@@ -441,7 +441,7 @@ namespace Hearthstone_Deck_Tracker
 			deck.Cards.Clear();
 			Helper.SortCardCollection(cards, false);
 			foreach(var card in cards)
-				deck.Cards.Add(new Card(card.Data));
+				deck.Cards.Add(new Card(card.Data, card.Count));
 			deck.LastEdited = DateTime.Now;
 			DeckList.Save();
 			Core.UpdatePlayerCards(true);

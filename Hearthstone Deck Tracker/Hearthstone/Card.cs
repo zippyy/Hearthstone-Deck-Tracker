@@ -116,11 +116,11 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 			}
 		}
 
-		public Card(HearthDb.Card dbCard)
+		public Card(HearthDb.Card dbCard, int count = 1)
 		{
 			_dbCard = dbCard;
 			Id = dbCard.Id;
-			Count = 1;
+			Count = count;
 			PlayerClass = HearthDbConverter.ConvertClass(dbCard.Class);
 			Rarity = dbCard.Rarity;
 			Type = HearthDbConverter.CardTypeConverter(dbCard.Type);
