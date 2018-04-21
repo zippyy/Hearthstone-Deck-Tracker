@@ -130,6 +130,7 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 			HsId = hsId;
 		}
 
+		[XmlIgnore]
 		public CardClass CardClass
 		{
 			get
