@@ -503,8 +503,6 @@
     <Compile Include="Stats\CompiledStats\ConstructedMatchup.cs" />
     <Compile Include="Stats\TrackedCard.cs" />
     <Compile Include="Utility\Analytics\Influx.cs" />
-    <Compile Include="Utility\Analytics\InfluxPoint.cs" />
-    <Compile Include="Utility\Analytics\InfluxPointBuilder.cs" />
     <Compile Include="Utility\Exceptions\ExportingInterruptedException.cs" />
     <Compile Include="Utility\LocUtil.cs" />
     <Compile Include="Utility\ResourceMonitor.cs" />

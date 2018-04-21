@@ -11,6 +11,7 @@ using Hearthstone_Deck_Tracker.Plugins;
 using Hearthstone_Deck_Tracker.Utility.Extensions;
 using Hearthstone_Deck_Tracker.Utility.Logging;
 using HearthSim.Core.HSReplay;
+using HearthSim.Util.Analytics;
 
 namespace Hearthstone_Deck_Tracker.Utility.Analytics
 {
@@ -90,23 +91,28 @@ namespace Hearthstone_Deck_Tracker.Utility.Analytics
 		{
 			if(!Config.Instance.GoogleAnalytics)
 				return;
-			WritePoint(new InfluxPointBuilder("hdt_memory_usage", false).Tag("os", Regex.Escape(Helper.GetWindowsVersion()))
-				.Tag("net", Helper.GetInstalledDotNetVersion()).Field("MB", mem).Build());
+			WritePoint(new InfluxPointBuilder("hdt_memory_usage")
+				.Tag("os", Regex.Escape(Helper.GetWindowsVersion()))
+				.Tag("net", Helper.GetInstalledDotNetVersion())
+				.Field("MB", mem)
+				.Build());
 		}
 
 		public static void OnUnevenPermissions()
 		{
 			if(!Config.Instance.GoogleAnalytics)
 				return;
-			WritePoint(new InfluxPointBuilder("hdt_uneven_permissions", false).Tag("os", Regex.Escape(Helper.GetWindowsVersion()))
-				.Tag("net", Helper.GetInstalledDotNetVersion()).Build());
+			WritePoint(new InfluxPointBuilder("hdt_uneven_permissions")
+				.Tag("os", Regex.Escape(Helper.GetWindowsVersion()))
+				.Tag("net", Helper.GetInstalledDotNetVersion())
+				.Build());
 		}
 
 		public static void OnPluginLoaded(IPlugin plugin, TimeSpan startupTime)
 		{
 			if(!Config.Instance.GoogleAnalytics)
 				return;
-			var point = new InfluxPointBuilder("hdt_plugin_loaded", false)
+			var point = new InfluxPointBuilder("hdt_plugin_loaded")
 				.Tag("name", plugin.Name)
 				.Tag("version", plugin.Version.ToVersionString())
 				.Field("startup_time", (int)startupTime.TotalMilliseconds);
@@ -117,7 +123,7 @@ namespace Hearthstone_Deck_Tracker.Utility.Analytics
 		{
 			if(!Config.Instance.GoogleAnalytics)
 				return;
-			var point = new InfluxPointBuilder("hdt_plugin_loading_error", false)
+			var point = new InfluxPointBuilder("hdt_plugin_loading_error")
 				.Tag("name", plugin.Name)
 				.Tag("version", plugin.Version.ToVersionString());
 			WritePoint(point.Build());
