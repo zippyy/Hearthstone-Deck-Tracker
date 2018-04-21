@@ -89,10 +89,10 @@ namespace Hearthstone_Deck_Tracker
 			};
 			Manager.Game.Arena.DraftComplete += args =>
 			{
-				var behaviour = Config.Instance.SelectedArenaImportingBehaviour
-								?? ArenaImportingBehaviour.AutoImportSave;
-				DeckManager.AutoImportArena(behaviour, args.Info);
+				DeckManager.ImportDeck(
+					new HearthSim.Core.Hearthstone.Deck(HearthSim.Core.Hearthstone.Enums.DeckType.Arena, args.Info.Deck));
 			};
+			Manager.Game.Collection.DecksChanged += args => DeckManager.ImportDecks(args.Items); 
 			Manager.Game.HearthstoneInstallationNotFound += () =>
 			{
 				ErrorManager.AddError("Could not find Hearthstone installation",

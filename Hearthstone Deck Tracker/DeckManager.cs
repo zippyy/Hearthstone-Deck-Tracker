@@ -3,202 +3,27 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Globalization;
 using System.Linq;
-using System.Threading.Tasks;
 using HearthDb.Enums;
-using HearthMirror.Objects;
 using Hearthstone_Deck_Tracker.API;
-using Hearthstone_Deck_Tracker.Enums;
 using Hearthstone_Deck_Tracker.Hearthstone;
-using Hearthstone_Deck_Tracker.Importing;
 using Hearthstone_Deck_Tracker.Importing.Game;
 using Hearthstone_Deck_Tracker.Importing.Game.ImportOptions;
-using Hearthstone_Deck_Tracker.Utility.Extensions;
 using Hearthstone_Deck_Tracker.Utility.Logging;
-using Hearthstone_Deck_Tracker.Windows;
 using HearthSim.Core.Hearthstone.Entities;
 using Card = Hearthstone_Deck_Tracker.Hearthstone.Card;
 using Deck = Hearthstone_Deck_Tracker.Hearthstone.Deck;
+using DeckType = HearthSim.Core.Hearthstone.Enums.DeckType;
 
 namespace Hearthstone_Deck_Tracker
 {
 	public class DeckManager
 	{
-		private static bool _waitingForHero;
-		private static bool _waitingForUserInput;
-		private static int _waitingForDraws;
-		private static int _autoSelectCount;
-		public static Guid IgnoredDeckId;
-		public static List<Card> NotFoundCards { get; set; } = new List<Card>(); 
-
-		internal static void ResetAutoSelectCount() => _autoSelectCount = 0;
-
-		public static async Task DetectCurrentDeck()
-		{
-			var game = Core.Hearthstone.CurrentGame;
-			var deck = DeckList.Instance.ActiveDeck;
-			if(deck == null || deck.DeckId == IgnoredDeckId || _waitingForHero || _waitingForUserInput)
-				return;
-			if(game.LocalPlayer.CurrentHero == null)
-			{
-				_waitingForHero = true;
-				while(game.LocalPlayer.CurrentHero == null)
-					await Task.Delay(100);
-				_waitingForHero = false;
-			}
-			var cardEntites = RevealedEntites;
-			var notFound = GetMissingCards(cardEntites, deck);
-			if(notFound.Any())
-			{
-				var activeVersion = deck.Version;
-				AutoImport(false);
-				if(activeVersion != deck.Version && cardEntites.All(ce => deck.GetSelectedDeckVersion().Cards.Any(c => c.Id == ce.Key && c.Count >= ce.Count())))
-				{
-					//if autoimport finds a new version of the selected deck, the new version will be set as selected, but not active.
-					//We are still using the old one for these checks AND exclude the selected version from possible targets to switch to,
-					//so if the newly imported version matches all existing entites, use that one.
-					Core.MainWindow.SelectDeck(deck, true);
-					return;
-				}	
-				NotFoundCards = notFound.SelectMany(x => x).Select(x => new Card(x.Card)).Distinct().ToList();
-				Log.Warn("Cards not found in deck: " + string.Join(", ", NotFoundCards.Select(x => $"{x.Name} ({x.Id})")));
-				if(Config.Instance.AutoDeckDetection)
-				{
-					await AutoSelectDeck(deck, game.LocalPlayer.CurrentHero.Class, (GameType)(game.MatchInfo?.GameType ?? 0),
-						(FormatType)(game.MatchInfo?.FormatType ?? 0), cardEntites);
-				}
-			}
-			else
-				NotFoundCards.Clear();
-		}
-
 		private static List<IGrouping<string, Entity>> RevealedEntites => Core.Hearthstone.CurrentGame.LocalPlayer.RevealedCards
 			.Where(x => !x.IsCreated && !x.Info.Stolen && (x.Card.Data?.Collectible ?? false)).GroupBy(x => x.CardId)
 			.ToList();
 
 		private static List<IGrouping<string, Entity>> GetMissingCards(List<IGrouping<string, Entity>> revealed, Deck deck) =>
 			revealed.Where(x => !deck.GetSelectedDeckVersion().Cards.Any(c => c.Id == x.Key && c.Count >= x.Count())).ToList();
-
-		private static async Task AutoSelectDeck(Deck currentDeck, CardClass heroClass, GameType mode, FormatType currentFormat, List<IGrouping<string, Entity>> cardEntites = null)
-		{
-			_waitingForDraws++;
-			await Task.Delay(500);
-			_waitingForDraws--;
-			if(_waitingForDraws > 0)
-				return;
-			var validDecks = DeckList.Instance.Decks.Where(x => heroClass == x.CardClass
-																&& !x.Archived && !x.IsDungeonDeck).ToList();
-			if(currentDeck != null)
-				validDecks.Remove(currentDeck);
-			validDecks = validDecks.FilterByMode(mode, currentFormat);
-			if(cardEntites != null)
-				validDecks = validDecks.Where(x => cardEntites.All(ce => x.GetSelectedDeckVersion().Cards.Any(c => c.Id == ce.Key && c.Count >= ce.Count()))).ToList();
-			if(_autoSelectCount > 1)
-			{
-				Log.Info("Too many auto selects. Showing dialog.");
-				ShowDeckSelectionDialog(validDecks);
-				return;
-			}
-			if(validDecks.Count == 0)
-			{
-				if(cardEntites == null || !AutoSelectDeckVersion(heroClass, mode, currentFormat, cardEntites))
-				{
-					Log.Info("No matching deck found, using no-deck mode");
-					Core.MainWindow.SelectDeck(null, true);
-				}
-				return;
-			}
-			if(validDecks.Count == 1)
-			{
-				var deck = validDecks.Single();
-				Log.Info("Found one matching deck: " + deck);
-				Core.MainWindow.SelectDeck(deck, true);
-				_autoSelectCount++;
-				return;
-			}
-			var lastUsed = DeckList.Instance.LastDeckClass.FirstOrDefault(x => x.CardClass == heroClass);
-			if(lastUsed != null)
-			{
-				var deck = validDecks.FirstOrDefault(x => x.DeckId == lastUsed.Id);
-				if(deck != null)
-				{
-					Log.Info($"Last used {heroClass} deck matches!");
-					Core.MainWindow.SelectDeck(deck, true);
-					_autoSelectCount++;
-					return;
-				}
-			}
-			if(cardEntites == null || !AutoSelectDeckVersion(heroClass, mode, currentFormat, cardEntites))
-				ShowDeckSelectionDialog(validDecks);
-		}
-
-		private static bool AutoSelectDeckVersion(CardClass heroClass, GameType mode, FormatType format, List<IGrouping<string, Entity>> cardEntites)
-		{
-			var validDecks = DeckList.Instance.Decks.Where(x => x.CardClass == heroClass && !x.Archived && !x.IsDungeonDeck).ToList();
-			validDecks = validDecks.FilterByMode(mode, format);
-			foreach(var deck in validDecks)
-			{
-				foreach(var version in deck.VersionsIncludingSelf.Where(x => x != deck.SelectedVersion).Select(deck.GetVersion))
-				{
-					if(!cardEntites.All(ce => version.Cards.Any(c => c.Id == ce.Key && c.Count >= ce.Count())))
-						continue;
-					Log.Info($"Found matching version on {deck.Name}: {version.Version.ShortVersionString}.");
-					deck.SelectVersion(version);
-					Core.MainWindow.SelectDeck(deck, true);
-					_autoSelectCount++;
-					return true;
-				}
-			}
-			Log.Info("Found no matching version.");
-			return false;
-		}
-
-		private static void ShowDeckSelectionDialog(List<Deck> decks)
-		{
-			decks.Add(new Deck("Use no deck", "", new List<Card>(), new List<string>(), "", "", DateTime.Now, false, new List<Card>(),
-								   SerializableVersion.Default, new List<Deck>(), Guid.Empty));
-			if(decks.Count == 1 && DeckList.Instance.ActiveDeck != null)
-			{
-				decks.Add(new Deck("No match - Keep using active deck", "", new List<Card>(), new List<string>(), "", "", DateTime.Now, false,
-								   new List<Card>(), SerializableVersion.Default, new List<Deck>(), Guid.Empty));
-			}
-			_waitingForUserInput = true;
-			Log.Info("Waiting for user input...");
-			var dsDialog = new DeckSelectionDialog(decks);
-			dsDialog.ShowDialog();
-
-			var selectedDeck = dsDialog.SelectedDeck;
-			if(selectedDeck != null)
-			{
-				if(selectedDeck.Name == "Use no deck")
-				{
-					Log.Info("Auto deck detection disabled.");
-					Core.MainWindow.SelectDeck(null, true);
-					NotFoundCards.Clear();
-				}
-				else if(selectedDeck.Name == "No match - Keep using active deck")
-				{
-					IgnoredDeckId = DeckList.Instance.ActiveDeck?.DeckId ?? Guid.Empty;
-					Log.Info($"Now ignoring {DeckList.Instance.ActiveDeck?.Name}");
-					NotFoundCards.Clear();
-				}
-				else
-				{
-					Log.Info("Selected deck: " + selectedDeck.Name);
-					Core.MainWindow.SelectDeck(selectedDeck, true);
-				}
-			}
-			else
-			{
-				Log.Info("Auto deck detection disabled.");
-				Core.MainWindow.ShowMessage("Auto deck selection disabled.", "This can be re-enabled under 'options (advanced) > tracker > general'.").Forget();
-				Config.Instance.AutoDeckDetection = false;
-				Config.Save();
-				Core.MainWindow.AutoDeckDetection(false);
-			}
-			_waitingForUserInput = false;
-		}
-
-		public static void ResetIgnoredDeckId() => IgnoredDeckId = Guid.Empty;
 
 		public static void ImportDecks(IEnumerable<ImportedDeck> decks, bool brawl, bool importNew = true, bool updateExisting = true, bool select = true)
 		{
@@ -299,64 +124,6 @@ namespace Hearthstone_Deck_Tracker
 			return importedDecks;
 		}
 
-		private static DateTime _lastAutoImport;
-		public static bool AutoImport(bool select)
-		{
-			if((DateTime.UtcNow - _lastAutoImport).TotalSeconds < 5)
-				return false;
-			_lastAutoImport = DateTime.UtcNow;
-			switch((GameType)(Core.Hearthstone.CurrentGame.MatchInfo?.GameType ?? 0))
-			{
-				case GameType.GT_RANKED:
-				case GameType.GT_CASUAL:
-				case GameType.GT_VS_FRIEND:
-				case GameType.GT_VS_AI:
-					return AutoImportConstructed(select);
-				case GameType.GT_ARENA:
-					AutoImportArena(Config.Instance.SelectedArenaImportingBehaviour ?? ArenaImportingBehaviour.AutoImportSave);
-					break;
-			}
-			return false;
-		}
-
-		public static bool AutoImportConstructed(bool select, bool brawl = false)
-		{
-			var decks = brawl ? DeckImporter.FromBrawl() : DeckImporter.FromConstructed();
-			if(decks.Any() && (Config.Instance.ConstructedAutoImportNew || Config.Instance.ConstructedAutoUpdate))
-			{
-				ImportDecks(decks, brawl, Config.Instance.ConstructedAutoImportNew, Config.Instance.ConstructedAutoUpdate, select);
-				return true;
-			}
-			return false;
-		}
-
-		public static bool AutoImportArena(ArenaImportingBehaviour behaviour, ArenaInfo info = null)
-		{
-			var deck = info ?? DeckImporter.FromArena();
-			if(deck?.Deck.Cards.Sum(x => x.Count) != 30)
-				return false;
-			Log.Info($"Found new complete {deck.Deck.Hero} arena deck!");
-			var recentArenaDecks =
-				DeckList.Instance.Decks.Where(d => d.IsArenaDeck && d.Cards.Sum(x => x.Count) == 30).OrderByDescending(
-					d => d.LastPlayedNewFirst).Take(15);
-			if(recentArenaDecks.Any(d => d.Cards.All(c => deck.Deck.Cards.Any(c2 => c.Id == c2.Id && c.Count == c2.Count))))
-				Log.Info("...but we already have that one. Discarding.");
-			else if(Core.IgnoredArenaDecks.Contains(deck.Deck.Id))
-				Log.Info("...but it was already discarded by the user. No automatic action taken.");
-			else if(behaviour == ArenaImportingBehaviour.AutoAsk)
-			{
-				Core.MainWindow.ShowNewArenaDeckMessageAsync(deck.Deck);
-				return true;
-			}
-			else if(behaviour == ArenaImportingBehaviour.AutoImportSave)
-			{
-				Log.Info("...auto saving new arena deck.");
-				Core.MainWindow.ImportArenaDeck(deck.Deck);
-				return true;
-			}
-			return false;
-		}
-
 		public static void SaveDeck(Deck deck, bool invokeApi = true)
 		{
 			deck.Edited();
@@ -414,8 +181,8 @@ namespace Hearthstone_Deck_Tracker
 					Log.Info($"Selecting existing deck: {existingDeck.Name}");
 					Core.MainWindow.SelectDeck(existingDeck, true);
 					if(Core.Hearthstone.CurrentGame?.LocalPlayer != null)
-						Core.Hearthstone.CurrentGame.LocalPlayer.Deck = new HearthSim.Core.Hearthstone.Deck(existingDeck.Name,
-							playerClass, existingDeck.Cards.SelectMany(x => Enumerable.Repeat(x.Id, x.Count)));
+						Core.Hearthstone.CurrentGame.LocalPlayer.Deck = new HearthSim.Core.Hearthstone.Deck(DeckType.DungeonRun,
+							existingDeck.Name, playerClass, existingDeck.Cards.SelectMany(x => Enumerable.Repeat(x.Id, x.Count)));
 				}
 			}
 		}
@@ -454,19 +221,66 @@ namespace Hearthstone_Deck_Tracker
 		private static Deck CreateDungeonDeck(HearthSim.Core.Hearthstone.Deck deck, CardSet set)
 		{
 			Log.Info($"Creating new {playerClass} dungeon run deck (CardSet={set})");
+			var newDeck = ImportDeck(deck);
+			newDeck.Name = Helper.ParseDeckNameTemplate(Config.Instance.DungeonRunDeckNameTemplate, newDeck);
+			DeckList.Instance.Decks.Add(newDeck);
+			DeckList.Save();
+			return newDeck;
+		}
+
+		private static Deck TryFindDeck(HearthSim.Core.Hearthstone.Deck deck)
+		{
+			bool MatchesType(Deck d)
+			{
+				switch(deck.Type)
+				{
+					case DeckType.Constructed:
+						return !d.IsArenaDeck && !d.IsBrawlDeck && !d.IsDungeonDeck;
+					case DeckType.Arena:
+						return d.IsArenaDeck;
+					case DeckType.TavernBrawl:
+						return d.IsBrawlDeck;
+					case DeckType.DungeonRun:
+						return d.IsDungeonDeck;
+				}
+				return false;
+			}
+			bool MatchesCards(Deck d) => deck.Cards.All(c1 => d.Cards.Any(c2 => c1.Id == c2.Id && c1.Count == c2.Count));
+			bool MatchesClass(Deck d) => deck.Class == d.CardClass;
+			bool Matches(Deck d) => MatchesType(d) && MatchesCards(d) && MatchesClass(d);
+			var existing = DeckList.Instance.Decks.FirstOrDefault(Matches);
+			return existing ?? DeckList.Instance.Decks.SelectMany(x => x.Versions).FirstOrDefault(Matches);
+		}
+
+		public static Deck ImportDeck(HearthSim.Core.Hearthstone.Deck deck)
+		{
+			var existing = TryFindDeck(deck);
+			if(existing != null)
+				return existing;
 			var newDeck = new Deck
 			{
-				Cards = new ObservableCollection<Card>(deck.Cards.Select(x => new Card(x.Data))),
+				Cards = new ObservableCollection<Card>(deck.Cards.Select(x => new Card(x.Data, x.Count))),
 				Class = CultureInfo.InvariantCulture.TextInfo.ToTitleCase(deck.Class.ToString().ToLowerInvariant()),
-				IsDungeonDeck = true,
-				LastEdited = DateTime.Now
+				IsDungeonDeck = deck.Type == DeckType.DungeonRun,
+				IsArenaDeck = deck.Type == DeckType.Arena,
+				LastEdited = DateTime.Now,
+				Name = deck.Name
 			};
-			newDeck.Name = Helper.ParseDeckNameTemplate(Config.Instance.DungeonRunDeckNameTemplate, newDeck);
+			if(deck.Type == DeckType.TavernBrawl)
+				newDeck.Tags.Add("Brawl");
+
 			DeckList.Instance.Decks.Add(newDeck);
 			DeckList.Save();
 			Core.MainWindow.DeckPickerList.UpdateDecks();
 			Core.MainWindow.SelectDeck(newDeck, true);
+
 			return newDeck;
+		}
+
+		public static void ImportDecks(IEnumerable<HearthSim.Core.Hearthstone.Deck> decks)
+		{
+			foreach(var deck in decks)
+				ImportDeck(deck);
 		}
 	}
 
