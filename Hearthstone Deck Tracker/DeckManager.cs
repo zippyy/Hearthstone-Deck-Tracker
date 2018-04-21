@@ -413,6 +413,9 @@ namespace Hearthstone_Deck_Tracker
 				{
 					Log.Info($"Selecting existing deck: {existingDeck.Name}");
 					Core.MainWindow.SelectDeck(existingDeck, true);
+					if(Core.Hearthstone.CurrentGame?.LocalPlayer != null)
+						Core.Hearthstone.CurrentGame.LocalPlayer.Deck = new HearthSim.Core.Hearthstone.Deck(existingDeck.Name,
+							playerClass, existingDeck.Cards.SelectMany(x => Enumerable.Repeat(x.Id, x.Count)));
 				}
 			}
 		}
