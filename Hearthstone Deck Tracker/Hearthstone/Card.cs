@@ -391,7 +391,7 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 				}
 				try
 				{
-					var image = ThemeManager.GetBarImageBuilder(new CardViewModel(new HearthSim.Core.Hearthstone.Card(_dbCard))).Build();
+					var image = ThemeManager.GetBarImageBuilder(new CardViewModel(new HearthSim.Core.Hearthstone.Card(_dbCard, Count))).Build();
 					if (image.CanFreeze)
 						image.Freeze();
 					cardImageObj = new CardImageObject(image, this);
