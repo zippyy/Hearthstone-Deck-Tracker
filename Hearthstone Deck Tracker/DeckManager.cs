@@ -5,11 +5,17 @@ using System.Globalization;
 using System.Linq;
 using HearthDb.Enums;
 using Hearthstone_Deck_Tracker.API;
+using Hearthstone_Deck_Tracker.Enums;
 using Hearthstone_Deck_Tracker.Hearthstone;
+using Hearthstone_Deck_Tracker.HsReplay.Utility;
 using Hearthstone_Deck_Tracker.Importing.Game;
 using Hearthstone_Deck_Tracker.Importing.Game.ImportOptions;
+using Hearthstone_Deck_Tracker.Replay;
+using Hearthstone_Deck_Tracker.Stats;
 using Hearthstone_Deck_Tracker.Utility.Logging;
 using HearthSim.Core.Hearthstone.Entities;
+using HearthSim.Core.Util.EventArgs;
+using HSReplay;
 using Card = Hearthstone_Deck_Tracker.Hearthstone.Card;
 using Deck = Hearthstone_Deck_Tracker.Hearthstone.Deck;
 using DeckType = HearthSim.Core.Hearthstone.Enums.DeckType;
@@ -260,7 +266,7 @@ namespace Hearthstone_Deck_Tracker
 			var newDeck = new Deck
 			{
 				Cards = new ObservableCollection<Card>(deck.Cards.Select(x => new Card(x.Data, x.Count))),
-				Class = CultureInfo.InvariantCulture.TextInfo.ToTitleCase(deck.Class.ToString().ToLowerInvariant()),
+				Class = ToTitleCase(deck.Class.ToString()),
 				IsDungeonDeck = deck.Type == DeckType.DungeonRun,
 				IsArenaDeck = deck.Type == DeckType.Arena,
 				LastEdited = DateTime.Now,
@@ -282,6 +288,132 @@ namespace Hearthstone_Deck_Tracker
 			foreach(var deck in decks)
 				ImportDeck(deck);
 		}
+
+		public static void HandleMatchResults(GameEndEventArgs args)
+		{
+			var playedDeck = args.GameState.LocalPlayer.Deck;
+			if(playedDeck == null)
+			{
+				//Todo
+				return;
+			}
+			var deck = ImportDeck(playedDeck);
+
+			var playState = (PlayState)args.GameState.LocalPlayerEntity.GetTag(GameTag.PLAYSTATE);
+			var gameResult = GetGameResult(playState);
+
+			var localHero = args.GameState.LocalPlayer.Entities.FirstOrDefault(x => x.IsHero);
+			var opposingHero = args.GameState.OpposingPlayer.Entities.FirstOrDefault(x => x.IsHero);
+
+			if(localHero == null || opposingHero == null)
+			{
+				//Todo
+				return;
+			}
+
+			List<TrackedCard> RevealedCards(HearthSim.Core.Hearthstone.Player player)
+			{
+				return player.RevealedCards.Where(x => !x.IsCreated && !x.Info.Stolen).GroupBy(x => x.Info.OriginalCardId)
+					.Select(x => new TrackedCard(x.Key, x.Count())).ToList();
+			}
+
+			var matchInfo = args.GameState.MatchInfo;
+			var gameType = (GameType)matchInfo.GameType;
+			var standard = (FormatType)matchInfo.FormatType == FormatType.FT_STANDARD;
+			var format = standard ? Format.Standard : Format.Wild;
+			var gameMode = HearthDbConverter.GetGameMode(gameType);
+			var game = new GameStats(gameResult, ToTitleCase(opposingHero.Class.ToString()),
+				ToTitleCase(localHero.Class.ToString()))
+			{
+				GameType = gameType,
+				ArenaWins = gameType == GameType.GT_ARENA ? args.Wins : 0,
+				ArenaLosses = gameType == GameType.GT_ARENA ? args.Losses : 0,
+				BrawlWins = gameMode == GameMode.Brawl ? args.Wins : 0,
+				BrawlLosses = gameMode == GameMode.Brawl ? args.Losses : 0,
+				BrawlSeasonId = gameMode == GameMode.Brawl ? args.GameState.MatchInfo.BrawlSeasonId : 0,
+				Coin = args.GameState.OpposingPlayerEntity.HasTag(GameTag.FIRST_PLAYER),
+				DeckId = deck.DeckId,
+				DeckName = deck.Name,
+				EndTime = args.GameState.GameTime.Time,
+				Format = format,
+				FriendlyPlayerId = args.GameState.LocalPlayer.PlayerId,
+				GameMode = gameMode,
+				HearthstoneBuild = args.Build,
+				HsDeckId = args.GameState.LocalPlayer.Deck.DeckId,
+				HsReplay = new HsReplayInfo(),
+				LegendRank = standard ? matchInfo.LocalPlayer.StandardLegendRank : matchInfo.LocalPlayer.WildLegendRank,
+				OpponentCardbackId = matchInfo.OpposingPlayer.CardBackId,
+				OpponentCards = RevealedCards(args.GameState.OpposingPlayer),
+				OpponentHeroCardId = args.GameState.OpposingPlayer.Entities.FirstOrDefault(x => x.IsHero)?.CardId,
+				OpponentLegendRank = standard ? matchInfo.OpposingPlayer.StandardLegendRank : matchInfo.OpposingPlayer.WildLegendRank,
+				OpponentName = matchInfo.OpposingPlayer.Name,
+				OpponentRank = standard ? matchInfo.OpposingPlayer.StandardRank : matchInfo.OpposingPlayer.WildRank,
+				PlayerCardbackId = matchInfo.LocalPlayer.CardBackId,
+				PlayerCards = RevealedCards(args.GameState.OpposingPlayer),
+				PlayerDeckVersion = deck.Version,
+				PlayerName = matchInfo.LocalPlayer.Name,
+				Rank = standard ? matchInfo.LocalPlayer.StandardRank : matchInfo.LocalPlayer.WildRank,
+				RankedSeasonId = matchInfo.RankedSeasonId,
+				Region = (Region)args.Region,
+				ScenarioId = matchInfo.MissionId,
+				ServerInfo = args.GameState.ServerInfo,
+				Stars = standard ? matchInfo.LocalPlayer.StandardStars : matchInfo.LocalPlayer.WildStars,
+				StartTime = args.GameState.CreatedAt,
+				Turns = args.GameState.CurrentTurn,
+				WasConceded = args.GameState.LocalPlayerEntity.Conceded,
+			};
+
+			game.ReplayFile = ReplayMaker.SaveToDisk(game, args.GameState.PowerLog.ToList());
+			LastGame = game;
+
+			deck.DeckStats.AddGameResult(game);
+			DeckStatsList.Save();
+			Core.MainWindow.DeckPickerList.UpdateDecks(false, new[] { deck });
+		}
+
+		public static GameStats LastGame { get; set; }
+
+		private static GameResult GetGameResult(PlayState playState)
+		{
+			switch(playState)
+			{
+				case PlayState.WON:
+					return GameResult.Win;
+				case PlayState.LOST:
+					return GameResult.Loss;
+				case PlayState.TIED:
+					return GameResult.Draw;
+			}
+			return GameResult.None;
+		}
+
+		private static string ToTitleCase(string str)
+		{
+			return CultureInfo.InvariantCulture.TextInfo.ToTitleCase(str.ToLowerInvariant());
+		}
+
+		public static void SetUploadStatus(UploadCompleteEventArgs args)
+		{
+			if(IsLastGame(args.Data))
+			{
+				LastGame.HsReplay.UploadId = args.Status.ShortId;
+				LastGame.HsReplay.ReplayUrl = args.Status.ReplayUrl;
+				//TODO: consider deleting replay file
+			}
+		}
+
+		public static void SetUploadStatus(UploadErrorEventArgs args)
+		{
+			if(IsLastGame(args.Data))
+				LastGame.HsReplay.Unsupported = true;
+		}
+
+		private static bool IsLastGame(UploadMetaData data)
+		{
+			return LastGame != null && data.GameHandle == LastGame.ServerInfo?.GameHandle.ToString()
+									&& data.AuroraPassword == LastGame.ServerInfo?.AuroraPassword;
+		}
+
 	}
 
 	public static class DeckListExtensions

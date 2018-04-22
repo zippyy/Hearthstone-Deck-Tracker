@@ -10,6 +10,7 @@ using Hearthstone_Deck_Tracker.Controls.Error;
 using Hearthstone_Deck_Tracker.Controls.Stats;
 using Hearthstone_Deck_Tracker.Enums;
 using Hearthstone_Deck_Tracker.Plugins;
+using Hearthstone_Deck_Tracker.Stats;
 using Hearthstone_Deck_Tracker.Utility;
 using Hearthstone_Deck_Tracker.Utility.Analytics;
 using Hearthstone_Deck_Tracker.Utility.Extensions;
@@ -111,6 +112,7 @@ namespace Hearthstone_Deck_Tracker
 				UpdateOpponentCards(true);
 				Helper.UpdateEverything(Manager.Game);
 			};
+			Manager.Game.GameEnded += DeckManager.HandleMatchResults;
 			Manager.Game.LogConfigError += args => MainWindow.ShowLogConfigUpdateFailedMessage().Forget();
 			Manager.Game.HearthstoneRestartRequired += () =>
 			{
@@ -119,6 +121,8 @@ namespace Hearthstone_Deck_Tracker
 					+ "HDT may not work properly until Hearthstone has been restarted.").Forget();
 				Overlay.ShowRestartRequiredWarning();
 			};
+			Manager.HSReplayNet.LogUploader.UploadComplete += DeckManager.SetUploadStatus;
+			Manager.HSReplayNet.LogUploader.UploadError += DeckManager.SetUploadStatus;
 
 			HearthstoneRunner.StartingHearthstone += state =>
 			{
