@@ -1,19 +1,45 @@
-﻿#region
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
 using HearthDb;
 using HearthDb.Enums;
 using Hearthstone_Deck_Tracker.Utility.Logging;
-
-#endregion
+using static HearthDb.CardIds;
+using static HearthDb.CardIds.Collectible;
 
 namespace Hearthstone_Deck_Tracker.Hearthstone
 {
 	public class Database
 	{
+		private static readonly Dictionary<string, string> HeroIdDict = new Dictionary<string, string>
+		{
+			{Warrior.GarroshHellscream, "Warrior"},
+			{Shaman.Thrall, "Shaman"},
+			{Rogue.ValeeraSanguinar, "Rogue"},
+			{Paladin.UtherLightbringer, "Paladin"},
+			{Hunter.Rexxar, "Hunter"},
+			{Druid.MalfurionStormrage, "Druid"},
+			{Warlock.Guldan, "Warlock"},
+			{Mage.JainaProudmoore, "Mage"},
+			{Priest.AnduinWrynn, "Priest"},
+			{Warlock.LordJaraxxus, "Jaraxxus"},
+			{Neutral.MajordomoExecutus, "Ragnaros the Firelord"}
+		};
+
+		private static readonly Dictionary<string, string> HeroNameDict = new Dictionary<string, string>
+		{
+			{"Warrior", Warrior.GarroshHellscream},
+			{"Shaman", Shaman.Thrall},
+			{"Rogue", Rogue.ValeeraSanguinar},
+			{"Paladin", Paladin.UtherLightbringer},
+			{"Hunter", Hunter.Rexxar},
+			{"Druid", Druid.MalfurionStormrage},
+			{"Warlock", Warlock.Guldan},
+			{"Mage", Mage.JainaProudmoore},
+			{"Priest", Priest.AnduinWrynn}
+		};
+
 		public static Card GetCardFromId(string cardId)
 		{
 			if(string.IsNullOrEmpty(cardId))
@@ -72,7 +98,7 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 			if(string.IsNullOrEmpty(id))
 				return returnIdIfNotFound ? id : null;
 			var baseId = GetBaseId(id);
-			if(CardIds.HeroIdDict.TryGetValue(baseId, out var name))
+			if(HeroIdDict.TryGetValue(baseId, out var name))
 				return name;
 			var card = GetCardFromId(baseId);
 			bool IsValidHeroCard(Card c) => !string.IsNullOrEmpty(c?.Name) && c.Name != "UNKNOWN" && c.Type == "Hero";
@@ -89,7 +115,7 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 		{
 			if(string.IsNullOrEmpty(className))
 				return null;
-			if(!CardIds.HeroNameDict.TryGetValue(className, out var heroId) || string.IsNullOrEmpty(heroId))
+			if(!HeroNameDict.TryGetValue(className, out var heroId) || string.IsNullOrEmpty(heroId))
 				return null;
 			return GetCardFromId(heroId);
 		}
@@ -104,8 +130,8 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 
 		public static bool IsActualCard(Card card) => card != null && Cards.Collectible.ContainsKey(card.Id);
 
-		public static Card UnknownCard => new Card(Cards.All[HearthDb.CardIds.NonCollectible.Neutral.Noooooooooooo]);
+		public static Card UnknownCard => new Card(Cards.All[NonCollectible.Neutral.Noooooooooooo]);
 
-		public static string UnknownCardId => HearthDb.CardIds.NonCollectible.Neutral.Noooooooooooo;
+		public static string UnknownCardId => NonCollectible.Neutral.Noooooooooooo;
 	}
 }

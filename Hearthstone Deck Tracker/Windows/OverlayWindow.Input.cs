@@ -213,8 +213,8 @@ namespace Hearthstone_Deck_Tracker.Windows
 				if (StackPanelSecrets.Visibility != Visibility.Visible)
 				{
 					_secretsTempVisible = true;
-					var secrets = CardIds.Secrets.Mage.All.Select(Database.GetCardFromId).ToList();
-					ShowSecrets(secrets, true);
+					//var secrets = CardIds.Secrets.Mage.All.Select(Database.GetCardFromId).ToList();
+					//ShowSecrets(secrets, true);
 					//need to wait for panel to actually show up
 					await Task.Delay(50);
 				}
