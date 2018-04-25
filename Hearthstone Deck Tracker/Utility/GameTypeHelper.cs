@@ -10,7 +10,7 @@ namespace Hearthstone_Deck_Tracker.Utility
 {
 	public class GameTypeHelper
 	{
-		private readonly Dictionary<GameMode, List<BnetGameType>> _dict = new Dictionary<GameMode, List<BnetGameType>>
+		private static readonly Dictionary<GameMode, List<BnetGameType>> Dict = new Dictionary<GameMode, List<BnetGameType>>
 		{
 			[Ranked] = new List<BnetGameType>
 			{
@@ -50,6 +50,27 @@ namespace Hearthstone_Deck_Tracker.Utility
 
 		public static IEnumerable<BnetGameType> All =>
 			Enum.GetValues(typeof(BnetGameType)).OfType<BnetGameType>();
+
+		public static IEnumerable<BnetGameType> GetFromConfig()
+		{
+			return GetGameModes().SelectMany(x => Dict[x]);
+		}
+
+		private static IEnumerable<GameMode> GetGameModes()
+		{
+			if(Config.Instance.HsReplayUploadArena)
+				yield return Arena;
+			if(Config.Instance.HsReplayUploadBrawl)
+				yield return Brawl;
+			if(Config.Instance.HsReplayUploadCasual)
+				yield return Casual;
+			if(Config.Instance.HsReplayUploadFriendly)
+				yield return Friendly;
+			if(Config.Instance.HsReplayUploadPractice)
+				yield return Practice;
+			if(Config.Instance.HsReplayUploadRanked)
+				yield return Ranked;
+		}
 	}
 
 }

@@ -95,6 +95,7 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Streaming
 					{
 						Config.Instance.SelectedTwitchUser = newId;
 						Config.Save();
+						Core.HSConfig.TwitchUpdatesUserId = newId;
 					}
 				}
 			}

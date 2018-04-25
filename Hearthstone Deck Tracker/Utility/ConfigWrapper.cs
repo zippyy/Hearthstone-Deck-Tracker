@@ -197,6 +197,7 @@ namespace Hearthstone_Deck_Tracker.Utility
 					Influx.OnCollectionSyncingEnabled(value);
 				}
 				CollectionSyncingChanged?.Invoke();
+				Core.HSConfig.UploadCollection = value;
 			}
 		}
 
@@ -209,6 +210,7 @@ namespace Hearthstone_Deck_Tracker.Utility
 				Config.Save();
 				Influx.OnHsReplayAutoUploadChanged(value);
 				ReplayAutoUploadChanged?.Invoke();
+				//TODO HSConfig
 			}
 		}
 
@@ -219,6 +221,7 @@ namespace Hearthstone_Deck_Tracker.Utility
 			{
 				Config.Instance.HsReplayUploadRanked = value;
 				Config.Save();
+				Core.HSConfig.UploadGameTypes = GameTypeHelper.GetFromConfig();
 			}
 		}
 
@@ -229,6 +232,7 @@ namespace Hearthstone_Deck_Tracker.Utility
 			{
 				Config.Instance.HsReplayUploadCasual = value;
 				Config.Save();
+				Core.HSConfig.UploadGameTypes = GameTypeHelper.GetFromConfig();
 			}
 		}
 
@@ -239,6 +243,7 @@ namespace Hearthstone_Deck_Tracker.Utility
 			{
 				Config.Instance.HsReplayUploadArena = value;
 				Config.Save();
+				Core.HSConfig.UploadGameTypes = GameTypeHelper.GetFromConfig();
 			}
 		}
 
@@ -249,6 +254,7 @@ namespace Hearthstone_Deck_Tracker.Utility
 			{
 				Config.Instance.HsReplayUploadBrawl = value;
 				Config.Save();
+				Core.HSConfig.UploadGameTypes = GameTypeHelper.GetFromConfig();
 			}
 		}
 
@@ -259,6 +265,7 @@ namespace Hearthstone_Deck_Tracker.Utility
 			{
 				Config.Instance.HsReplayUploadFriendly = value;
 				Config.Save();
+				Core.HSConfig.UploadGameTypes = GameTypeHelper.GetFromConfig();
 			}
 		}
 
@@ -269,6 +276,7 @@ namespace Hearthstone_Deck_Tracker.Utility
 			{
 				Config.Instance.HsReplayUploadPractice = value;
 				Config.Save();
+				Core.HSConfig.UploadGameTypes = GameTypeHelper.GetFromConfig();
 			}
 		}
 
@@ -279,6 +287,7 @@ namespace Hearthstone_Deck_Tracker.Utility
 			{
 				Config.Instance.HsReplayUploadSpectator = value;
 				Config.Save();
+				Core.HSConfig.UploadSpectated = value;
 			}
 		}
 

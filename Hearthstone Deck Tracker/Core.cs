@@ -57,6 +57,8 @@ namespace Hearthstone_Deck_Tracker
 		internal static bool Update { get; set; }
 		internal static bool CanShutdown { get; set; }
 
+		internal static HSReplayNetConfig HSConfig { get; private set; }
+
 #pragma warning disable 1998
 		public static async void Initialize()
 #pragma warning restore 1998
@@ -66,10 +68,11 @@ namespace Hearthstone_Deck_Tracker
 			ServicePointManager.SecurityProtocol = SecurityProtocolType.Tls12 | SecurityProtocolType.Tls11 | SecurityProtocolType.Tls;
 			Directory.SetCurrentDirectory(AppDomain.CurrentDomain.BaseDirectory);
 			Config.Load();
-			var hsReplayConfig = new HSReplayNetConfig(Config.Instance.DataDir, "089b2bc6-3c26-4aab-adbe-bcfd5bb48671",
-				"jIpNwuUWLFI6S3oeQkO3xlW6UCnfogw1IpAbFXqq", Helper.GetUserAgent(), GameTypeHelper.All,
-				Config.Instance.HsReplayUploadPacks ?? false, Config.Instance.SelectedTwitchUser);
-			Manager = new Manager(hsReplayConfig);
+			HSConfig = new HSReplayNetConfig(Config.Instance.DataDir, "089b2bc6-3c26-4aab-adbe-bcfd5bb48671",
+				"jIpNwuUWLFI6S3oeQkO3xlW6UCnfogw1IpAbFXqq", Helper.GetUserAgent(), GameTypeHelper.GetFromConfig(),
+				Config.Instance.HsReplayUploadSpectator, Config.Instance.HsReplayUploadPacks ?? false,
+				Config.Instance.SelectedTwitchUser);
+			Manager = new Manager(HSConfig);
 			ThemeManager.Load(new ThemeConfig() {Theme = "Dark"});
 			Manager.Start();
 
