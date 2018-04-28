@@ -12,6 +12,7 @@ using Hearthstone_Deck_Tracker.Annotations;
 using Hearthstone_Deck_Tracker.Enums;
 using Hearthstone_Deck_Tracker.Utility;
 using HearthSim.Core.Hearthstone;
+using HearthSim.UI;
 using Card = Hearthstone_Deck_Tracker.Hearthstone.Card;
 using Deck = Hearthstone_Deck_Tracker.Hearthstone.Deck;
 using Panel = System.Windows.Controls.Panel;
@@ -81,7 +82,7 @@ namespace Hearthstone_Deck_Tracker
 
 		public void Update()
 		{
-			var deck = DeckList.Instance.GetDeck(_game.CurrentGame.LocalPlayer.Deck);
+			var deck = _game.CurrentGame != null ? DeckList.Instance.GetDeck(_game.CurrentGame.LocalPlayer.Deck) : null;
 			CanvasPlayerChance.Visibility = Config.Instance.HideDrawChances ? Visibility.Collapsed : Visibility.Visible;
 			CanvasPlayerCount.Visibility = Config.Instance.HidePlayerCardCount ? Visibility.Collapsed : Visibility.Visible;
 			ListViewPlayer.Visibility = Config.Instance.HidePlayerCards ? Visibility.Collapsed : Visibility.Visible;
@@ -174,7 +175,7 @@ namespace Hearthstone_Deck_Tracker
 				Topmost = false;
 		}
 
-		//public void UpdatePlayerCards(List<Card> cards, bool reset) => ListViewPlayer.Update(cards, reset);
+		public void UpdatePlayerCards(List<HearthSim.Core.Hearthstone.Card> cards, bool reset) => ListViewPlayer.Update(cards.Select(x => new CardViewModel(x)).ToList(), reset);
 
 		[NotifyPropertyChangedInvocator]
 		protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)

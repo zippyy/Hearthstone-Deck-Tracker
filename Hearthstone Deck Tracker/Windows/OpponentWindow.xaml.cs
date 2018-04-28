@@ -14,6 +14,7 @@ using Hearthstone_Deck_Tracker.Enums;
 using Hearthstone_Deck_Tracker.Stats;
 using Hearthstone_Deck_Tracker.Utility;
 using HearthSim.Core.Hearthstone;
+using HearthSim.UI;
 using Card = Hearthstone_Deck_Tracker.Hearthstone.Card;
 using Point = System.Drawing.Point;
 using Panel = System.Windows.Controls.Panel;
@@ -65,7 +66,7 @@ namespace Hearthstone_Deck_Tracker
 
 		public void Update()
 		{
-			var deck = DeckList.Instance.GetDeck(_game.CurrentGame.LocalPlayer.Deck);
+			var deck = _game.CurrentGame != null ? DeckList.Instance.GetDeck(_game.CurrentGame.LocalPlayer.Deck) : null;
 			LblWinRateAgainst.Visibility = Config.Instance.ShowWinRateAgainst && deck != null ? Visibility.Visible : Visibility.Collapsed;
 			CanvasOpponentChance.Visibility = Config.Instance.HideOpponentDrawChances ? Visibility.Collapsed : Visibility.Visible;
 			CanvasOpponentCount.Visibility = Config.Instance.HideOpponentCardCount ? Visibility.Collapsed : Visibility.Visible;
@@ -178,7 +179,7 @@ namespace Hearthstone_Deck_Tracker
 				Topmost = false;
 		}
 
-		//public void UpdateOpponentCards(List<Card> cards, bool reset) => ListViewOpponent.Update(cards, reset);
+		public void UpdateOpponentCards(List<HearthSim.Core.Hearthstone.Card> cards, bool reset) => ListViewOpponent.Update(cards.Select(x => new CardViewModel(x)).ToList(), reset);
 
 		[NotifyPropertyChangedInvocator]
 		protected virtual void OnPropertyChanged([CallerMemberName] string propertyName = null)

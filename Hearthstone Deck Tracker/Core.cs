@@ -126,6 +126,7 @@ namespace Hearthstone_Deck_Tracker
 			};
 			Manager.HSReplayNet.LogUploader.UploadComplete += DeckManager.SetUploadStatus;
 			Manager.HSReplayNet.LogUploader.UploadError += DeckManager.SetUploadStatus;
+			Manager.Game.HearthstoneStarted += BackupManager.Run;
 
 			HearthstoneRunner.StartingHearthstone += state =>
 			{
@@ -237,8 +238,6 @@ namespace Hearthstone_Deck_Tracker
 					Updater.CheckForUpdates();
 				if(HearthstoneWindow.Exists())
 				{
-					// TODO: on hearthstone start
-					//		BackupManager.Run();
 					Overlay.UpdatePosition();
 
 					if(!Hearthstone.IsRunning)
@@ -313,9 +312,11 @@ namespace Hearthstone_Deck_Tracker
 				return;
 			var cards = Hearthstone.CurrentGame?.LocalPlayer.GetRemainingCards().ToList();
 			if(cards != null)
+			{
 				Overlay.UpdatePlayerCards(cards, reset);
-			//if(Windows.PlayerWindow.IsVisible)
-			//	Windows.PlayerWindow.UpdatePlayerCards(cards, reset);
+				if(Windows.PlayerWindow.IsVisible)
+					Windows.PlayerWindow.UpdatePlayerCards(cards, reset);
+			}
 		}
 
 		internal static async void UpdateOpponentCards(bool reset = false)
@@ -327,9 +328,11 @@ namespace Hearthstone_Deck_Tracker
 				return;
 			var cards = Hearthstone.CurrentGame?.OpposingPlayer.GetRemainingCards().ToList();
 			if(cards != null)
+			{
 				Overlay.UpdateOpponentCards(cards, reset);
-			//if(Windows.OpponentWindow.IsVisible)
-			//	Windows.OpponentWindow.UpdateOpponentCards(cards, reset);
+				if(Windows.OpponentWindow.IsVisible)
+					Windows.OpponentWindow.UpdateOpponentCards(cards, reset);
+			}
 		}
 
 		public static class Windows

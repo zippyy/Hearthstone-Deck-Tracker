@@ -37,13 +37,7 @@
                 <ui:AnimatedCardList x:Name="ListViewPlayer" Background="Transparent" BorderThickness="0"
                                 ScrollViewer.HorizontalScrollBarVisibility="Disabled" Width="221"
                                 ScrollViewer.VerticalScrollBarVisibility="Disabled" IsEnabled="False"
-                                ScrollViewer.CanContentScroll="False">
-                    <!--<controls1:AnimatedCardList.ItemContainerStyle>
-                        <Style TargetType="controls1:AnimatedCard">
-                            <Setter Property="Margin" Value="0,1,0,0"/>
-                        </Style>
-                    </controls1:AnimatedCardList.ItemContainerStyle>-->
-                </ui:AnimatedCardList>
+                                ScrollViewer.CanContentScroll="False"/>
             </Viewbox>
             <Canvas Name="CanvasPlayerCount" HorizontalAlignment="Stretch" Height="40" Width="218" Margin="0,2" Background="{Binding CurrentTheme.OverlayTheme.CardCounterFrame, Source={StaticResource ThemeManager}}">
                 <local:HearthstoneTextBlock x:Name="LblCardCount" FontSize="16" Text="0" Canvas.Left="57" Canvas.Top="8" TextAlignment="Center" Width="56" Height="25"/>

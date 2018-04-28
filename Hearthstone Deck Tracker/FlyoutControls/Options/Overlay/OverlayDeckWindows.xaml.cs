@@ -191,9 +191,9 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Overlay
 				return;
 			Core.Windows.PlayerWindow.Show();
 			Core.Windows.PlayerWindow.Activate();
-			var player = Core.Hearthstone.CurrentGame.LocalPlayer;
-			Core.Windows.PlayerWindow.SetCardCount(player.InHand.Count(),
-				Core.Hearthstone.IsInMenu ? 30 : player.InDeck.Count());
+			var player = Core.Hearthstone.CurrentGame?.LocalPlayer;
+			Core.Windows.PlayerWindow.SetCardCount(player?.InHand.Count() ?? 0,
+				Core.Hearthstone.IsInMenu || player == null ? 30 : player.InDeck.Count());
 			Config.Instance.PlayerWindowOnStart = true;
 			Config.Save();
 		}
@@ -213,9 +213,10 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Overlay
 				return;
 			Core.Windows.OpponentWindow.Show();
 			Core.Windows.OpponentWindow.Activate();
-			var opponent = Core.Hearthstone.CurrentGame.OpposingPlayer;
-			Core.Windows.OpponentWindow.SetOpponentCardCount(opponent.InHand.Count(),
-				Core.Hearthstone.IsInMenu ? 30 : opponent.InDeck.Count(), opponent.HasTheCoin);
+			var opponent = Core.Hearthstone.CurrentGame?.OpposingPlayer;
+			Core.Windows.OpponentWindow.SetOpponentCardCount(opponent?.InHand.Count() ?? 0,
+				Core.Hearthstone.IsInMenu || opponent == null ? 30 : opponent.InDeck.Count(),
+				opponent?.HasTheCoin ?? false);
 			Config.Instance.OpponentWindowOnStart = true;
 			Config.Save();
 		}
