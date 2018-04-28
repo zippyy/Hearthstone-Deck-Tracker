@@ -13,6 +13,7 @@ using Hearthstone_Deck_Tracker.Importing.Game.ImportOptions;
 using Hearthstone_Deck_Tracker.Replay;
 using Hearthstone_Deck_Tracker.Stats;
 using Hearthstone_Deck_Tracker.Utility.Logging;
+using HearthSim.Core.Hearthstone;
 using HearthSim.Core.Hearthstone.Entities;
 using HearthSim.Core.Util.EventArgs;
 using HSReplay;
@@ -163,8 +164,9 @@ namespace Hearthstone_Deck_Tracker
 				CreateDungeonDeck(deck);
 			else if(deck == null)
 			{
-				var playerClass = Core.Hearthstone.CurrentGame.LocalPlayer.CurrentHero?.Class ?? CardClass.INVALID;
 				var revealed = RevealedEntites;
+				var localHero = Core.Hearthstone.CurrentGame?.LocalPlayer?.CurrentHero;
+				var playerClass = localHero?.Class ?? CardClass.INVALID;
 				var existingDeck = DeckList.Instance.Decks
 					.Where(x => x.IsDungeonDeck && playerClass == x.CardClass && !(x.IsDungeonRunCompleted ?? false)
 								&& (!newRun || x.Cards.Count == 10) && GetMissingCards(revealed, x).Count == 0)
@@ -172,10 +174,8 @@ namespace Hearthstone_Deck_Tracker
 				if(existingDeck == null)
 				{
 					Log.Info("We don't have an existing deck for this run");
-					var hero = Core.Game.Opponent.PlayerEntities.FirstOrDefault(x => x.IsHero)?.CardId;
-					var set = Database.GetCardFromId(hero)?.CardSet;
-					CreateDungeonDeck(playerClass, set ?? CardSet.INVALID);
-				}
+					var set = (CardSet)(localHero?.GetTag(GameTag.CARD_SET) ?? 0);
+					CreateDungeonDeck(playerClass, set);
 					if(DeckList.Instance.ActiveDeck != null)
 					{
 						Log.Info("Switching to no deck mode");
@@ -224,9 +224,14 @@ namespace Hearthstone_Deck_Tracker
 			Log.Info("Updated dungeon run deck");
 		}
 
-		private static Deck CreateDungeonDeck(HearthSim.Core.Hearthstone.Deck deck, CardSet set)
+		private static Deck CreateDungeonDeck(CardClass cardClass, CardSet cardSet)
 		{
-			Log.Info($"Creating new {playerClass} dungeon run deck (CardSet={set})");
+			return CreateDungeonDeck(DungeonRun.GetDefaultDeck(cardClass, cardSet));
+		}
+		private static Deck CreateDungeonDeck(HearthSim.Core.Hearthstone.Deck deck)
+		{
+			if(deck == null)
+				return null;
 			var newDeck = ImportDeck(deck);
 			newDeck.Name = Helper.ParseDeckNameTemplate(Config.Instance.DungeonRunDeckNameTemplate, newDeck);
 			DeckList.Instance.Decks.Add(newDeck);
