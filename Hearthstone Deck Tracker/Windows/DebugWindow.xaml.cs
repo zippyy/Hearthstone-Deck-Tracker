@@ -87,7 +87,7 @@ namespace Hearthstone_Deck_Tracker.Windows
 
 		private void UpdateBoardDamage()
 		{
-			if(_game.CurrentGame.SetupDone)
+			if(_game.CurrentGame?.SetupComplete ?? false)
 				return;
 			var board = new BoardState();
 			PlayerDataGrid.ItemsSource = board.Player.Cards;
