@@ -3,6 +3,7 @@ using System.Net;
 using Hearthstone_Deck_Tracker.Controls.Error;
 using Hearthstone_Deck_Tracker.Utility.Analytics;
 using Hearthstone_Deck_Tracker.Utility.Toasts;
+using Hearthstone_Deck_Tracker.Utility.Toasts.ToastControls;
 using HearthSim.Core.EventManagers;
 using HearthSim.Core.HSReplay;
 using HearthSim.Core.Util.EventArgs;
@@ -27,24 +28,25 @@ namespace Hearthstone_Deck_Tracker.HsReplay
 			Core.HSReplay.OAuth.Authenticated += () => Influx.OnOAuthLoginComplete(AuthenticationErrorType.None);
 			Core.HSReplay.OAuth.AuthenticationBrowserError += HandleAuthenticationBrowserError;
 			Core.HSReplay.LogUploader.UploadComplete += HandleUploadComplete;
-			Core.HSReplay.LogUploader.UploadError += args =>
-			{
-				//todo? this might be handled elsewhere
-			};
+			Core.HSReplay.LogUploader.UploadInitiated += HandleUploadInitiated;
+			Core.HSReplay.LogUploader.UploadError += DeckManager.SetUploadStatus;
+		}
+
+		private static void HandleUploadInitiated(UploadStatusChangedEventArgs args)
+		{
+			ToastManager.CreatrOrUpdateReplayProgressToast(args.UploadId, ReplayProgress.Uploading);
 		}
 
 		private static void HandleUploadComplete(UploadCompleteEventArgs args)
 		{
-			if(args.Status.Success)
+			if(!args.Status.Success)
 			{
-				//TODO: Update GameStats
-			}
-			else
-			{
-				//TODO: Store powerlog
 				var status = (args.Status.Exception as WebException)?.Status ?? WebExceptionStatus.UnknownError;
 				Influx.OnGameUploadFailed(status);
 			}
+			DeckManager.SetUploadStatus(args);
+			var progress = args.Status.Success ? ReplayProgress.Complete : ReplayProgress.Error;
+			ToastManager.CreatrOrUpdateReplayProgressToast(args.UploadId, progress);
 		}
 
 		private static void HandleAuthenticationBrowserError(string url)

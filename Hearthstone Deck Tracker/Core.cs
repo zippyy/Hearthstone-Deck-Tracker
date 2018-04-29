@@ -15,7 +15,6 @@ using Hearthstone_Deck_Tracker.Utility.Analytics;
 using Hearthstone_Deck_Tracker.Utility.Extensions;
 using Hearthstone_Deck_Tracker.Utility.HotKeys;
 using Hearthstone_Deck_Tracker.Utility.Toasts;
-using Hearthstone_Deck_Tracker.Utility.Toasts.ToastControls;
 using Hearthstone_Deck_Tracker.Windows;
 using MahApps.Metro.Controls.Dialogs;
 using Hearthstone_Deck_Tracker.Utility.Updating;
@@ -133,17 +132,6 @@ namespace Hearthstone_Deck_Tracker
 					+ "HDT may not work properly until Hearthstone has been restarted.").Forget();
 				Overlay.ShowRestartRequiredWarning();
 			};
-			Manager.HSReplayNet.LogUploader.UploadInitiated += args =>
-			{
-				ToastManager.CreatrOrUpdateReplayProgressToast(args.UploadId, ReplayProgress.Uploading);
-			};
-			Manager.HSReplayNet.LogUploader.UploadComplete += args =>
-			{
-				DeckManager.SetUploadStatus(args);
-				var status = args.Status.Success ? ReplayProgress.Complete : ReplayProgress.Error;
-				ToastManager.CreatrOrUpdateReplayProgressToast(args.UploadId, status);
-			};
-			Manager.HSReplayNet.LogUploader.UploadError += DeckManager.SetUploadStatus;
 			Manager.Game.HearthstoneStarted += BackupManager.Run;
 			HSReplayNetHelper.Initialize();
 
