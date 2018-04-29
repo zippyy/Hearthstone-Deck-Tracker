@@ -37,6 +37,20 @@ namespace Hearthstone_Deck_Tracker.Utility.Toasts
 				ShowToast(result);
 		}
 
+		private static readonly Dictionary<int, Action<ReplayProgress>> ProgressToasts = new Dictionary<int, Action<ReplayProgress>>();
+		internal static void CreatrOrUpdateReplayProgressToast(int id, ReplayProgress progress)
+		{
+			if(!ProgressToasts.TryGetValue(id, out var updateToast))
+				return;
+			if(progress == ReplayProgress.Uploading)
+				ProgressToasts[id] = ShowReplayProgressToast();
+			else
+			{
+				updateToast(progress);
+				ProgressToasts.Remove(id);
+			}
+		}
+
 		internal static Action<ReplayProgress> ShowReplayProgressToast()
 		{
 			var progressControl = new ReplayProgressToast();
