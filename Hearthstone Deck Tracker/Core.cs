@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using Hearthstone_Deck_Tracker.Controls.Error;
 using Hearthstone_Deck_Tracker.Controls.Stats;
+using Hearthstone_Deck_Tracker.HsReplay;
 using Hearthstone_Deck_Tracker.Plugins;
 using Hearthstone_Deck_Tracker.Utility;
 using Hearthstone_Deck_Tracker.Utility.Analytics;
@@ -144,6 +145,7 @@ namespace Hearthstone_Deck_Tracker
 			};
 			Manager.HSReplayNet.LogUploader.UploadError += DeckManager.SetUploadStatus;
 			Manager.Game.HearthstoneStarted += BackupManager.Run;
+			HSReplayNetHelper.Initialize();
 
 			HearthstoneRunner.StartingHearthstone += state =>
 			{

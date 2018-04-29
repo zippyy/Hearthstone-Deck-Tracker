@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Net;
 using Hearthstone_Deck_Tracker.Controls.Error;
-using Hearthstone_Deck_Tracker.Hearthstone;
 using Hearthstone_Deck_Tracker.Utility.Analytics;
 using Hearthstone_Deck_Tracker.Utility.Toasts;
 using HearthSim.Core.EventManagers;
@@ -12,9 +11,12 @@ namespace Hearthstone_Deck_Tracker.HsReplay
 {
 	internal static class HSReplayNetHelper
 	{
+		public static void Initialize()
+		{
+		}
+
 		static HSReplayNetHelper()
 		{
-			//ConfigWrapper.CollectionSyncingChanged += () => SyncCollection().Forget();
 			Core.HSReplay.OAuth.CollectionUpdated += HandleCollectionUpdated;
 			Core.HSReplay.Events.CollectionUploadError += HandleCollectionUploadError;
 			Core.HSReplay.Events.BlizzardAccountClaimed += args => Influx.OnBlizzardAccountClaimed(true);
