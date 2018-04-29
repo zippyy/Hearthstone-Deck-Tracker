@@ -294,13 +294,13 @@ namespace Hearthstone_Deck_Tracker
 				ImportDeck(deck);
 		}
 
-		public static void HandleMatchResults(GameEndEventArgs args)
+		public static GameStats HandleMatchResults(GameEndEventArgs args)
 		{
 			var playedDeck = args.GameState.LocalPlayer.Deck;
 			if(playedDeck == null)
 			{
 				//Todo
-				return;
+				return null;
 			}
 			var deck = ImportDeck(playedDeck);
 
@@ -313,7 +313,7 @@ namespace Hearthstone_Deck_Tracker
 			if(localHero == null || opposingHero == null)
 			{
 				//Todo
-				return;
+				return null;
 			}
 
 			List<TrackedCard> RevealedCards(HearthSim.Core.Hearthstone.Player player)
@@ -374,6 +374,7 @@ namespace Hearthstone_Deck_Tracker
 			deck.DeckStats.AddGameResult(game);
 			DeckStatsList.Save();
 			Core.MainWindow.DeckPickerList.UpdateDecks(false, new[] { deck });
+			return game;
 		}
 
 		public static GameStats LastGame { get; set; }

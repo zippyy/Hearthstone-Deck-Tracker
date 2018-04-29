@@ -115,7 +115,15 @@ namespace Hearthstone_Deck_Tracker
 				UpdateOpponentCards(true);
 				Helper.UpdateEverything(Manager.Game);
 			};
-			Manager.Game.GameEnded += DeckManager.HandleMatchResults;
+			Manager.Game.GameEnded += args =>
+			{
+				var game = DeckManager.HandleMatchResults(args);
+				if(game != null)
+				{
+					var deck = DeckList.Instance.Decks.FirstOrDefault(x => x.DeckId == game.DeckId);
+					ToastManager.ShowGameResultToast(deck?.Name, game);
+				}
+			};
 			Manager.Game.LogConfigError += args => MainWindow.ShowLogConfigUpdateFailedMessage().Forget();
 			Manager.Game.HearthstoneRestartRequired += () =>
 			{
