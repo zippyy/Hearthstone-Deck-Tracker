@@ -80,7 +80,7 @@ namespace Hearthstone_Deck_Tracker.Windows
 				tvi.Expanded += OnItemExpanded;
 				tvi.Collapsed += OnItemCollapsed;
 				foreach(var item in collection.Collection)
-					tvi.Items.Add(item.ToString());
+					tvi.Items.Add(item.Info.ToString());
 				TreeViewCards.Items.Add(tvi);
 			}
 		}
