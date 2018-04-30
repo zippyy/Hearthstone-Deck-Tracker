@@ -100,13 +100,13 @@ namespace Hearthstone_Deck_Tracker.Windows
 
 			if (!_playerCardsHidden)
 			{
-				StackPanelPlayer.Visibility = (Config.Instance.HideDecksInOverlay || (Config.Instance.HideInMenu && _game.IsInMenu)) && !_uiMovable
+				StackPanelPlayer.Visibility = (Config.Instance.HideDecksInOverlay || _game.IsInMenu) && !_uiMovable
 												  ? Collapsed : Visible;
 			}
 
 			if (!_opponentCardsHidden)
 			{
-				StackPanelOpponent.Visibility = (Config.Instance.HideDecksInOverlay || (Config.Instance.HideInMenu && _game.IsInMenu))
+				StackPanelOpponent.Visibility = (Config.Instance.HideDecksInOverlay || _game.IsInMenu)
 												&& !_uiMovable ? Collapsed : Visible;
 			}
 

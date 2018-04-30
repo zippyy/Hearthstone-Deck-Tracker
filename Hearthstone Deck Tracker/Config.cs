@@ -381,9 +381,6 @@ namespace Hearthstone_Deck_Tracker
 		public bool HideInBackground = false;
 
 		[DefaultValue(true)]
-		public bool HideInMenu = true;
-
-		[DefaultValue(true)]
 		public bool HideOpponentAttackIcon = true;
 
 		[DefaultValue(DisplayMode.Auto)]

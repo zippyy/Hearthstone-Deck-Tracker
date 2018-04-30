@@ -17,7 +17,6 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Overlay
 		public void Load()
 		{
 			CheckboxHideOverlayInBackground.IsChecked = Config.Instance.HideInBackground;
-			CheckboxHideOverlayInMenu.IsChecked = Config.Instance.HideInMenu;
 			CheckboxHideOverlay.IsChecked = Config.Instance.HideOverlay;
 			CheckboxHideDecksInOverlay.IsChecked = Config.Instance.HideDecksInOverlay;
 			CheckboxOverlaySecretToolTipsOnly.IsChecked = Config.Instance.OverlaySecretToolTipsOnly;
@@ -241,22 +240,6 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Overlay
 			if(!_initialized)
 				return;
 			Config.Instance.HideOverlay = false;
-			SaveConfig(true);
-		}
-
-		private void CheckboxHideOverlayInMenu_Checked(object sender, RoutedEventArgs e)
-		{
-			if(!_initialized)
-				return;
-			Config.Instance.HideInMenu = true;
-			SaveConfig(true);
-		}
-
-		private void CheckboxHideOverlayInMenu_Unchecked(object sender, RoutedEventArgs e)
-		{
-			if(!_initialized)
-				return;
-			Config.Instance.HideInMenu = false;
 			SaveConfig(true);
 		}
 

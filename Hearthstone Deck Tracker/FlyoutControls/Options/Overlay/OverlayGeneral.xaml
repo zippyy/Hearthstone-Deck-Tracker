@@ -15,10 +15,6 @@
                   HorizontalAlignment="Left" Margin="10,5,0,0" VerticalAlignment="Top"
                   Checked="CheckboxHideOverlay_Checked"
                   Unchecked="CheckboxHideOverlay_Unchecked" />
-        <CheckBox x:Name="CheckboxHideOverlayInMenu" Content="{lex:Loc Options_Overlay_General_CheckBox_HideInMenu}"
-                  HorizontalAlignment="Left" Margin="10,5,0,0" VerticalAlignment="Top"
-                  Checked="CheckboxHideOverlayInMenu_Checked"
-                  Unchecked="CheckboxHideOverlayInMenu_Unchecked" />
         <CheckBox x:Name="CheckboxHideOverlayInSpectator" Content="{lex:Loc Options_Overlay_General_CheckBox_HideInSpectator}"
                   HorizontalAlignment="Left" Margin="10,5,0,0" VerticalAlignment="Top"
                   Checked="CheckboxHideOverlayInSpectator_Checked"

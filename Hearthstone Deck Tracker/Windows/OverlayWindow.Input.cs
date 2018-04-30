@@ -383,16 +383,13 @@ namespace Hearthstone_Deck_Tracker.Windows
 							_opponentCardsHidden = true;
 					}
 				}
-				else if (panel.Visibility == Visibility.Collapsed)
+				else if(panel.Visibility == Visibility.Collapsed && !_game.IsInMenu)
 				{
-					if (!(_game.IsInMenu && Config.Instance.HideInMenu))
-					{
-						panel.Visibility = Visibility.Visible;
-						if (panel.Equals(BorderStackPanelPlayer))
-							_playerCardsHidden = false;
-						else
-							_opponentCardsHidden = false;
-					}
+					panel.Visibility = Visibility.Visible;
+					if(panel.Equals(BorderStackPanelPlayer))
+						_playerCardsHidden = false;
+					else
+						_opponentCardsHidden = false;
 				}
 			}
 		}
