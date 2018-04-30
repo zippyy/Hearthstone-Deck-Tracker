@@ -104,7 +104,7 @@ namespace Hearthstone_Deck_Tracker.Windows
 			{
 				var tags = entity.Value.Tags.Select(GetTagKeyValue).Aggregate((c, n) => c + " | " + n);
 				var card = Database.GetCardFromId(entity.Value.CardId);
-				list.Add(new {Name = card.Name ?? string.Empty, entity.Value.CardId, Tags = tags});
+				list.Add(new {Name = card?.Name ?? string.Empty, entity.Value.CardId, Tags = tags});
 			}
 
 			var firstNotSecond = list.Except(_previous).ToList();
