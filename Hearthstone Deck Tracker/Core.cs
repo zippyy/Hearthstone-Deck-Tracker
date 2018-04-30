@@ -19,6 +19,8 @@ using Hearthstone_Deck_Tracker.Windows;
 using MahApps.Metro.Controls.Dialogs;
 using Hearthstone_Deck_Tracker.Utility.Updating;
 using HearthSim.Core;
+using HearthSim.Core.Hearthstone;
+using HearthSim.Core.Hearthstone.Enums;
 using HearthSim.Core.HSReplay;
 using HearthSim.Core.LogReading;
 using HearthSim.UI.Themes;
@@ -133,6 +135,21 @@ namespace Hearthstone_Deck_Tracker
 				Overlay.ShowRestartRequiredWarning();
 			};
 			Manager.Game.HearthstoneStarted += BackupManager.Run;
+			Manager.Game.ModeChanged += args =>
+			{
+				if(args.CurrentMode == Mode.GAMEPLAY || args.PreviousMode == Mode.GAMEPLAY)
+				{
+					UpdatePlayerCards(true);
+					UpdateOpponentCards(true);
+					Helper.UpdateEverything(Manager.Game);
+				}
+			};
+			Manager.Game.ActivePlayerDeckChanged += args =>
+			{
+				UpdatePlayerCards(true);
+				UpdateOpponentCards(true);
+				Helper.UpdateEverything(Manager.Game);
+			};
 			HSReplayNetHelper.Initialize();
 
 			HearthstoneRunner.StartingHearthstone += state =>
@@ -317,13 +334,12 @@ namespace Hearthstone_Deck_Tracker
 			_updateRequestsPlayer--;
 			if(_updateRequestsPlayer > 0)
 				return;
-			var cards = Hearthstone.CurrentGame?.LocalPlayer.GetRemainingCards().ToList();
-			if(cards != null)
-			{
-				Overlay.UpdatePlayerCards(cards, reset);
-				if(Windows.PlayerWindow.IsVisible)
-					Windows.PlayerWindow.UpdatePlayerCards(cards, reset);
-			}
+			var cards = (Hearthstone.CurrentGame != null && !Hearthstone.IsInMenu
+							? Hearthstone.CurrentGame.LocalPlayer?.GetRemainingCards().ToList()
+							: Hearthstone.SelectedDeck?.Cards.ToList()) ?? new List<Card>();
+			Overlay.UpdatePlayerCards(cards, reset);
+			if(Windows.PlayerWindow.IsVisible)
+				Windows.PlayerWindow.UpdatePlayerCards(cards, reset);
 		}
 
 		internal static async void UpdateOpponentCards(bool reset = false)
@@ -333,13 +349,12 @@ namespace Hearthstone_Deck_Tracker
 			_updateRequestsOpponent--;
 			if(_updateRequestsOpponent > 0)
 				return;
-			var cards = Hearthstone.CurrentGame?.OpposingPlayer.GetRemainingCards().ToList();
-			if(cards != null)
-			{
-				Overlay.UpdateOpponentCards(cards, reset);
-				if(Windows.OpponentWindow.IsVisible)
-					Windows.OpponentWindow.UpdateOpponentCards(cards, reset);
-			}
+			var cards = (Hearthstone.CurrentGame != null && !Hearthstone.IsInMenu
+							? Hearthstone.CurrentGame.OpposingPlayer?.GetRemainingCards().ToList()
+							: null) ?? new List<Card>();
+			Overlay.UpdateOpponentCards(cards, reset);
+			if(Windows.OpponentWindow.IsVisible)
+				Windows.OpponentWindow.UpdateOpponentCards(cards, reset);
 		}
 
 		public static class Windows
