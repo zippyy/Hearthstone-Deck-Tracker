@@ -20,8 +20,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		lib\HearthDb.dll = lib\HearthDb.dll
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ResourceGenerator", "ResourceGenerator\ResourceGenerator.csproj", "{944AFE2A-49B4-4E63-BA1D-FC49E5029F36}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HearthDb", "HearthSim.Common\HearthDb\HearthDb\HearthDb.csproj", "{7ED14243-E02B-4B94-AF00-A67A62C282F0}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "HearthMirror", "HearthSim.Common\HearthMirror\HearthMirror\HearthMirror.csproj", "{1694A2F8-645A-4263-A6AB-FC26323FD675}"
@@ -65,12 +63,6 @@ Global
 		{245A59F5-6E48-4B5B-B828-24A4C3EED309}.Release|x86.Build.0 = Release|x86
 		{245A59F5-6E48-4B5B-B828-24A4C3EED309}.Squirrel|x86.ActiveCfg = Squirrel|x86
 		{245A59F5-6E48-4B5B-B828-24A4C3EED309}.Squirrel|x86.Build.0 = Squirrel|x86
-		{944AFE2A-49B4-4E63-BA1D-FC49E5029F36}.Debug|x86.ActiveCfg = Debug|x86
-		{944AFE2A-49B4-4E63-BA1D-FC49E5029F36}.Debug|x86.Build.0 = Debug|x86
-		{944AFE2A-49B4-4E63-BA1D-FC49E5029F36}.Release|x86.ActiveCfg = Release|x86
-		{944AFE2A-49B4-4E63-BA1D-FC49E5029F36}.Release|x86.Build.0 = Release|x86
-		{944AFE2A-49B4-4E63-BA1D-FC49E5029F36}.Squirrel|x86.ActiveCfg = Release|x86
-		{944AFE2A-49B4-4E63-BA1D-FC49E5029F36}.Squirrel|x86.Build.0 = Release|x86
 		{7ED14243-E02B-4B94-AF00-A67A62C282F0}.Debug|x86.ActiveCfg = Debug|x86
 		{7ED14243-E02B-4B94-AF00-A67A62C282F0}.Debug|x86.Build.0 = Debug|x86
 		{7ED14243-E02B-4B94-AF00-A67A62C282F0}.Release|x86.ActiveCfg = Release|x86

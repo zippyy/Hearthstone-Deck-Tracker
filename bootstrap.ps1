@@ -30,5 +30,3 @@ Set-Location ..
 git clone "https://github.com/HearthSim/HDT-Localization" "HDT-Localization"
 
 Copy-Item "HDT-Localization\*.resx" "Hearthstone Deck Tracker\Properties\" -Force
-
-Invoke-Expression "./generate_resources.bat"
