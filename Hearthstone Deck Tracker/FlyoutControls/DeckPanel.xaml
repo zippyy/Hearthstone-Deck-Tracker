@@ -6,6 +6,7 @@
              xmlns:controls="clr-namespace:Hearthstone_Deck_Tracker.Controls"
              xmlns:hearthstoneDeckTracker="clr-namespace:Hearthstone_Deck_Tracker"
              xmlns:lex="http://wpflocalizeextension.codeplex.com"
+             xmlns:ui="clr-namespace:HearthSim.UI;assembly=HearthSim.UI"
              lex:LocalizeDictionary.DesignCulture="en"
              lex:ResxLocalizationProvider.DefaultAssembly="HearthstoneDeckTracker"
              lex:ResxLocalizationProvider.DefaultDictionary="Strings"
@@ -13,33 +14,8 @@
              d:DesignHeight="300" d:DesignWidth="245">
     <DockPanel>
         <Button Name="ButtonImport" DockPanel.Dock="Bottom" Content="{lex:Loc DeckPanel_Button_Import}" Click="ButtonImport_OnClick" Margin="5"/>
-        <ListView x:Name="ListViewDeck"
-                  Background="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}"
-                  Foreground="White" FontWeight="Bold" BorderThickness="1"
-                  ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                  ScrollViewer.VerticalScrollBarVisibility="Visible"
-                  ScrollViewer.CanContentScroll="True" FontFamily="Arial" Margin="0,6,0,6"
-                  HorizontalAlignment="Center" Width="235" Height="auto">
-            <ListView.Resources>
-                <Style TargetType="GridViewColumnHeader">
-                    <Setter Property="Visibility" Value="Collapsed" />
-                </Style>
-                <Style TargetType="ListViewItem">
-                    <Setter Property="Margin" Value="-4,-3,-3,0" />
-                    <Style.Triggers>
-                        <Trigger Property="IsSelected"
-                                 Value="True">
-                            <Setter Property="BorderBrush"
-                                    Value="Blue" />
-                        </Trigger>
-                    </Style.Triggers>
-                </Style>
-            </ListView.Resources>
-            <ListView.ItemTemplate>
-                <DataTemplate>
-                    <controls:Card />
-                </DataTemplate>
-            </ListView.ItemTemplate>
-        </ListView>
+        <ScrollViewer Background="{DynamicResource {x:Static SystemColors.ControlDarkDarkBrushKey}}" Margin="5,0">
+            <ui:AnimatedCardList x:Name="ListViewDeck" Animate="False" TransitionOpacity="False"/>
+        </ScrollViewer>
     </DockPanel>
 </UserControl>

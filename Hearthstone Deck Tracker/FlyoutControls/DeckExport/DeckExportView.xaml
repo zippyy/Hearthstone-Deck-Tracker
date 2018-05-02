@@ -6,6 +6,7 @@
              xmlns:local="clr-namespace:Hearthstone_Deck_Tracker.FlyoutControls.DeckExport"
              xmlns:lex="http://wpflocalizeextension.codeplex.com"
              xmlns:controls="clr-namespace:Hearthstone_Deck_Tracker.Controls"
+             xmlns:ui="clr-namespace:HearthSim.UI;assembly=HearthSim.UI"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="300">
     <UserControl.DataContext>
@@ -79,7 +80,7 @@
                                                 <TextBlock Text="{Binding CostString}" VerticalAlignment="Center" Margin="10,0,0,0" FontWeight="SemiBold"/>
                                                 <Image Source="{StaticResource DustIcon}" Style="{StaticResource DustIconStyle}"/>
                                             </StackPanel>
-                                            <controls:Card DataContext="{Binding Card}" HorizontalAlignment="Left"/>
+                                            <ui:AnimatedCard Card="{Binding Card}" Animate="False" TransitionOpacity="False" HorizontalAlignment="Left"/>
                                         </Grid>
                                     </DataTemplate>
                                 </ItemsControl.ItemTemplate>

@@ -12,6 +12,7 @@
              xmlns:system="clr-namespace:System;assembly=mscorlib"
              xmlns:deckEditorEnums="clr-namespace:Hearthstone_Deck_Tracker.FlyoutControls.DeckEditor.Enums"
              xmlns:deckSetIcons="clr-namespace:Hearthstone_Deck_Tracker.Controls.DeckSetIcons"
+             xmlns:ui="clr-namespace:HearthSim.UI;assembly=HearthSim.UI"
              mc:Ignorable="d" 
              d:DesignHeight="600" d:DesignWidth="700">
     <UserControl.DataContext>
@@ -61,14 +62,14 @@
                     Margin="0,5,0,0" BorderThickness="0">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <controls:Card>
+                            <ui:AnimatedCard Card="{Binding}" Animate="False" TransitionOpacity="False">
                                 <i:Interaction.Triggers>
                                     <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
                                         <i:InvokeCommandAction CommandParameter="{Binding}"
                                             Command="{Binding DataContext.AddCardCommand, RelativeSource={RelativeSource AncestorType=deckEditor:DeckEditorView}}" />
                                     </i:EventTrigger>
                                 </i:Interaction.Triggers>
-                            </controls:Card>
+                            </ui:AnimatedCard>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                     <ListView.InputBindings>
@@ -94,7 +95,7 @@
                           ScrollViewer.HorizontalScrollBarVisibility="Disabled"  Margin="0,5" BorderThickness="0">
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <controls:Card>
+                            <ui:AnimatedCard Card="{Binding}" Animate="False" TransitionOpacity="False">
                                 <i:Interaction.Triggers>
                                     <i:EventTrigger EventName="PreviewMouseLeftButtonUp">
                                         <i:InvokeCommandAction CommandParameter="{Binding}"
@@ -105,7 +106,7 @@
                                             Command="{Binding DataContext.AddCardCommand, RelativeSource={RelativeSource AncestorType=deckEditor:DeckEditorView}}" />
                                     </i:EventTrigger>
                                 </i:Interaction.Triggers>
-                            </controls:Card>
+                            </ui:AnimatedCard>
                         </DataTemplate>
                     </ItemsControl.ItemTemplate>
                 </ListView>

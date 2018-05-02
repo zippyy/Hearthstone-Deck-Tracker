@@ -9,6 +9,7 @@ using Hearthstone_Deck_Tracker.FlyoutControls.DeckEditor.Enums;
 using Hearthstone_Deck_Tracker.Hearthstone;
 using Hearthstone_Deck_Tracker.Utility;
 using Hearthstone_Deck_Tracker.Utility.MVVM;
+using HearthSim.UI;
 
 namespace Hearthstone_Deck_Tracker.FlyoutControls.DeckEditor
 {
@@ -56,7 +57,8 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.DeckEditor
 			}
 		}
 
-		public IEnumerable<Card> Cards => Deck.Cards;
+		public IEnumerable<CardViewModel> Cards =>
+			Deck.Cards.Select(x => new CardViewModel(new HearthSim.Core.Hearthstone.Card(x.Id, x.Count)));
 
 		public void SetDeck(Deck deck, bool isNewDeck)
 		{
@@ -102,7 +104,7 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.DeckEditor
 			UpdateCardCountWarning();
 		}
 
-		public IEnumerable<Card> CardDatabase
+		public IEnumerable<CardViewModel> CardDatabase
 		{
 			get
 			{
@@ -120,7 +122,7 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.DeckEditor
 					cards = cards.Where(c => c.CardSet.HasValue && (int)c.CardSet.Value == (int)SelectedSetFilter);
 				if(!IncludeWild || Deck.IsArenaDeck)
 					cards = cards.Where(c => !Helper.WildOnlySets.Contains(c.Set));
-				return cards;
+				return cards.Select(x => new CardViewModel(new HearthSim.Core.Hearthstone.Card(x.Id, x.Count)));
 			}
 		}
 
@@ -139,9 +141,9 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.DeckEditor
 
 		private string CleanString(string str) => string.IsNullOrEmpty(str) ? string.Empty : Helper.RemoveDiacritics(str, true).ToLowerInvariant();
 
-		public ICommand AddCardCommand => new Command<Card>(AddCardToDeck);
+		public ICommand AddCardCommand => new Command<CardViewModel>(AddCardToDeck);
 
-		public ICommand RemoveCardCommand => new Command<Card>(RemoveCardFromDeck);
+		public ICommand RemoveCardCommand => new Command<CardViewModel>(RemoveCardFromDeck);
 
 		public bool IncludeWild
 		{
@@ -369,9 +371,12 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.DeckEditor
 
 		public const int MaxDeckSize = 30;
 
-		private void RemoveCardFromDeck(Card card)
+		private void RemoveCardFromDeck(CardViewModel cvm)
 		{
-			if(Deck == null || card == null)
+			if(Deck == null || cvm == null)
+				return;
+			var card = Deck.Cards.FirstOrDefault(x => x.Id == cvm.Id);
+			if(card == null)
 				return;
 			card.Count--;
 			if(card.Count <= 0)
@@ -382,14 +387,14 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.DeckEditor
 			UpdateCardCountWarning();
 		}
 
-		private void AddCardToDeck(Card card)
+		private void AddCardToDeck(CardViewModel card)
 		{
 			if(Deck == null || card == null)
 				return;
 			var existing = Deck.Cards.FirstOrDefault(c => c.Id == card.Id);
 			if(existing == null)
 			{
-				existing = (Card)card.Clone();
+				existing = new Card(card.Card.Data, card.Count);
 				existing.Count = 0;
 				Deck.Cards.Add(existing);
 			}

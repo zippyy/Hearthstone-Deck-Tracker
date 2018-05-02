@@ -11,6 +11,7 @@ using Hearthstone_Deck_Tracker.Hearthstone;
 using Hearthstone_Deck_Tracker.Utility;
 using Hearthstone_Deck_Tracker.Utility.Logging;
 using Hearthstone_Deck_Tracker.Utility.MVVM;
+using HearthSim.UI;
 using Deck = Hearthstone_Deck_Tracker.Hearthstone.Deck;
 
 namespace Hearthstone_Deck_Tracker.FlyoutControls.DeckExport
@@ -68,7 +69,7 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.DeckExport
 			Helper.SortCardCollection(MissingCards, false);
 			HasMissingCards = missingCards.Any();
 			TotalDustCost = missingCards.Sum(x => x.DustCost);
-			RequiresKarazhan = missingCards.Any(c => c.Card.CardSet == CardSet.KARA);
+			RequiresKarazhan = missingCards.Any(c => c.Card.Card.Data.Set == CardSet.KARA);
 			var missingCardsCount = missingCards.Sum(c => c.Card.Count);
 			MissingCardsHeader = LocUtil.Get(LocMissingCardsHeader) + $" ({missingCardsCount})";
 			HasCollectionData = true;
@@ -276,6 +277,6 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.DeckExport
 
 		public int DustCost => _card.Count * _card.DustCost;
 
-		public Card Card => _card;
+		public CardViewModel Card => new CardViewModel(new HearthSim.Core.Hearthstone.Card(_card.Id, _card.Count));
 	}
 }

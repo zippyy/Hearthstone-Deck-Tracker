@@ -9,6 +9,8 @@ using Hearthstone_Deck_Tracker.Hearthstone;
 using Hearthstone_Deck_Tracker.Utility;
 using static HearthDb.CardIds.Collectible;
 using static System.Windows.Visibility;
+using Deck = Hearthstone_Deck_Tracker.Hearthstone.Deck;
+using Card = HearthSim.Core.Hearthstone.Card;
 
 namespace Hearthstone_Deck_Tracker.Controls
 {
@@ -20,7 +22,7 @@ namespace Hearthstone_Deck_Tracker.Controls
 		{
 			InitializeComponent();
 			_allTags = deck.TagList.ToLowerInvariant().Replace("-", "");
-			//ListViewPlayer.Update(deck.Cards.ToSortedCardList(), true);
+			ListViewPlayer.Cards = deck.Cards.Select(x => new Card(x.Id, x.Count));
 
 			if(deckOnly)
 			{

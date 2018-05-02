@@ -204,11 +204,12 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.DeckScreenshot
 			CopyToClipboardButtonText = LocUtil.Get(ClipboardDefault, true);
 		}
 
-		public void UpdateImage()
+		public async void UpdateImage()
 		{
 			if(_deck == null)
 				return;
-			DeckImage = DeckScreenshotHelper.Generate(_deck, CardsOnly);
+			DeckImage = null;
+			DeckImage = await DeckScreenshotHelper.Generate(_deck, CardsOnly);
 		}
 	}
 }

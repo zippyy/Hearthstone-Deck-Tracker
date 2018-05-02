@@ -214,9 +214,6 @@
     <Compile Include="API\GameEvents.cs" />
     <Compile Include="API\LogEvents.cs" />
     <Compile Include="API\PredamageInfo.cs" />
-    <Compile Include="Controls\Card.xaml.cs">
-      <DependentUpon>Card.xaml</DependentUpon>
-    </Compile>
     <Compile Include="Controls\CardMarker.xaml.cs">
       <DependentUpon>CardMarker.xaml</DependentUpon>
     </Compile>
@@ -805,10 +802,6 @@
       <DependentUpon>TimerWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Utility\XmlManager.cs" />
-    <Page Include="Controls\Card.xaml">
-      <SubType>Designer</SubType>
-      <Generator>MSBuild:Compile</Generator>
-    </Page>
     <Page Include="Controls\CardMarker.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

@@ -9,8 +9,6 @@ using System.Windows.Media;
 using System.Xml.Serialization;
 using HearthDb.Enums;
 using Hearthstone_Deck_Tracker.Annotations;
-using Hearthstone_Deck_Tracker.Utility.Logging;
-using HearthSim.UI;
 using HearthSim.UI.Themes;
 
 namespace Hearthstone_Deck_Tracker.Hearthstone
@@ -159,7 +157,6 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 			{
 				_count = value;
 				OnPropertyChanged();
-				OnPropertyChanged(nameof(Background));
 			}
 		}
 
@@ -376,45 +373,6 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 		public static FontFamily DefaultFont => Helper.UseLatinFont() ? new FontFamily(new Uri("pack://application:,,,/"), "./Resources/#Chunkfive") : new FontFamily();
 
 		public static FontWeight DefaultFontWeight => Helper.UseLatinFont() ? FontWeights.Normal : FontWeights.Bold;
-
-		public DrawingBrush Background
-		{
-			get
-			{
-				if(Id == null || Name == null)
-					return new DrawingBrush();
-				var cardImageObj = new CardImageObject(this);
-				if(CardImageCache.TryGetValue(Id, out Dictionary<int, CardImageObject> cache))
-				{
-					if(cache.TryGetValue(cardImageObj.GetHashCode(), out CardImageObject cached))
-						return cached.Image;
-				}
-				try
-				{
-					var image = ThemeManager.GetBarImageBuilder(new CardViewModel(new HearthSim.Core.Hearthstone.Card(_dbCard, Count))).Build();
-					if (image.CanFreeze)
-						image.Freeze();
-					cardImageObj = new CardImageObject(image, this);
-					if(cache == null)
-					{
-						cache = new Dictionary<int, CardImageObject>();
-						CardImageCache.Add(Id, cache);
-					}
-					cache.Add(cardImageObj.GetHashCode(), cardImageObj);
-					return cardImageObj.Image;
-				}
-				catch(Exception ex)
-				{
-					Log.Error($"Image builder failed: {ex.Message}");
-					return new DrawingBrush();
-				}
-			}
-		}
-
-		internal void Update() => OnPropertyChanged(nameof(Background));
-		internal void UpdateHighlight() => OnPropertyChanged(nameof(Highlight));
-
-		public ImageBrush Highlight => ThemeManager.CurrentTheme?.HighlightImage ?? new ImageBrush();
 
 		[XmlIgnore]
 		public bool HighlightInHand { get; set; }

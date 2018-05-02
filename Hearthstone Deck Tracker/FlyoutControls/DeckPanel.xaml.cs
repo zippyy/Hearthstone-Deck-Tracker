@@ -7,6 +7,9 @@ using System.Windows.Controls;
 using Hearthstone_Deck_Tracker.Hearthstone;
 using Hearthstone_Deck_Tracker.Stats;
 using Hearthstone_Deck_Tracker.Utility.Extensions;
+using HearthSim.Core.Hearthstone;
+using Card = HearthSim.Core.Hearthstone.Card;
+using Deck = Hearthstone_Deck_Tracker.Hearthstone.Deck;
 
 #endregion
 
@@ -56,10 +59,7 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls
 		public void SetDeck(Deck deck, bool showImportButton = true)
 		{
 			_deck = deck;
-			ListViewDeck.Items.Clear();
-			foreach(var card in deck.Cards.ToSortedCardList())
-				ListViewDeck.Items.Add(card);
-			Helper.SortCardCollection(ListViewDeck.Items, false);
+			ListViewDeck.Cards = deck.Cards.Select(x => new Card(x.Id, x.Count));
 			ButtonImport.Visibility = showImportButton ? Visibility.Visible : Visibility.Collapsed;
 		}
 	}

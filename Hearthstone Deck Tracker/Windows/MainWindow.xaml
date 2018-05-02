@@ -15,6 +15,7 @@
                       xmlns:mainWindowControls="clr-namespace:Hearthstone_Deck_Tracker.Windows.MainWindowControls"
                       xmlns:deckHistory="clr-namespace:Hearthstone_Deck_Tracker.FlyoutControls.DeckHistory"
                       xmlns:deckEditor="clr-namespace:Hearthstone_Deck_Tracker.FlyoutControls.DeckEditor"
+                      xmlns:ui="clr-namespace:HearthSim.UI;assembly=HearthSim.UI"
                       lex:LocalizeDictionary.DesignCulture="en"
                       lex:ResxLocalizationProvider.DefaultAssembly="HearthstoneDeckTracker"
                       lex:ResxLocalizationProvider.DefaultDictionary="Strings"
@@ -231,7 +232,10 @@
                     </DockPanel>
                 </Border>
                 <local:ManaCurve x:Name="ManaCurveMyDecks" Height="150" Margin="0,5,0,0" DockPanel.Dock="Bottom"/>
-                <ListView x:Name="ListViewDeck" Background="#696969"
+                <ScrollViewer>
+                    <ui:AnimatedCardList x:Name="ListViewDeck" Animate="False" TransitionOpacity="False"/>
+                </ScrollViewer>
+                <!--<ListView x:Name="ListViewDeck" Background="#696969"
                                     Foreground="White" FontWeight="Bold" BorderThickness="1"
                                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
                                     ScrollViewer.VerticalScrollBarVisibility="Visible"
@@ -255,7 +259,7 @@
                             <controls1:Card/>
                         </DataTemplate>
                     </ListView.ItemTemplate>
-                </ListView>
+                </ListView>-->
             </DockPanel>
             <DockPanel Name="MyGamesPanel" Width="380" DockPanel.Dock="Right" Margin="5,0,0,0">
                 <GroupBox x:Name="GroupBoxHsReplayDeckInfo" Header="{lex:LocTextUpper MainWindow_Header_GlobalDeckStatistics}" DockPanel.Dock="Top" Margin="0,0,0,5">

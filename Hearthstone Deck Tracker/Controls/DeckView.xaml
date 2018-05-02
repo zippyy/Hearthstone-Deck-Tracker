@@ -114,16 +114,7 @@
             </DockPanel>
             <!-- Card List -->
             <Viewbox Name="ViewBoxPlayer" StretchDirection="DownOnly" Stretch="Fill">
-                <ui:AnimatedCardList x:Name="ListViewPlayer" Background="Transparent" BorderThickness="0"
-                                    ScrollViewer.HorizontalScrollBarVisibility="Disabled"
-                                    ScrollViewer.VerticalScrollBarVisibility="Disabled" IsEnabled="False"
-                                    ScrollViewer.CanContentScroll="False">
-                    <!--<ui:AnimatedCardList>
-                        <Style TargetType="ui:AnimatedCard">
-                            <Setter Property="Margin" Value="0,1,0,0"/>
-                        </Style>
-                    </ui:AnimatedCardList>-->
-                </ui:AnimatedCardList>
+                <ui:AnimatedCardList x:Name="ListViewPlayer"/>
             </Viewbox>
         </DockPanel>
     </Grid>

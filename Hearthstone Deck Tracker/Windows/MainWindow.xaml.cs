@@ -51,11 +51,11 @@ namespace Hearthstone_Deck_Tracker.Windows
 
 		public void UpdateDeckList(Deck selected)
 		{
-			ListViewDeck.ItemsSource = null;
 			if(selected == null)
-				return;
-			ListViewDeck.ItemsSource = selected.GetSelectedDeckVersion().Cards;
-			Helper.SortCardCollection(ListViewDeck.Items, Config.Instance.CardSortingClassFirst);
+				ListViewDeck.Cards = new List<HearthSim.Core.Hearthstone.Card>();
+			else
+				ListViewDeck.Cards = selected.GetSelectedDeckVersion().Cards
+					.Select(x => new HearthSim.Core.Hearthstone.Card(x.Id, x.Count));
 		}
 
 		public void AutoDeckDetection(bool enable)
@@ -75,7 +75,7 @@ namespace Hearthstone_Deck_Tracker.Windows
 			Options.OptionsTrackerGeneral.CheckBoxClassCardsFirst.IsChecked = classFirst;
 			Config.Instance.CardSortingClassFirst = classFirst;
 			Config.Save();
-			Helper.SortCardCollection(Core.MainWindow.ListViewDeck.ItemsSource, classFirst);
+			//Helper.SortCardCollection(Core.MainWindow.ListViewDeck.ItemsSource, classFirst);
 			Core.TrayIcon.MenuItemClassCardsFirst.Checked = classFirst;
 		}
 
@@ -241,7 +241,7 @@ namespace Hearthstone_Deck_Tracker.Windows
 		{
 			UpdateDeckList(DeckList.Instance.ActiveDeck);
 			SelectDeck(DeckList.Instance.ActiveDeck, true);
-			Helper.SortCardCollection(ListViewDeck.Items, Config.Instance.CardSortingClassFirst);
+			//Helper.SortCardCollection(ListViewDeck.Items, Config.Instance.CardSortingClassFirst);
 			DeckPickerList.PropertyChanged += DeckPickerList_PropertyChanged;
 			DeckPickerList.UpdateDecks();
 			DeckPickerList.UpdateArchivedClassVisibility();

@@ -149,21 +149,21 @@ namespace Hearthstone_Deck_Tracker.Windows
 
 		public void ShowSecrets(List<Card> secrets, bool force = false)
 		{
-			if(Config.Instance.HideSecrets && !force)
-				return;
+			//if(Config.Instance.HideSecrets && !force)
+			//	return;
 
-			StackPanelSecrets.Children.Clear();
+			//StackPanelSecrets.Children.Clear();
 
-			foreach(var secret in secrets)
-			{
-				if(secret.Count <= 0 && Config.Instance.RemoveSecretsFromList)
-					continue;
-				var cardObj = new Controls.Card();
-				cardObj.SetValue(DataContextProperty, secret);
-				StackPanelSecrets.Children.Add(cardObj);
-			}
+			//foreach(var secret in secrets)
+			//{
+			//	if(secret.Count <= 0 && Config.Instance.RemoveSecretsFromList)
+			//		continue;
+			//	var cardObj = new Controls.Card();
+			//	cardObj.SetValue(DataContextProperty, secret);
+			//	StackPanelSecrets.Children.Add(cardObj);
+			//}
 
-			StackPanelSecrets.Visibility = Visible;
+			//StackPanelSecrets.Visibility = Visible;
 		}
 
 		public void HideSecrets() => StackPanelSecrets.Visibility = Collapsed;

@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
@@ -8,21 +9,26 @@ using Hearthstone_Deck_Tracker.Controls;
 using Hearthstone_Deck_Tracker.Controls.Error;
 using Hearthstone_Deck_Tracker.Hearthstone;
 using Hearthstone_Deck_Tracker.Utility.Logging;
+using HearthSim.UI.Util;
+using HearthSim.Util.Caching;
 
 namespace Hearthstone_Deck_Tracker.FlyoutControls.DeckScreenshot
 {
 	public static class DeckScreenshotHelper
 	{
-		private const int CardHeight = 35;
+		private const int CardHeight = 34;
 		private const int InfoHeight = 124;
 		private const int ScreenshotWidth = 219;
 		private const int Dpi = 96;
 
-		public static RenderTargetBitmap Generate(Deck deck, bool cardsOnly)
+		public static async Task<RenderTargetBitmap> Generate(Deck deck, bool cardsOnly)
 		{
 			var height = CardHeight * deck.GetSelectedDeckVersion().Cards.Count;
 			if(!cardsOnly)
 				height += InfoHeight;
+
+			while(!deck.Cards.All(x => ImageCache.HasCardTile(x.Id)))
+				await Task.Delay(500);
 			var control = new DeckView(deck, cardsOnly);
 			control.Measure(new Size(ScreenshotWidth, height));
 			control.Arrange(new Rect(new Size(ScreenshotWidth, height)));
