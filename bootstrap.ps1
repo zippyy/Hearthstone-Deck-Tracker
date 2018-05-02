@@ -24,7 +24,7 @@ catch {
 
 git clone "https://github.com/HearthSim/HearthSim.Common" "HearthSim.Common"
 Set-Location "HearthSim.Common"
-Invoke-Expression "./bootstrap.bat"
+Invoke-Expression "./bootstrap.ps1"
 Set-Location ..
 
 git clone "https://github.com/HearthSim/HDT-Localization" "HDT-Localization"
