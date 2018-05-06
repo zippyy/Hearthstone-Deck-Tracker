@@ -26,6 +26,7 @@ using HearthSim.Core.LogReading;
 using HearthSim.UI.Themes;
 using HearthSim.Util;
 using WPFLocalizeExtension.Engine;
+using ImageCache = HearthSim.UI.Util.ImageCache;
 using Log = HearthSim.Util.Logging.Log;
 
 namespace Hearthstone_Deck_Tracker
@@ -77,6 +78,8 @@ namespace Hearthstone_Deck_Tracker
 			Manager = new Manager(HSConfig);
 			ThemeManager.Load(new ThemeConfig() {Theme = "Dark"});
 			Manager.Start();
+
+			ImageCache.Initialize(Config.Instance.DataDir);
 
 			//TODO: Figure out where to put these
 			Manager.Game.FriendlyChallenge += () =>
