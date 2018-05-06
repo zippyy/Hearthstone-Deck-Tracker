@@ -6,6 +6,7 @@ using System.Linq;
 using System.Net;
 using System.Threading.Tasks;
 using System.Windows;
+using HearthDb.Enums;
 using Hearthstone_Deck_Tracker.Controls.Error;
 using Hearthstone_Deck_Tracker.Controls.Stats;
 using Hearthstone_Deck_Tracker.HsReplay;
@@ -98,8 +99,7 @@ namespace Hearthstone_Deck_Tracker
 			};
 			Manager.Game.Arena.DraftComplete += args =>
 			{
-				DeckManager.ImportDeck(
-					new HearthSim.Core.Hearthstone.Deck(HearthSim.Core.Hearthstone.Enums.DeckType.Arena, args.Info.Deck));
+				DeckManager.ImportDeck(new Deck(HearthSim.Core.Hearthstone.Enums.DeckType.Arena, args.Info.Deck));
 			};
 			Manager.Game.Collection.DecksChanged += args => DeckManager.ImportDecks(args.Items); 
 			Manager.Game.HearthstoneInstallationNotFound += () =>
