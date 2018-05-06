@@ -22,6 +22,7 @@ using Hearthstone_Deck_Tracker.Utility.Updating;
 using HearthSim.Core;
 using HearthSim.Core.Hearthstone;
 using HearthSim.Core.Hearthstone.Enums;
+using HearthSim.Core.Hearthstone.GameStateModifiers;
 using HearthSim.Core.HSReplay;
 using HearthSim.Core.LogReading;
 using HearthSim.UI.Themes;
@@ -109,9 +110,12 @@ namespace Hearthstone_Deck_Tracker
 			};
 			Manager.Game.GameStateEvents.GameStateChanged += args =>
 			{
-				UpdatePlayerCards();
-				UpdateOpponentCards();
-				Helper.UpdateEverything(Manager.Game);
+				if(args.Modifier is TagChange t && t.Tag == GameTag.ZONE)
+				{
+					UpdatePlayerCards();
+					UpdateOpponentCards();
+					Helper.UpdateEverything(Manager.Game);
+				}
 			};
 			Manager.Game.GameCreated += args =>
 			{
