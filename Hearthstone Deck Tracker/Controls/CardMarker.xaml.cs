@@ -119,7 +119,7 @@ namespace Hearthstone_Deck_Tracker.Controls
 				mark = CardMark.Returned;
 			if(entity.IsCreated || entity.Info.Stolen)
 				mark = CardMark.Created;
-			if(entity.Info.Mulliganed)
+			if(entity.Info.MulliganDraw)
 				mark =  CardMark.Mulliganed;
 			UpdateIcon(mark);
 		}
