@@ -81,17 +81,7 @@ namespace Hearthstone_Deck_Tracker.Windows
 					_cardMarks[i].Visibility = Collapsed;
 			}
 
-			var oppBoard =
-				Core.Hearthstone.CurrentGame?.OpposingPlayer.InPlay.Where(x => x.IsMinion).OrderBy(x => x.GetTag(ZONE_POSITION))
-					.ToList() ?? new List<Entity>();
-			var playerBoard =
-				Core.Hearthstone.CurrentGame?.LocalPlayer.InPlay.Where(x => x.IsMinion).OrderBy(x => x.GetTag(ZONE_POSITION))
-					.ToList() ?? new List<Entity>();
-			UpdateMouseOverDetectionRegions(oppBoard, playerBoard);
-			if(!_game.IsInMenu && (_game.CurrentGame?.IsMulliganDone ?? false) && HearthstoneWindow.IsInForeground() && IsVisible)
-				DetectMouseOver(playerBoard, oppBoard);
-			else
-				FlavorTextVisibility = Collapsed;
+			UpdateMouseOver();
 
 			StackPanelPlayer.Opacity = Config.Instance.PlayerOpacity / 100;
 			StackPanelOpponent.Opacity = Config.Instance.OpponentOpacity / 100;
@@ -161,6 +151,21 @@ namespace Hearthstone_Deck_Tracker.Windows
 				Core.Windows.PlayerWindow.Update();
 			if (Core.Windows.OpponentWindow.Visibility == Visible)
 				Core.Windows.OpponentWindow.Update();
+		}
+
+		private void UpdateMouseOver()
+		{
+			var oppBoard =
+				Core.Hearthstone.CurrentGame?.OpposingPlayer.InPlay.Where(x => x.IsMinion).OrderBy(x => x.GetTag(ZONE_POSITION))
+					.ToList() ?? new List<Entity>();
+			var playerBoard =
+				Core.Hearthstone.CurrentGame?.LocalPlayer.InPlay.Where(x => x.IsMinion).OrderBy(x => x.GetTag(ZONE_POSITION))
+					.ToList() ?? new List<Entity>();
+			UpdateMouseOverDetectionRegions(oppBoard, playerBoard);
+			if(!_game.IsInMenu && (_game.CurrentGame?.IsMulliganDone ?? false) && HearthstoneWindow.IsInForeground() && IsVisible)
+				DetectMouseOver(playerBoard, oppBoard);
+			else
+				FlavorTextVisibility = Collapsed;
 		}
 
 
@@ -260,7 +265,10 @@ namespace Hearthstone_Deck_Tracker.Windows
 			try
 			{
 				if(Visibility == Visible)
+				{
 					UpdateCardTooltip();
+					UpdateMouseOver();
+				}
 			}
 			catch (Exception ex)
 			{
