@@ -59,18 +59,18 @@ namespace Hearthstone_Deck_Tracker.Windows
 			TreeViewCards.Items.Clear();
 			var collections = new[]
 			{
-				new CollectionItem(_game.CurrentGame.LocalPlayer.InHand, "Player Hand"),
-				new CollectionItem(_game.CurrentGame.LocalPlayer.InPlay, "Player Board"),
-				new CollectionItem(_game.CurrentGame.LocalPlayer.InDeck, "Player Deck"),
-				new CollectionItem(_game.CurrentGame.LocalPlayer.InGraveyard, "Player Graveyard"),
-				new CollectionItem(_game.CurrentGame.LocalPlayer.InSecret, "Player Secrets"),
-				new CollectionItem(_game.CurrentGame.LocalPlayer.RevealedCards, "Player RevealedEntities"),
-				new CollectionItem(_game.CurrentGame.OpposingPlayer.InHand, "Opponent Hand"),
-				new CollectionItem(_game.CurrentGame.OpposingPlayer.InPlay, "Opponent Board"),
-				new CollectionItem(_game.CurrentGame.OpposingPlayer.InDeck, "Opponent Deck"),
-				new CollectionItem(_game.CurrentGame.OpposingPlayer.InGraveyard, "Opponent Graveyard"),
-				new CollectionItem(_game.CurrentGame.OpposingPlayer.InSecret, "Opponent Secrets"),
-				new CollectionItem(_game.CurrentGame.OpposingPlayer.RevealedCards, "Opponent RevealedEntities")
+				new CollectionItem(_game.CurrentGame?.LocalPlayer.InHand, "Player Hand"),
+				new CollectionItem(_game.CurrentGame?.LocalPlayer.InPlay, "Player Board"),
+				new CollectionItem(_game.CurrentGame?.LocalPlayer.InDeck, "Player Deck"),
+				new CollectionItem(_game.CurrentGame?.LocalPlayer.InGraveyard, "Player Graveyard"),
+				new CollectionItem(_game.CurrentGame?.LocalPlayer.InSecret, "Player Secrets"),
+				new CollectionItem(_game.CurrentGame?.LocalPlayer.RevealedCards, "Player RevealedEntities"),
+				new CollectionItem(_game.CurrentGame?.OpposingPlayer.InHand, "Opponent Hand"),
+				new CollectionItem(_game.CurrentGame?.OpposingPlayer.InPlay, "Opponent Board"),
+				new CollectionItem(_game.CurrentGame?.OpposingPlayer.InDeck, "Opponent Deck"),
+				new CollectionItem(_game.CurrentGame?.OpposingPlayer.InGraveyard, "Opponent Graveyard"),
+				new CollectionItem(_game.CurrentGame?.OpposingPlayer.InSecret, "Opponent Secrets"),
+				new CollectionItem(_game.CurrentGame?.OpposingPlayer.RevealedCards, "Opponent RevealedEntities")
 			};
 			foreach(var collection in collections)
 			{
@@ -99,6 +99,8 @@ namespace Hearthstone_Deck_Tracker.Windows
 
 		private void FilterEntities()
 		{
+			if(_game.CurrentGame == null)
+				return;
 			var list = new List<object>();
 			foreach(var entity in _game.CurrentGame.Entities)
 			{
