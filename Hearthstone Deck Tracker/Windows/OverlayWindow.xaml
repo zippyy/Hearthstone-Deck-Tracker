@@ -140,8 +140,7 @@
             <Rectangle Name="RectPlayerHand7" Width="{Binding CardWidth, RelativeSource={RelativeSource AncestorType=windows:OverlayWindow}}" Height="{Binding CardHeight, RelativeSource={RelativeSource AncestorType=windows:OverlayWindow}}"/>
             <Rectangle Name="RectPlayerHand8" Width="{Binding CardWidth, RelativeSource={RelativeSource AncestorType=windows:OverlayWindow}}" Height="{Binding CardHeight, RelativeSource={RelativeSource AncestorType=windows:OverlayWindow}}"/>
             <Rectangle Name="RectPlayerHand9" Width="{Binding CardWidth, RelativeSource={RelativeSource AncestorType=windows:OverlayWindow}}" Height="{Binding CardHeight, RelativeSource={RelativeSource AncestorType=windows:OverlayWindow}}"/>
-            <controls:CardToolTipControl x:Name="ToolTipCard" Height="auto" Canvas.Left="323" Canvas.Top="203" Panel.ZIndex="100"
-                               Visibility="Hidden" />
+            <Rectangle x:Name="ToolTipCard" Fill="{Binding Path=FullCardImage}" Width="256" Height="382" Margin="0,-20, 0, -40"/>
             <WrapPanel Name="StackPanelAdditionalTooltips" Width="auto" Height="auto" Visibility="Collapsed" Orientation="Vertical"/>
             <Rectangle Name="RectGoldDisplay" Width="150" Height="25" Visibility="Hidden"/>
             <Grid Name="GoldProgressGrid" Height="33" Visibility="Hidden">
