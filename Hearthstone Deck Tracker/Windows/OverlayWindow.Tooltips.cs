@@ -73,11 +73,11 @@ namespace Hearthstone_Deck_Tracker.Windows
 			if(!Config.Instance.HideOpponentCardMarks && cardMark != null)
 			{
 				var index = _cardMarks.IndexOf(cardMark.Label);
-				var card = _game.CurrentGame.OpposingPlayer.InHand
-					.FirstOrDefault(x => x.GetTag(GameTag.ZONE_POSITION) == index + 1 && x.HasCardId && !x.Info.Hidden)?.Card;
-				if(card != null)
+				var cardId = _game.CurrentGame.OpposingPlayer.InHand
+					.FirstOrDefault(x => x.GetTag(GameTag.ZONE_POSITION) == index + 1 && !string.IsNullOrEmpty(x.Info.PredictedCardId))?.Info.PredictedCardId;
+				if(cardId != null)
 				{
-					ToolTipCard.SetValue(DataContextProperty, card);
+					ToolTipCard.DataContext = new CardViewModel(new HearthSim.Core.Hearthstone.Card(cardId));
 					var topOffset = Canvas.GetTop(_cardMarks[index]) + _cardMarks[index].ActualHeight;
 					var leftOffset = Canvas.GetLeft(_cardMarks[index]) + _cardMarks[index].ActualWidth * index;
 					Canvas.SetTop(ToolTipCard, topOffset);
