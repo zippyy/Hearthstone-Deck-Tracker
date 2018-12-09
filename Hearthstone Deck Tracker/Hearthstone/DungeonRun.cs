@@ -37,6 +37,8 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 					return Config.Instance.DungeonRunDeckNameTemplate;
 				case CardSet.GILNEAS:
 					return Config.Instance.MonsterHuntDeckNameTemplate;
+				case CardSet.TROLL:
+					return Config.Instance.RumbleRunDeckNameTemplate;
 				default:
 					return null;
 			}
@@ -86,11 +88,36 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 					}
 				}
 					break;
+				case CardSet.TROLL:
+				{
+					switch(playerClass.ToUpperInvariant())
+					{
+						case "ROGUE":
+							return TrlDefaultDecks.Rogue;
+						case "WARRIOR":
+							return TrlDefaultDecks.Warrior;
+						case "SHAMAN":
+							return TrlDefaultDecks.Shaman;
+						case "PALADIN":
+							return TrlDefaultDecks.Paladin;
+						case "HUNTER":
+							return TrlDefaultDecks.Hunter;
+						case "DRUID":
+							return TrlDefaultDecks.Druid;
+						case "WARLOCK":
+							return TrlDefaultDecks.Warlock;
+						case "MAGE":
+							return TrlDefaultDecks.Mage;
+						case "PRIEST":
+							return TrlDefaultDecks.Priest;
+					}
+				}
+					break;
 			}
 			return null;
 		}
 
-		public static bool IsDungeonBoss(string cardId) => cardId != null && (cardId.Contains("LOOT") || cardId.Contains("GIL")) && cardId.Contains("BOSS");
+		public static bool IsDungeonBoss(string cardId) => cardId != null && (cardId.Contains("LOOT") || cardId.Contains("GIL") || cardId.Contains("TRL")) && cardId.Contains("BOSS");
 
 		private static class GilDefaultDecks
 		{
@@ -277,6 +304,67 @@ namespace Hearthstone_Deck_Tracker.Hearthstone
 				Collectible.Priest.AuchenaiSoulpriest,
 				Collectible.Priest.Lightspawn,
 				Collectible.Priest.HolyNova,
+			};
+		}
+
+		private static class TrlDefaultDecks
+		{
+			public static List<string> Rogue => new List<string>
+			{
+				NonCollectible.Rogue.PiratesMark,
+				Collectible.Rogue.Backstab,
+				Collectible.Rogue.CounterfeitCoin,
+				Collectible.Neutral.ArcaneAnomaly,
+				Collectible.Rogue.SinisterStrike,
+				Collectible.Rogue.Betrayal,
+				Collectible.Neutral.KoboldGeomancer,
+				Collectible.Neutral.Spellzerker,
+				Collectible.Rogue.FanOfKnives,
+				Collectible.Rogue.AcademicEspionage,
+				Collectible.Rogue.TombPillager,
+			};
+
+			public static List<string> Warrior = new List<string>
+			{
+			};
+
+			public static List<string> Shaman = new List<string>
+			{
+			};
+
+			public static List<string> Paladin = new List<string>
+			{
+			};
+
+			public static List<string> Hunter = new List<string>
+			{
+			};
+
+			public static List<string> Druid = new List<string>
+			{
+				NonCollectible.Druid.GonksArmament,
+				Collectible.Druid.ForbiddenAncient,
+				Collectible.Druid.LesserJasperSpellstone,
+				Collectible.Neutral.LowlySquire,
+				Collectible.Neutral.Waterboy,
+				Collectible.Druid.Wrath,
+				Collectible.Druid.FerociousHowl,
+				Collectible.Druid.GroveTender,
+				Collectible.Neutral.HalfTimeScavenger,
+				Collectible.Druid.IronwoodGolem,
+				Collectible.Neutral.SnapjawShellfighter,
+			};
+
+			public static List<string> Warlock = new List<string>
+			{
+			};
+
+			public static List<string> Mage = new List<string>
+			{
+			};
+
+			public static List<string> Priest = new List<string>
+			{
 			};
 		}
 	}
