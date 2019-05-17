@@ -26,6 +26,7 @@ namespace HearthWatcher
 		private List<int>[] _prevCards;
 		private int[] _prevLootChoice;
 		private int[] _prevTreasureChoice;
+		private int _prevSelectedDeckId;
 
 		public event Action<DungeonInfo> DungeonInfoChanged;
 		public event Action<bool> DungeonRunMatchStarted;
@@ -48,9 +49,10 @@ namespace HearthWatcher
 		private async void Watch()
 		{
 			Running = true;
-			_prevCards = new List<int>[] { null, null, null };
-			_prevLootChoice = new[] { 0, 0, 0 };
-			_prevTreasureChoice = new[] { 0, 0, 0 };
+			_prevCards = new List<int>[] { null, null, null, null, null };
+			_prevLootChoice = new[] { 0, 0, 0, 0, 0 };
+			_prevTreasureChoice = new[] { 0, 0, 0, 0, 0 };
+			_prevSelectedDeckId = 0;
 			while(_watch)
 			{
 				await Task.Delay(_delay);
@@ -82,7 +84,7 @@ namespace HearthWatcher
 				{
 					for(var i = 0; i < dungeonInfo.Length; i++)
 					{
-						if(dungeonInfo[i]?.RunActive ?? false)
+						if(dungeonInfo[i] != null && (dungeonInfo[i].RunActive || dungeonInfo[i].SelectedDeckId != 0))
 						{
 							if(_prevCards[i] == null || !dungeonInfo[i].DbfIds.SequenceEqual(_prevCards[i])
 								|| _prevLootChoice[i] != dungeonInfo[i].PlayerChosenLoot

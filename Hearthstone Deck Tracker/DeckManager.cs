@@ -492,7 +492,7 @@ namespace Hearthstone_Deck_Tracker
 			var deck = DeckList.Instance.Decks.FirstOrDefault(x => x.IsDungeonDeck && x.Class.ToUpperInvariant() == playerClass
 																		&& !(x.IsDungeonRunCompleted ?? false)
 																		&& x.Cards.All(e => cards.Any(c => c.Id == e.Id && c.Count >= e.Count)));
-			if(deck == null && (deck = CreateDungeonDeck(playerClass, (CardSet)info.CardSet)) == null)
+			if(deck == null && (deck = CreateDungeonDeck(playerClass, (CardSet)info.CardSet, info.SelectedDeck)) == null)
 			{
 				Log.Info($"No existing deck - can't find default deck for {playerClass}");
 				return;
@@ -512,11 +512,13 @@ namespace Hearthstone_Deck_Tracker
 			Log.Info("Updated dungeon run deck");
 		}
 
-		private static Deck CreateDungeonDeck(string playerClass, CardSet set)
+		private static Deck CreateDungeonDeck(string playerClass, CardSet set, List<int> selectedDeck = null)
 		{
 			var shrine = Core.Game.Player.Board.FirstOrDefault(x => x.HasTag(GameTag.SHRINE))?.CardId;
-			Log.Info($"Creating new {playerClass} dungeon run deck (CardSet={set}, Shrine={shrine})");
-			var deck = DungeonRun.GetDefaultDeck(playerClass, set, shrine);
+			Log.Info($"Creating new {playerClass} dungeon run deck (CardSet={set}, Shrine={shrine}, SelectedDeck={selectedDeck != null})");
+			var deck = selectedDeck == null
+				? DungeonRun.GetDefaultDeck(playerClass, set, shrine)
+				: DungeonRun.GetDeckFromDbfIds(playerClass, set, selectedDeck);
 			if(deck == null)
 			{
 				Log.Info($"Could not find default deck for {playerClass} in card set {set} with Shrine={shrine}");
