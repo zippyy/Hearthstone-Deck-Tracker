@@ -79,7 +79,7 @@
                                 VerticalAlignment="Center" HorizontalAlignment="Center"/>
                 
 
-                <Rectangle Width="8" Height="12" Margin="0 -8 5 0" Style="{StaticResource StatusBarIconStyle}" HorizontalAlignment="Right" VerticalAlignment="Bottom"  Visibility="{Binding SettingsVisibility}">
+                <Rectangle Width="8" Height="12" Margin="0 -8 5 0" Style="{StaticResource StatusBarIconStyle}" HorizontalAlignment="Right" VerticalAlignment="Bottom"  Visibility="{Binding SettingsVisibility}" ToolTipService.ShowDuration="10000">
                     <Rectangle.Fill>
                         <VisualBrush Visual="{StaticResource appbar_question}" />
                     </Rectangle.Fill>
