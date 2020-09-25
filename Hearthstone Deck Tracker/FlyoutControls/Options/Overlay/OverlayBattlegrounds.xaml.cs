@@ -1,6 +1,7 @@
 #region
 
 using System;
+using System.Web.UI.WebControls;
 using System.Windows;
 using Hearthstone_Deck_Tracker.Hearthstone;
 using Hearthstone_Deck_Tracker.Utility;
@@ -35,6 +36,10 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Overlay
 
 			CheckboxShowResultsDuringShopping.IsChecked = Config.Instance.ShowBobsBuddyDuringShopping;
 			CheckboxShowResultsDuringShopping.IsEnabled = Config.Instance.RunBobsBuddy;
+
+			CheckboxAlwaysShowAverageDamage.IsChecked = Config.Instance.AlwaysShowAverageDamage;
+			CheckboxAlwaysShowAverageDamage.IsEnabled = Config.Instance.RunBobsBuddy;
+
 			_initialized = true;
 		}
 
@@ -58,6 +63,7 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Overlay
 			TextBobsBuddyDisabled.Visibility = enabled ? Visibility.Collapsed : Visibility.Visible;
 			CheckboxShowResultsDuringCombat.IsEnabled = enabled && Config.Instance.RunBobsBuddy;
 			CheckboxShowResultsDuringShopping.IsEnabled = enabled && Config.Instance.RunBobsBuddy;
+			CheckboxAlwaysShowAverageDamage.IsEnabled = enabled && Config.Instance.RunBobsBuddy;
 		}
 
 		private void SaveConfig(bool updateOverlay)
@@ -165,10 +171,29 @@ namespace Hearthstone_Deck_Tracker.FlyoutControls.Options.Overlay
 			SaveConfig(true);
 		}
 
+		private void CheckboxAlwaysShowAverageDamage_Checked(object sender, RoutedEventArgs e)
+		{
+			if(!_initialized)
+				return;
+			Config.Instance.AlwaysShowAverageDamage = true;
+			Core.Overlay.BobsBuddyDisplay.AttemptToExpandAverageDamagePanels(false);
+			SaveConfig(true);
+		}
+
+		private void CheckboxAlwaysShowAverageDamage_Unchecked(object sender, RoutedEventArgs e)
+		{
+			if(!_initialized)
+				return;
+			Config.Instance.AlwaysShowAverageDamage = false;
+			Core.Overlay.BobsBuddyDisplay.CollapseAverageDamagePanels();
+			SaveConfig(true);
+		}
+
 		private void OverlayHelpButtonClick(object sender, RoutedEventArgs e)
 		{
 			e.Handled = true;
 			Core.MainWindow.Options.TreeViewItemStreamingCapturableOverlay.IsSelected = true;
 		}
+
 	}
 }
