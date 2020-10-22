@@ -14,6 +14,7 @@ using Rectangle = System.Windows.Shapes.Rectangle;
 using Hearthstone_Deck_Tracker.Controls;
 using Hearthstone_Deck_Tracker.Utility;
 using Hearthstone_Deck_Tracker.Hearthstone;
+using Hearthstone_Deck_Tracker.Importing;
 
 #endregion
 
@@ -215,26 +216,23 @@ namespace Hearthstone_Deck_Tracker.Windows
 						break;
 					BattlegroundsBoard.Children.Clear();
 					foreach(var e in state.Entities)
-						BattlegroundsBoard.Children.Add(new EntityControl(e));
+						BattlegroundsBoard.Children.Add(new BattlegroundsMinion(e));
 					var age = _game.GetTurnNumber() - state.Turn;
 					BattlegroundsAge.Text = string.Format(LocUtil.Get("Overlay_Battlegrounds_Turns"), age);
-					BattlegroundsOpponent.Text = entity.Card.LocalizedName;
 					showMinions = true;
 					break;
 				}
 			}
 			if(showMinions)
 			{
-				Canvas.SetTop(BattlegroundsLeaderboard, Height * 0.01);
-				Canvas.SetLeft(BattlegroundsLeaderboard, Helper.GetScaledXPos(0.05, (int)Width, ScreenRatio));
-				BattlegroundsLeaderboard.Visibility = Visibility.Visible;
-				var scale = Math.Min(1.5, Height / 1080);
-				BattlegroundsLeaderboard.RenderTransform = new ScaleTransform(scale, scale, 0, 0);
+				Core.Overlay.BobsBuddyDisplay.HideFullPanel();
+				_bgsPastOpponentBoardBehavior.Show();
 			}
 			else
 			{
+				_bgsPastOpponentBoardBehavior.Hide();
 				BattlegroundsBoard.Children.Clear();
-				BattlegroundsLeaderboard.Visibility = Visibility.Collapsed;
+				Core.Overlay.BobsBuddyDisplay.ShowFullPanelAsync();
 			}
 			// Only fade the minions, if we're out of mulligan
 			if(_game.GameEntity?.GetTag(GameTag.STEP) <= (int)Step.BEGIN_MULLIGAN)
