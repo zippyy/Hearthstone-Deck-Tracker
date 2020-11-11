@@ -337,6 +337,7 @@
     <Compile Include="HsReplay\HSReplayNetOAuth.cs" />
     <Compile Include="HsReplay\Data\OAuthData.cs" />
     <Compile Include="HsReplay\HSReplayNetHelper.cs" />
+    <Compile Include="OpponentDeadForTracker.cs" />
     <Compile Include="Utility\Assets\AssetDownloader.cs" />
     <Compile Include="Utility\Assets\AssetDownloaders.cs" />
     <Compile Include="Utility\ComboBoxHelper.cs" />

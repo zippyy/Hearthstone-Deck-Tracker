@@ -15,7 +15,6 @@ using Hearthstone_Deck_Tracker.Hearthstone;
 using Hearthstone_Deck_Tracker.Utility.Logging;
 using static System.Windows.Visibility;
 using Card = Hearthstone_Deck_Tracker.Hearthstone.Card;
-using HearthDb.Enums;
 using Hearthstone_Deck_Tracker.Utility;
 
 #endregion
@@ -44,6 +43,7 @@ namespace Hearthstone_Deck_Tracker.Windows
 		private readonly List<Ellipse> _playerBoard = new List<Ellipse>();
 		private readonly List<Rectangle> _playerHand = new List<Rectangle>();
 		private readonly List<Rectangle> _leaderboardIcons = new List<Rectangle>();
+		private readonly List<HearthstoneTextBlock> _leaderboardDeadForText = new List<HearthstoneTextBlock>();
 		private bool? _isFriendsListOpen;
 		private string _lastToolTipCardId;
 		private bool _lmbDown;
@@ -311,6 +311,16 @@ namespace Hearthstone_Deck_Tracker.Windows
 		{
 			_bgsBobsBuddyBehavior.Hide();
 			BobsBuddyDisplay.ResetDisplays();
+		}
+
+		internal void UpdateOpponentDeadForTurns(List<int> turns)
+		{
+			var index = _leaderboardDeadForText.Count - 1;
+			foreach(var turn in turns)
+			{
+				_leaderboardDeadForText[index].Text = $"{turn}\nturns";
+				index--;
+			}
 		}
 	}
 }
